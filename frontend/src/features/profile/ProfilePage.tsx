@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useSession } from "../auth/authStore";
 import { useLogout } from "../../api/useAuth";
 import { brand } from "../../app/theme";
-import { ProfileIcon, ThaliIcon } from "../../components/brand/icons";
+import { NotebookIcon, ProfileIcon, ThaliIcon } from "../../components/brand/icons";
 import BeachAccessIcon from "@mui/icons-material/BeachAccessRounded";
 import LockIcon from "@mui/icons-material/LockRounded";
 import EventBusyIcon from "@mui/icons-material/EventBusyRounded";
@@ -54,6 +54,14 @@ export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile"
                   <ThaliIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("plans.title")} secondary={t("plans.hintShort")} />
+                <ChevronRightIcon sx={{ color: "text.secondary" }} />
+              </ListItemButton>
+              <Divider component="li" />
+              <ListItemButton onClick={() => navigate("/owner/reports")} sx={{ minHeight: 60 }}>
+                <ListItemIcon sx={{ color: brand.inkSoft, minWidth: 44 }}>
+                  <NotebookIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("reports.title")} secondary={t("reports.hintShort")} />
                 <ChevronRightIcon sx={{ color: "text.secondary" }} />
               </ListItemButton>
               <Divider component="li" />

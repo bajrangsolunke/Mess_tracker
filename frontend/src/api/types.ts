@@ -207,3 +207,45 @@ export interface Announcement {
   body: string | null;
   published_at: string;
 }
+
+export interface MenuToday {
+  lunch: string[];
+  dinner: string[];
+}
+
+export interface OwnerDashboard {
+  date: string;
+  active_members: number;
+  tiffin_members: number;
+  lunch: AttendanceCounts;
+  dinner: AttendanceCounts;
+  payments: BillTotals;
+  menu: MenuToday;
+  late_leaves: number;
+  meals_served_month: number;
+  holiday_today: string | null;
+}
+
+export interface CustomerDashboard {
+  date: string;
+  member: MemberBrief;
+  meals_this_month: number;
+  bill: Bill | null;
+  menu: MenuToday;
+  upcoming_leaves: Leave[];
+  unread_notifications: number;
+  announcements: Announcement[];
+}
+
+export interface MealsReport {
+  month: string;
+  days: { date: string; lunch: number; dinner: number }[];
+  totals: { lunch: number; dinner: number; total: number; tiffin: number };
+}
+
+export interface PaymentsReport {
+  month: string;
+  totals: BillTotals;
+  by_method: Record<PaymentMethod, string>;
+  months: { month: string; billed: string; collected: string }[];
+}

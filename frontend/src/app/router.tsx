@@ -25,6 +25,7 @@ import { BillDetailPage } from "../features/payments/BillDetailPage";
 import { MyBillsPage } from "../features/payments/MyBillsPage";
 import { MenuPage } from "../features/menu/MenuPage";
 import { AnnouncementsPage } from "../features/announcements/AnnouncementsPage";
+import { ReportsPage } from "../features/reports/ReportsPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
@@ -53,6 +54,7 @@ export const router = createBrowserRouter([
       { path: "menu", element: <MenuPage /> },
       { path: "announcements", element: <AnnouncementsPage /> },
       { path: "notifications", element: <NotificationsPage /> },
+      { path: "reports", element: <ReportsPage /> },
       { path: "payments", element: <PaymentsPage /> },
       { path: "payments/:id", element: <BillDetailPage /> },
       { path: "more", element: <ProfilePage titleKey="nav.more" /> },

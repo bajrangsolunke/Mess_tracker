@@ -55,7 +55,9 @@
     "quickActions": "Quick actions",
     "addMember": "Add member",
     "announce": "Announce",
-    "todayGlance": "Today at a glance"
+    "todayGlance": "Today at a glance",
+    "tiffinCount": "{{count}} tiffin",
+    "unmarkedHint": "{{count}} unmarked"
   },
   "meal": {
     "lunch": "Lunch",
@@ -119,7 +121,14 @@
     "noMenu": "Today's menu isn't set yet.",
     "leaveHint": "Tell me before {{time}} the night before, and I won't cook for you.",
     "noBills": "No bills for this month yet. Shall I prepare them?",
-    "noBillYet": "Your bill for this month isn't ready yet."
+    "noBillYet": "Your bill for this month isn't ready yet.",
+    "holidayToday": "Mess is closed today: {{reason}}. Enjoy the break!",
+    "lateLeaves": "{{count}} late leave requests need your decision.",
+    "dinnerPending": "Lunch is done. {{count}} still unmarked for dinner.",
+    "allDone": "All marked for today. Great work!",
+    "billPending": "₹ {{amount}} is pending this month. Pay at the counter or via UPI.",
+    "noMenuCustomer": "Today's menu isn't posted yet. Check back soon.",
+    "noBillYetShort": "Not ready"
   },
   "brand": {
     "tagline": "Authentic Taste · Modern Experience"
@@ -297,5 +306,17 @@
     "notifyHint": "Every member gets an in-app notification.",
     "publish": "Publish",
     "empty": "No announcements yet."
+  },
+  "reports": {
+    "title": "Reports",
+    "hintShort": "Meals, collection, attendance",
+    "meals": "Meals",
+    "totalMeals": "Meals served",
+    "tiffinMeals": "{{count}} of these were tiffins.",
+    "mealsPerDay": "Meals per day",
+    "pctCollected": "{{pct}}% collected",
+    "ofBilled": "of {{billed}} billed",
+    "byMethod": "By payment method",
+    "sixMonths": "Last 6 months"
   }
 }
