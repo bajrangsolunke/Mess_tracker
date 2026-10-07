@@ -39,7 +39,10 @@
     "save": "Save",
     "cancel": "Cancel",
     "comingSoon": "Coming soon",
-    "comingSoonHint": "This screen is being built. It will appear here soon."
+    "comingSoonHint": "This screen is being built. It will appear here soon.",
+    "edit": "Edit",
+    "done": "Done",
+    "copy": "Copy"
   },
   "dashboard": {
     "welcome": "Hello, {{name}} 👋",
@@ -119,5 +122,52 @@
   "role": {
     "owner": "Owner",
     "customer": "Member"
+  },
+  "members": {
+    "add": "Add member",
+    "addFirst": "Add first member",
+    "edit": "Edit member",
+    "profile": "Member",
+    "all": "All",
+    "count": "{{count}} members",
+    "room": "Room",
+    "name": "Full name",
+    "plan": "Plan",
+    "monthlyFee": "Monthly fee (₹)",
+    "joiningDate": "Joining date",
+    "deposit": "Deposit (₹)",
+    "emergencyContact": "Emergency contact",
+    "notes": "Notes",
+    "perMonth": "month",
+    "call": "Call",
+    "searchPlaceholder": "Search name, phone or room",
+    "noResults": "No members match",
+    "emptyTitle": "No members yet",
+    "emptyHint": "Add your members with their plan. Each one gets a login to see menu, attendance and bills.",
+    "nameRequired": "Enter the member's name",
+    "planRequired": "Choose a plan",
+    "invalidAmount": "Enter a valid amount",
+    "duplicatePhone": "A login with this phone already exists",
+    "phoneLocked": "Phone is the login and cannot change",
+    "loginNote": "A login with a temporary password will be created for this phone.",
+    "noPlansYet": "Create a mess plan first, then add members.",
+    "loginReady": "{{name}} can log in now",
+    "loginReadyHint": "Share these once. The member will set a new password on first login.",
+    "tempPassword": "Temporary password",
+    "whatsappText": "Namaste {{name}}! Your स्वाद mess login:\\nPhone: {{phone}}\\nPassword: {{password}}\\nOpen: {{app}}",
+    "resetPassword": "Reset password",
+    "deactivate": "Deactivate member",
+    "activate": "Activate member",
+    "inactiveFrom": "Inactive from"
+  },
+  "plans": {
+    "title": "Mess plans",
+    "create": "New plan",
+    "name": "Plan name",
+    "monthlyFee": "Monthly fee (₹)",
+    "hint": "A plan is which meals a member gets and the monthly fee. Members can have their own fee too.",
+    "hintShort": "Meals and monthly fee",
+    "empty": "No plans yet. Create one like “Lunch + Dinner · ₹2500”.",
+    "active": "Active"
   }
 }

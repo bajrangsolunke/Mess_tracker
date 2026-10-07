@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useSession } from "../auth/authStore";
 import { useLogout } from "../../api/useAuth";
 import { brand } from "../../app/theme";
-import { ProfileIcon } from "../../components/brand/icons";
+import { ProfileIcon, ThaliIcon } from "../../components/brand/icons";
 import { SectionTitle } from "../../components/brand/SectionTitle";
 
 const LANG_NAME: Record<string, string> = { en: "English", hi: "हिन्दी", mr: "मराठी" };
@@ -43,6 +43,18 @@ export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile"
       <Box>
         <SectionTitle>{t("profile.settings")}</SectionTitle>
         <List disablePadding sx={{ bgcolor: brand.paper, border: `1px solid ${brand.line}`, borderRadius: "16px", overflow: "hidden" }}>
+          {user?.role === "owner" ? (
+            <>
+              <ListItemButton onClick={() => navigate("/owner/plans")} sx={{ minHeight: 60 }}>
+                <ListItemIcon sx={{ color: brand.red, minWidth: 44 }}>
+                  <ThaliIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("plans.title")} secondary={t("plans.hintShort")} />
+                <ChevronRightIcon sx={{ color: "text.secondary" }} />
+              </ListItemButton>
+              <Divider component="li" />
+            </>
+          ) : null}
           <ListItemButton onClick={() => navigate("/select-language")} sx={{ minHeight: 60 }}>
             <ListItemIcon sx={{ color: brand.red, minWidth: 44 }}>
               <LanguageIcon />

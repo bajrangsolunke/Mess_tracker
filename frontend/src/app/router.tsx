@@ -9,6 +9,10 @@ import { CustomerShell } from "../features/shell/CustomerShell";
 import { CustomerHome, OwnerHome } from "../features/dashboard/HomePage";
 import { ComingSoon } from "../features/dashboard/ComingSoon";
 import { ProfilePage } from "../features/profile/ProfilePage";
+import { MembersPage } from "../features/members/MembersPage";
+import { MemberFormPage } from "../features/members/MemberFormPage";
+import { MemberDetailPage } from "../features/members/MemberDetailPage";
+import { PlansPage } from "../features/plans/PlansPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
@@ -24,7 +28,11 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <OwnerHome /> },
-      { path: "members", element: <ComingSoon titleKey="nav.members" /> },
+      { path: "members", element: <MembersPage /> },
+      { path: "members/new", element: <MemberFormPage /> },
+      { path: "members/:id", element: <MemberDetailPage /> },
+      { path: "members/:id/edit", element: <MemberFormPage /> },
+      { path: "plans", element: <PlansPage /> },
       { path: "attendance", element: <ComingSoon titleKey="nav.attendance" /> },
       { path: "payments", element: <ComingSoon titleKey="nav.payments" /> },
       { path: "more", element: <ProfilePage titleKey="nav.more" /> },

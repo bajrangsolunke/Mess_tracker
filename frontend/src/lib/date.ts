@@ -20,3 +20,9 @@ export function formatTodayLong(lang: string): string {
   const locale = lang === "mr" || lang === "hi" ? lang : "en";
   return d.locale(locale).format("dddd, D MMMM YYYY");
 }
+
+/** "2026-10-01" → "1 ऑक्टोबर 2026" / "1 October 2026". */
+export function formatDateLong(iso: string, lang: string): string {
+  const locale = lang === "mr" || lang === "hi" ? lang : "en";
+  return dayjs(iso).locale(locale).format("D MMMM YYYY");
+}

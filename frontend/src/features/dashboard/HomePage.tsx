@@ -80,7 +80,7 @@ export function OwnerHome() {
         <SectionTitle>{t("dashboard.quickActions")}</SectionTitle>
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
           <QuickAction label={t("nav.attendance")} icon={<PlateCheckIcon />} tone="green" onClick={() => navigate("/owner/attendance")} />
-          <QuickAction label={t("dashboard.addMember")} icon={<FamilyIcon />} tone="red" onClick={() => navigate("/owner/members")} />
+          <QuickAction label={t("dashboard.addMember")} icon={<FamilyIcon />} tone="red" onClick={() => navigate("/owner/members/new")} />
           <QuickAction label={t("nav.payments")} icon={<WalletRupeeIcon />} tone="gold" onClick={() => navigate("/owner/payments")} />
           <QuickAction label={t("nav.menu")} icon={<ThaliIcon />} tone="neutral" onClick={() => navigate("/owner/more")} />
         </Box>
