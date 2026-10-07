@@ -1,0 +1,17 @@
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+backend/.env
+# node
+node_modules/
+frontend/dist/
+frontend/dev-dist/
+frontend/.env.local
+# misc
+.superpowers/
+.DS_Store
+*.log
