@@ -27,7 +27,11 @@ def upgrade() -> None:
         "menus",
         sa.Column("organization_id", sa.BigInteger(), nullable=False),
         sa.Column("date", sa.Date(), nullable=False),
-        sa.Column("meal_type", postgresql.ENUM("lunch", "dinner", name="meal_type", create_type=False), nullable=False),
+        sa.Column(
+            "meal_type",
+            postgresql.ENUM("lunch", "dinner", name="meal_type", create_type=False),
+            nullable=False,
+        ),
         sa.Column("items", sa.Text(), nullable=False),
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.Column(
