@@ -12,11 +12,12 @@ Mobile-first, multilingual (English / हिन्दी / मराठी) PWA 
 | Area | Owner | Member (customer) |
 |------|-------|-------------------|
 | Auth | Register mess (invite code), login, change password | Login with phone + temporary password, forced password change on first login |
+| Prices & membership | Set monthly prices for 1 time (lunch or dinner) and 2 times a day; office tiffin price list (veg / egg / non-veg items). Membership runs one month from joining (7 Oct → 6 Nov) with a bill per period; renew with one tap (can switch 1↔2 times); renewals-due list | Validity and days left on home; request renewal choosing 1 or 2 times |
 | Plans & members | Mess plans (meals + fee), members with room, deposit, notes; **tiffin members** with company and delivery address; search, filters, deactivate, reset password, WhatsApp share of login | Profile, language |
-| Attendance | Daily lunch/dinner sheet, one-tap present/absent, mark all, date strip, search, mess/tiffin filter, holidays, month close/lock, per-member history | Monthly calendar with lunch/dinner dots, meals taken |
+| Attendance | Members tap "मी जेवलो" after eating (replaces the notebook signature, shown as self-marked); notebook-style monthly register; daily lunch/dinner sheet, one-tap present/absent, mark all, date strip, search, mess/tiffin filter, holidays, month close/lock, per-member history | Monthly calendar with lunch/dinner dots, meals taken |
 | Leaves | List by date, approve/reject late requests (notifies member) | Skip meals in advance; cutoff rule (default 22:00 the night before), cancel future leaves |
 | Billing | Prepare monthly bills from fees, record cash/UPI/bank payments, partial payments, edit bill, pending list, collection progress, payment reminders | Current bill status, payment history |
-| Company tiffins | Companies with their own veg and non-veg rates; daily lunch/dinner counts per company with − / + steppers and notes (Jain, extra roti); copy yesterday; live totals; monthly statement per company with payments and advance; today's count on the home screen | — |
+| Company tiffins | Daily lunch/dinner counts per company per price-list item (e.g. Veg thali ₹90, Anda thali - Chapati ₹120) with − / + steppers and notes (Jain, extra roti); copy yesterday; live totals; monthly statement per company with payments and advance; today's count on the home screen | — |
 | Menu | Day editor with dish chips and suggestions, copy yesterday | Today's and weekly menu |
 | Announcements | Publish to all members (in-app notifications) | Read; notification bell with unread badge |
 | Dashboard & reports | Live today-at-a-glance, pending payments, chef's next-action hint; meals per day, collection by method, 6-month trend, per-member attendance | Plan, meals this month, bill, menu, upcoming leaves, announcements |
@@ -53,7 +54,7 @@ Demo logins (seeded):
 | Member | 9000000002 | cust123 |
 | Tiffin member | 9000000021 | cust123 |
 
-Demo company tiffin clients: Infosys (veg ₹60, non-veg ₹80) and TCS (veg ₹55, non-veg ₹75) with daily orders for the current month.
+Demo prices: 1 time ₹2000, 2 times ₹3600; tiffin items Veg thali ₹90, Anda thali - Chapati ₹120, Anda thali - Bhakri ₹130; companies Infosys and TCS with daily orders. Members have 4-digit IDs from 1001.
 
 API docs: http://localhost:8000/docs
 

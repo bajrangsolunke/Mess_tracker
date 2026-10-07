@@ -7,6 +7,8 @@ export interface NavItem {
   labelKey: string;
   to: string;
   icon: ReactElement;
+  /** Other route prefixes that belong to this tab (e.g. More owns /owner/pricing). */
+  also?: string[];
 }
 
 export function BottomNav({ items }: { items: NavItem[] }) {
@@ -15,10 +17,11 @@ export function BottomNav({ items }: { items: NavItem[] }) {
   const { pathname } = useLocation();
   // Longest matching prefix wins: "/owner" is a prefix of every owner page, so it must lose
   // to "/owner/attendance" when the user is on attendance.
+  const matches = (prefix: string) => pathname === prefix || pathname.startsWith(prefix + "/");
   const current =
     items
-      .filter((i) => pathname === i.to || pathname.startsWith(i.to + "/"))
-      .sort((a, b) => b.to.length - a.to.length)[0]?.to ?? items[0].to;
+      .flatMap((i) => [i.to, ...(i.also ?? [])].filter(matches).map((prefix) => ({ to: i.to, len: prefix.length })))
+      .sort((a, b) => b.len - a.len)[0]?.to ?? items[0].to;
 
   return (
     <Paper

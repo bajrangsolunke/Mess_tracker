@@ -4,6 +4,7 @@ import CheckIcon from "@mui/icons-material/CheckRounded";
 import CloseIcon from "@mui/icons-material/CloseRounded";
 import LockIcon from "@mui/icons-material/LockRounded";
 import BeachAccessIcon from "@mui/icons-material/BeachAccessRounded";
+import MenuBookIcon from "@mui/icons-material/MenuBookRounded";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { AttendanceRow, MealType, MemberType } from "../../api/types";
@@ -49,7 +50,11 @@ function Row({ row, locked, onMark }: { row: AttendanceRow; locked: boolean; onM
           {row.member.name}
         </Typography>
         <Typography variant="caption" noWrap sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          {row.member.member_type === "tiffin" ? `${t("members.type.tiffin")}${row.member.company ? ` · ${row.member.company}` : ""}` : row.member.room_no ? `${t("members.room")} ${row.member.room_no}` : row.member.phone}
+          <Box component="span" sx={{ fontWeight: 700, color: brand.red }}>#{row.member.member_no}</Box>
+          {row.member.member_type === "tiffin" ? ` · ${t("members.type.tiffin")}${row.member.company ? ` · ${row.member.company}` : ""}` : ""}
+          {row.self_marked ? (
+            <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.25, color: brand.greenDark, fontWeight: 700 }}>· {t("attendance.selfMarked")}</Box>
+          ) : null}
           {row.on_leave ? (
             <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.25, color: brand.goldDark, fontWeight: 600 }}>
               <BeachAccessIcon sx={{ fontSize: 14 }} /> {t("attendance.onLeave")}
@@ -118,7 +123,7 @@ export function AttendancePage() {
     const items = data?.items ?? [];
     const q = search.trim().toLowerCase();
     const typed = type ? items.filter((r) => r.member.member_type === type) : items;
-    return q ? typed.filter((r) => r.member.name.toLowerCase().includes(q) || r.member.phone.includes(q) || (r.member.room_no ?? "").toLowerCase().includes(q) || (r.member.company ?? "").toLowerCase().includes(q)) : typed;
+    return q ? typed.filter((r) => r.member.name.toLowerCase().includes(q) || r.member.phone.includes(q) || String(r.member.member_no).includes(q) || (r.member.company ?? "").toLowerCase().includes(q)) : typed;
   }, [data, search, type]);
   const tiffinCount = (data?.items ?? []).filter((r) => r.member.member_type === "tiffin").length;
 
@@ -126,7 +131,11 @@ export function AttendancePage() {
 
   return (
     <Stack spacing={2}>
-      <PageHeader title={t("nav.attendance")} subtitle={formatDateLong(date, i18n.language)} />
+      <PageHeader
+        title={t("nav.attendance")}
+        subtitle={formatDateLong(date, i18n.language)}
+        action={<Button variant="outlined" size="medium" startIcon={<MenuBookIcon />} onClick={() => navigate("/owner/register")} sx={{ minHeight: 44 }}>{t("register.title")}</Button>}
+      />
       <DateStrip value={date} onChange={setDate} />
 
       <Tabs value={meal} onChange={(_, v: MealType) => setMeal(v)} variant="fullWidth" sx={{ minHeight: 44, "& .MuiTab-root": { minHeight: 44, fontWeight: 600 } }}>

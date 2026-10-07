@@ -9,7 +9,7 @@ export function SearchBar({ value, onChange, placeholder }: { value: string; onC
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      type="search"
+      type="text"
       inputMode="search"
       slotProps={{
         input: {

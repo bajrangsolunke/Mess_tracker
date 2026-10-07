@@ -13,6 +13,7 @@ import LockIcon from "@mui/icons-material/LockRounded";
 import EventBusyIcon from "@mui/icons-material/EventBusyRounded";
 import CampaignIcon from "@mui/icons-material/CampaignRounded";
 import LocalShippingIcon from "@mui/icons-material/LocalShippingRounded";
+import AutorenewIcon from "@mui/icons-material/AutorenewRounded";
 import { SectionTitle } from "../../components/brand/SectionTitle";
 
 const LANG_NAME: Record<string, string> = { en: "English", hi: "हिन्दी", mr: "मराठी" };
@@ -21,7 +22,7 @@ const LANG_NAME: Record<string, string> = { en: "English", hi: "हिन्द�
 export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile" }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { user, organization } = useSession();
+  const { user, organization, member } = useSession();
   const logout = useLogout();
 
   return (
@@ -40,6 +41,7 @@ export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile"
           </Typography>
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
             {user?.phone ? `+91 ${user.phone}` : ""} · {t(`role.${user?.role ?? "customer"}`)}
+            {member?.member_no ? ` · #${member.member_no}` : ""}
           </Typography>
           <Typography variant="caption">{organization?.name}</Typography>
         </Box>
@@ -50,8 +52,24 @@ export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile"
         <List disablePadding sx={{ bgcolor: brand.paper, border: `1px solid ${brand.line}`, borderRadius: "16px", overflow: "hidden" }}>
           {user?.role === "owner" ? (
             <>
-              <ListItemButton onClick={() => navigate("/owner/plans")} sx={{ minHeight: 60 }}>
+              <ListItemButton onClick={() => navigate("/owner/pricing")} sx={{ minHeight: 60 }}>
                 <ListItemIcon sx={{ color: brand.red, minWidth: 44 }}>
+                  <ThaliIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("pricing.title")} secondary={t("pricing.hintShort")} />
+                <ChevronRightIcon sx={{ color: "text.secondary" }} />
+              </ListItemButton>
+              <Divider component="li" />
+              <ListItemButton onClick={() => navigate("/owner/renewals")} sx={{ minHeight: 60 }}>
+                <ListItemIcon sx={{ color: brand.green, minWidth: 44 }}>
+                  <AutorenewIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("membership.renewalsTitle")} secondary={t("membership.renewalsHint")} />
+                <ChevronRightIcon sx={{ color: "text.secondary" }} />
+              </ListItemButton>
+              <Divider component="li" />
+              <ListItemButton onClick={() => navigate("/owner/plans")} sx={{ minHeight: 60 }}>
+                <ListItemIcon sx={{ color: brand.inkSoft, minWidth: 44 }}>
                   <ThaliIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("plans.title")} secondary={t("plans.hintShort")} />

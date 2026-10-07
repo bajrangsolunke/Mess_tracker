@@ -7,6 +7,7 @@ import type { Plan } from "../../api/types";
 import { PageHeader } from "../../components/brand/PageHeader";
 import { ThaliIcon } from "../../components/brand/icons";
 import { rupees } from "../../lib/money";
+import { planName } from "../../lib/plans";
 import { brand } from "../../app/theme";
 
 const EMPTY: PlanInput = { name: "", includes_lunch: true, includes_dinner: true, monthly_fee: "" };
@@ -81,7 +82,7 @@ export function PlansPage() {
               </Box>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography variant="subtitle1" noWrap>
-                  {p.name}
+                  {planName(p, t)}
                 </Typography>
                 <Typography variant="body2" sx={{ color: "text.secondary" }}>
                   {[p.includes_lunch && t("meal.lunchShort"), p.includes_dinner && t("meal.dinnerShort")].filter(Boolean).join(" + ")} · {rupees(p.monthly_fee)}/{t("members.perMonth")}

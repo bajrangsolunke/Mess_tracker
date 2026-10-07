@@ -37,7 +37,11 @@ export function BillDetailPage() {
 
   return (
     <Stack spacing={2.5}>
-      <PageHeader title={bill.member.name} subtitle={formatMonth(bill.month.slice(0, 7), i18n.language)} back="/owner/payments" />
+      <PageHeader
+        title={`${bill.member.name} #${bill.member.member_no}`}
+        subtitle={bill.period_start && bill.period_end ? `${formatDateLong(bill.period_start, i18n.language)} – ${formatDateLong(bill.period_end, i18n.language)}` : formatMonth(bill.month.slice(0, 7), i18n.language)}
+        back="/owner/payments"
+      />
 
       <Box sx={{ p: 2, borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}` }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>

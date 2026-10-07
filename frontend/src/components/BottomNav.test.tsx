@@ -6,7 +6,8 @@ import { BottomNav } from "./BottomNav";
 const items = [
   { labelKey: "nav.home", to: "/owner", icon: <span /> },
   { labelKey: "nav.members", to: "/owner/members", icon: <span /> },
-  { labelKey: "nav.attendance", to: "/owner/attendance", icon: <span /> },
+  { labelKey: "nav.attendance", to: "/owner/attendance", icon: <span />, also: ["/owner/register"] },
+  { labelKey: "nav.more", to: "/owner/more", icon: <span />, also: ["/owner/pricing"] },
 ];
 
 function selected() {
@@ -25,5 +26,16 @@ describe("BottomNav highlights the current section", () => {
   it("members on a nested member page", () => {
     renderWithProviders(<BottomNav items={items} />, { route: "/owner/members/12/edit" });
     expect(selected()).toEqual(["Members"]);
+  });
+});
+
+describe("sub-pages light up their parent tab", () => {
+  it("prices page belongs to More", () => {
+    renderWithProviders(<BottomNav items={items} />, { route: "/owner/pricing" });
+    expect(selected()).toEqual(["More"]);
+  });
+  it("register belongs to Attendance", () => {
+    renderWithProviders(<BottomNav items={items} />, { route: "/owner/register" });
+    expect(selected()).toEqual(["Attendance"]);
   });
 });

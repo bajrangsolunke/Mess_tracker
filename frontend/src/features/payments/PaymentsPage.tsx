@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Box, Button, ButtonBase, Chip, LinearProgress, Skeleton, Stack, Typography, alpha } from "@mui/material";
 import CampaignIcon from "@mui/icons-material/CampaignRounded";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLongRounded";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { Bill, BillStatus } from "../../api/types";
-import { useBills, useGenerateBills, useSendReminders } from "../../api/useBilling";
+import { useBills, useSendReminders } from "../../api/useBilling";
 import { PageHeader } from "../../components/brand/PageHeader";
 import { Avatar } from "../../components/brand/Avatar";
 import { StatusChip } from "../../components/brand/StatusChip";
@@ -15,6 +14,7 @@ import { rupees } from "../../lib/money";
 import { monthKey } from "../../lib/date";
 import { MonthSwitcher } from "../attendance/MyAttendancePage";
 import { RecordPaymentSheet } from "./RecordPaymentSheet";
+import dayjs from "dayjs";
 
 export function PaymentsPage() {
   const { t } = useTranslation();
@@ -22,7 +22,6 @@ export function PaymentsPage() {
   const [month, setMonth] = useState(monthKey());
   const [filter, setFilter] = useState<BillStatus | "">("");
   const { data, isLoading } = useBills(month, filter);
-  const generate = useGenerateBills();
   const remind = useSendReminders();
   const [selected, setSelected] = useState<Bill | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -39,14 +38,7 @@ export function PaymentsPage() {
       {isLoading && !data ? (
         <Skeleton variant="rounded" height={120} sx={{ borderRadius: "16px" }} />
       ) : noBills ? (
-        <EmptyState
-          pose="thali"
-          says={t("chef.noBills")}
-          title={t("payments.noBillsTitle")}
-          hint={t("payments.noBillsHint")}
-          actionLabel={t("payments.generate")}
-          onAction={() => generate.mutate(month, { onSuccess: (r) => setToast(t("payments.generated", { count: r.created })) })}
-        />
+        <EmptyState pose="thali" says={t("chef.noBills")} title={t("payments.noBillsTitle")} hint={t("payments.noBillsAuto")} actionLabel={t("members.add")} onAction={() => navigate("/owner/members/new")} />
       ) : totals ? (
         <>
           <Box sx={{ p: 2, borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}` }}>
@@ -67,14 +59,9 @@ export function PaymentsPage() {
             </Box>
           </Box>
 
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button variant="outlined" size="medium" startIcon={<ReceiptLongIcon />} disabled={generate.isPending} onClick={() => generate.mutate(month, { onSuccess: (r) => setToast(t("payments.generated", { count: r.created })) })} sx={{ flex: 1, minHeight: 44 }}>
-              {t("payments.generateMissing")}
-            </Button>
-            <Button variant="outlined" size="medium" startIcon={<CampaignIcon />} disabled={remind.isPending || Number(totals.pending) === 0} onClick={() => remind.mutate(month, { onSuccess: (r) => setToast(t("payments.remindersSent", { count: r.sent })) })} sx={{ flex: 1, minHeight: 44 }}>
-              {t("payments.remind")}
-            </Button>
-          </Box>
+          <Button variant="outlined" size="medium" startIcon={<CampaignIcon />} disabled={remind.isPending || Number(totals.pending) === 0} onClick={() => remind.mutate(month, { onSuccess: (r) => setToast(t("payments.remindersSent", { count: r.sent })) })} sx={{ minHeight: 44 }}>
+            {t("payments.remind")}
+          </Button>
           {toast ? <Typography variant="body2" sx={{ color: brand.greenDark, fontWeight: 600 }}>{toast}</Typography> : null}
 
           <Box sx={{ display: "flex", gap: 1 }}>
@@ -89,7 +76,8 @@ export function PaymentsPage() {
                 <ButtonBase onClick={() => navigate(`/owner/payments/${b.id}?month=${month}`)} sx={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 1.25, textAlign: "left", py: 0.5, borderRadius: "12px" }}>
                   <Avatar name={b.member.name} size={40} />
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="subtitle1" noWrap>{b.member.name}</Typography>
+                    <Typography variant="subtitle1" noWrap>{b.member.name} <Typography component="span" variant="caption" sx={{ fontWeight: 700, color: brand.red }}>#{b.member.member_no}</Typography></Typography>
+                    {b.period_start && b.period_end ? <Typography variant="caption">{dayjs(b.period_start).format("D MMM")} – {dayjs(b.period_end).format("D MMM")}</Typography> : null}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
                       <StatusChip status={b.status === "unpaid" ? "pending" : b.status} />
                       <Typography variant="body2" sx={{ color: "text.secondary" }}>

@@ -28,6 +28,9 @@ import { AnnouncementsPage } from "../features/announcements/AnnouncementsPage";
 import { ReportsPage } from "../features/reports/ReportsPage";
 import { ChangePasswordPage } from "../features/profile/ChangePasswordPage";
 import { TiffinOrdersPage } from "../features/tiffin/TiffinOrdersPage";
+import { PricingPage } from "../features/pricing/PricingPage";
+import { RenewalsPage } from "../features/membership/RenewalsPage";
+import { RegisterPage } from "../features/register/RegisterPage";
 import { TiffinClientsPage } from "../features/tiffin/TiffinClientsPage";
 import { TiffinClientDetailPage } from "../features/tiffin/TiffinClientDetailPage";
 
@@ -60,6 +63,9 @@ export const router = createBrowserRouter([
       { path: "notifications", element: <NotificationsPage /> },
       { path: "reports", element: <ReportsPage /> },
       { path: "tiffins", element: <TiffinOrdersPage /> },
+      { path: "pricing", element: <PricingPage /> },
+      { path: "renewals", element: <RenewalsPage /> },
+      { path: "register", element: <RegisterPage /> },
       { path: "tiffin-clients", element: <TiffinClientsPage /> },
       { path: "tiffin-clients/:id", element: <TiffinClientDetailPage /> },
       { path: "payments", element: <PaymentsPage /> },

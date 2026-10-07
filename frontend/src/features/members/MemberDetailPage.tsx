@@ -14,6 +14,10 @@ import { Avatar } from "../../components/brand/Avatar";
 import { StatusChip } from "../../components/brand/StatusChip";
 import { TempPasswordDialog } from "./TempPasswordDialog";
 import { planLabel } from "./planLabel";
+import { MembershipBadge } from "./MembershipBadge";
+import { RenewSheet } from "../membership/RenewSheet";
+import { planName } from "../../lib/plans";
+import AutorenewIcon from "@mui/icons-material/AutorenewRounded";
 import { rupees } from "../../lib/money";
 import { formatDateLong } from "../../lib/date";
 import { brand } from "../../app/theme";
@@ -40,6 +44,7 @@ export function MemberDetailPage() {
   const setStatus = useSetMemberStatus();
   const resetPw = useResetMemberPassword();
   const [temp, setTemp] = useState<string | null>(null);
+  const [renewing, setRenewing] = useState(false);
 
   if (isLoading || !m) {
     return (
@@ -71,10 +76,11 @@ export function MemberDetailPage() {
           <Typography variant="h6" noWrap>
             {m.name}
           </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 800, color: brand.red }}>#{m.member_no}</Typography>
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
             {planLabel(m, t)} · {rupees(m.monthly_fee)}/{t("members.perMonth")}
           </Typography>
-          <Box sx={{ mt: 0.75 }}>
+          <Box sx={{ mt: 0.75, display: "flex", gap: 0.75, alignItems: "center" }}>
             <StatusChip status={m.status} />
           </Box>
         </Box>
@@ -83,7 +89,23 @@ export function MemberDetailPage() {
         </Button>
       </Box>
 
+      {m.valid_until ? (
+        <Box sx={{ p: 2, borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}` }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 1 }}>
+            <Box>
+              <Typography variant="caption">{t("membership.validUntilLabel")}</Typography>
+              <Typography sx={{ fontWeight: 800, fontSize: "1.1rem" }}>{formatDateLong(m.valid_until, i18n.language)}</Typography>
+              <MembershipBadge validUntil={m.valid_until} always />
+            </Box>
+            <Button variant="contained" startIcon={<AutorenewIcon />} onClick={() => setRenewing(true)} sx={{ minHeight: 44 }}>{t("membership.renew")}</Button>
+          </Box>
+          {m.renewal_plan ? <Typography variant="body2" sx={{ mt: 1, color: brand.greenDark, fontWeight: 600 }}>{t("membership.requested", { plan: planName(m.renewal_plan, t) })}</Typography> : null}
+        </Box>
+      ) : null}
+
       <Box sx={{ px: 2, borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}` }}>
+        <Row label={t("members.memberNo")} value={`#${m.member_no}`} />
+        <Divider />
         <Row label={t("auth.phone")} value={`+91 ${m.phone}`} />
         <Divider />
         {m.member_type === "tiffin" ? (
@@ -94,11 +116,9 @@ export function MemberDetailPage() {
             <Divider />
             <Row label={t("members.deliveryAddress")} value={m.delivery_address} />
           </>
-        ) : (
-          <Row label={t("members.room")} value={m.room_no} />
-        )}
-        <Divider />
-        <Row label={t("members.plan")} value={m.plan.name} />
+        ) : null}
+        {m.member_type === "tiffin" ? <Divider /> : null}
+        <Row label={t("members.plan")} value={planName(m.plan, t)} />
         <Divider />
         <Row label={t("members.joiningDate")} value={formatDateLong(m.joining_date, i18n.language)} />
         <Divider />
@@ -147,6 +167,7 @@ export function MemberDetailPage() {
         </Button>
       </Stack>
 
+      {renewing ? <RenewSheet member={m} onClose={() => setRenewing(false)} onRenewed={(bill) => navigate(`/owner/payments/${bill.id}?month=${bill.month.slice(0, 7)}`)} /> : null}
       {temp ? <TempPasswordDialog open name={m.name} phone={m.phone} password={temp} onClose={() => setTemp(null)} /> : null}
     </Stack>
   );

@@ -21,6 +21,7 @@ export interface AuthOrganization {
 
 export interface AuthMember {
   id: number;
+  member_no?: number;
   name: string;
   member_type?: "dine_in" | "tiffin";
   monthly_fee: string;

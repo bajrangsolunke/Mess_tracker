@@ -122,3 +122,16 @@ export function useSetMonthClosed() {
     },
   });
 }
+
+/** Mark one cell on any date (register view). Refreshes the register and dependent views. */
+export function useMarkCell(meal: MealType) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ date, member_id, status }: { date: string; member_id: number; status: AttendanceStatus }) =>
+      api<AttendanceSheet>("/attendance", { method: "PUT", body: JSON.stringify({ date, meal_type: meal, items: [{ member_id, status }] }) }),
+    onSuccess: (sheet) => {
+      qc.setQueryData([...attendanceKey, "sheet", sheet.date, sheet.meal_type], sheet);
+      refreshAttendanceViews(qc);
+    },
+  });
+}

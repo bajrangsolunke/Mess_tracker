@@ -1,6 +1,9 @@
 import type { Member } from "../../api/types";
+import { planMeals, planName } from "../../lib/plans";
 
-export function planLabel(m: Member, t: (k: string) => string): string {
-  const parts = [m.plan.includes_lunch && t("meal.lunchShort"), m.plan.includes_dinner && t("meal.dinnerShort")].filter(Boolean);
-  return parts.join(" + ");
+type T = (k: string, o?: Record<string, unknown>) => string;
+
+/** Short plan text for a member: standard plans by name ("2 वेळा"), custom plans by meals. */
+export function planLabel(m: Pick<Member, "plan">, t: T): string {
+  return m.plan.kind ? planName(m.plan, t) : planMeals(m.plan, t);
 }

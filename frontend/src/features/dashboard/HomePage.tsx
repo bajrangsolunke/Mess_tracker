@@ -19,6 +19,10 @@ import { brand } from "../../app/theme";
 import { VegMark, VEG_COLOR, NONVEG_COLOR } from "../../components/brand/VegMark";
 import LocalShippingIcon from "@mui/icons-material/LocalShippingRounded";
 import { formatDateLong, formatTodayLong } from "../../lib/date";
+import { CheckInCard } from "../membership/CheckInCard";
+import { MyMembershipCard } from "../membership/MyMembershipCard";
+import { planName } from "../../lib/plans";
+import AutorenewIcon from "@mui/icons-material/AutorenewRounded";
 import { rupees } from "../../lib/money";
 
 function Greeting({ says }: { says: string }) {
@@ -71,6 +75,25 @@ export function OwnerHome() {
           </Box>
         )}
       </Box>
+
+      {data && data.renewals_due > 0 ? (
+        <Box
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate("/owner/renewals")}
+          onKeyDown={(e) => e.key === "Enter" && navigate("/owner/renewals")}
+          sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 2, borderRadius: "16px", bgcolor: alpha(brand.red, 0.06), border: `1px solid ${alpha(brand.red, 0.3)}`, cursor: "pointer" }}
+        >
+          <Box sx={{ width: 44, height: 44, borderRadius: "12px", bgcolor: alpha(brand.red, 0.12), color: brand.red, display: "grid", placeItems: "center", flexShrink: 0 }}>
+            <AutorenewIcon />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle1">{t("membership.renewalsDue", { count: data.renewals_due })}</Typography>
+            <Typography variant="caption">{t("membership.renewalsDueHint")}</Typography>
+          </Box>
+          <ChevronRightIcon sx={{ color: "text.secondary" }} />
+        </Box>
+      ) : null}
 
       <Box
         role="button"
@@ -128,6 +151,7 @@ export function OwnerHome() {
           <QuickAction label={t("nav.payments")} icon={<WalletRupeeIcon />} tone="gold" onClick={() => navigate("/owner/payments")} />
           <QuickAction label={t("tiffin.short")} icon={<LocalShippingIcon />} tone="red" onClick={() => navigate("/owner/tiffins")} />
           <QuickAction label={t("reports.title")} icon={<NotebookIcon />} tone="neutral" onClick={() => navigate("/owner/reports")} />
+          <QuickAction label={t("pricing.title")} icon={<ThaliIcon />} tone="gold" onClick={() => navigate("/owner/pricing")} />
         </Box>
       </Box>
 
@@ -160,11 +184,15 @@ export function CustomerHome() {
   const { data } = useCustomerDashboard();
   const bill = data?.bill;
   const says = !data ? t("chef.customerWelcome") : bill && bill.status !== "paid" ? t("chef.billPending", { amount: rupees(bill.due) }) : data.menu.lunch.length || data.menu.dinner.length ? t("chef.customerWelcome") : t("chef.noMenuCustomer");
-  const planLabel = data ? [data.member.plan.includes_lunch && t("meal.lunchShort"), data.member.plan.includes_dinner && t("meal.dinnerShort")].filter(Boolean).join(" + ") : undefined;
+  const planLabel = data ? planName(data.member.plan, t) : undefined;
 
   return (
     <Stack spacing={3}>
       <Greeting says={says} />
+
+      <CheckInCard />
+
+      {data ? <MyMembershipCard info={data.membership} currentPlan={data.member.plan} /> : null}
 
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
         <StatCard label={t("customer.plan")} value={planLabel} hint={data ? `${rupees(data.member.plan.monthly_fee)}/${t("members.perMonth")}` : undefined} tone="red" icon={<ThaliIcon fontSize="small" />} />

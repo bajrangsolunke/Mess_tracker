@@ -126,12 +126,14 @@
     "lateLeaves": "{{count}} late leave requests need your decision.",
     "dinnerPending": "Lunch is done. {{count}} still unmarked for dinner.",
     "allDone": "All marked for today. Great work!",
-    "billPending": "₹ {{amount}} is pending this month. Pay at the counter or via UPI.",
+    "billPending": "{{amount}} is pending this month. Pay at the counter or via UPI.",
     "noMenuCustomer": "Today's menu isn't posted yet. Check back soon.",
     "noBillYetShort": "Not ready",
     "forcedPassword": "Welcome! Set your own password before we start.",
     "changePassword": "Pick something only you remember.",
-    "noCompanies": "Add the companies you send tiffins to, then enter each day's count."
+    "noCompanies": "Add the companies you send tiffins to, then enter each day's count.",
+    "noPriceList": "Tell me your tiffin prices, then we can take orders.",
+    "noRenewals": "Nobody's membership is ending in the next 5 days."
   },
   "brand": {
     "tagline": "Authentic Taste · Modern Experience"
@@ -162,7 +164,7 @@
     "notes": "Notes",
     "perMonth": "month",
     "call": "Call",
-    "searchPlaceholder": "Search name, phone or room",
+    "searchPlaceholder": "Search name, phone or ID",
     "noResults": "No members match",
     "emptyTitle": "No members yet",
     "emptyHint": "Add your members with their plan. Each one gets a login to see menu, attendance and bills.",
@@ -188,7 +190,13 @@
       "label": "Type",
       "dine_in": "Mess",
       "tiffin": "Tiffin"
-    }
+    },
+    "otherPlan": "Plan",
+    "setPricesFirst": "Set your monthly prices first (1 time / 2 times).",
+    "firstPeriod": "First month: {{from}} – {{to}} · {{amount}}",
+    "moreDetails": "More details",
+    "lessDetails": "Fewer details",
+    "memberNo": "Member ID"
   },
   "plans": {
     "title": "Mess plans",
@@ -219,7 +227,8 @@
       "present": "Present",
       "absent": "Absent",
       "leave": "Leave"
-    }
+    },
+    "selfMarked": "self"
   },
   "holidays": {
     "title": "Holidays",
@@ -298,7 +307,8 @@
     "history": "Payments",
     "noPayments": "No payments yet.",
     "thanks": "Paid. Thank you ❤️",
-    "customerDue": "Paid {{paid}} of {{total}}. Pay at the counter or via UPI."
+    "customerDue": "Paid {{paid}} of {{total}}. Pay at the counter or via UPI.",
+    "noBillsAuto": "Bills are created automatically when you add or renew a member."
   },
   "announcements": {
     "title": "Announcements",
@@ -362,6 +372,96 @@
     "enterToday": "Tap to enter today's counts",
     "advance": "Advance",
     "dailyOrders": "Daily orders",
-    "noOrders": "No orders this month."
+    "noOrders": "No orders this month.",
+    "nonvegEgg": "Egg / Non-veg",
+    "pricesFromList": "Prices come from the tiffin price list.",
+    "byItem": "By item",
+    "noItemsTitle": "Set your tiffin prices first",
+    "noItemsHint": "Add items like Veg thali ₹90, Anda thali - Chapati ₹120."
+  },
+  "pricing": {
+    "title": "Prices",
+    "hintShort": "Monthly mess fees and tiffin price list",
+    "messSection": "Monthly mess",
+    "messHint": "Members choose 1 time (lunch or dinner) or 2 times a day. New members get these prices.",
+    "oneMeal": "1 time a day",
+    "twoMeals": "2 times a day",
+    "oneMealHint": "Lunch or dinner",
+    "twoMealsHint": "Lunch + dinner",
+    "applyExisting": "Also change the fee of existing members on these plans",
+    "saved": "Saved. {{count}} existing members updated.",
+    "save": "Save prices",
+    "tiffinSection": "Office tiffin price list",
+    "tiffinHint": "Prices per tiffin for company orders. Daily counts are entered per item.",
+    "addItem": "Add item",
+    "editItem": "Edit item",
+    "itemName": "Item name",
+    "itemNamePlaceholder": "Veg thali / Rice plate",
+    "itemPrice": "Price per tiffin",
+    "itemActive": "Available",
+    "noItems": "No items yet. Add e.g. “Veg thali ₹90”.",
+    "howManyTimes": "How many times a day?",
+    "whichMeal": "Which meal?",
+    "plan": {
+      "one_lunch": "1 time · Lunch",
+      "one_dinner": "1 time · Dinner",
+      "two": "2 times"
+    }
+  },
+  "food": {
+    "veg": "Veg",
+    "egg": "Egg",
+    "nonveg": "Non-veg"
+  },
+  "membership": {
+    "renewTitle": "Renew {{name}}",
+    "memberRequested": "Member asked to renew",
+    "startDate": "Start date",
+    "validTill": "Valid till {{date}}",
+    "amount": "Amount",
+    "periodExists": "A bill already exists for a period starting in that month.",
+    "renew": "Renew",
+    "renewalsTitle": "Renewals",
+    "renewalsHint": "Ending in 5 days, expired, or requested",
+    "expiredAgo": "Expired {{count}} days ago",
+    "endsToday": "Ends today",
+    "daysLeft": "{{count}} days left",
+    "requested": "Asked to renew: {{plan}}",
+    "expired": "Expired",
+    "renewalAsked": "Renewal asked",
+    "validUntilLabel": "Membership valid till",
+    "endedOn": "Membership ended on",
+    "expiredRenew": "Ended. Renew to continue eating.",
+    "requestSent": "Renewal requested: {{plan}}",
+    "payAtCounter": "The owner will confirm when you pay at the counter or by UPI.",
+    "cancelRequest": "Cancel request",
+    "sendRequest": "Send request",
+    "renewMine": "Renew membership",
+    "renewalsDue": "{{count}} renewals due",
+    "renewalsDueHint": "Memberships ending soon or asked to renew"
+  },
+  "checkin": {
+    "title": "Today's meals",
+    "hint": "Tap after you eat — no need to sign the notebook.",
+    "closed": "Mess closed",
+    "done": "{{meal}} recorded",
+    "undo": "Undo",
+    "byOwner": "Marked by owner",
+    "markedAbsent": "Marked absent",
+    "askOwner": "Ask the owner to change",
+    "ate": "I had {{meal}}",
+    "onLeave": "You are on leave",
+    "error": {
+      "MEMBERSHIP_EXPIRED": "Your membership has ended. Renew to check in.",
+      "OWNER_MARKED": "The owner has already marked this meal.",
+      "HOLIDAY": "Mess is closed for this meal.",
+      "MONTH_CLOSED": "This month is closed.",
+      "MEAL_NOT_IN_PLAN": "This meal is not in your plan."
+    }
+  },
+  "register": {
+    "title": "Register",
+    "hint": "Like the notebook: tap a day to mark",
+    "member": "Member"
   }
 }
