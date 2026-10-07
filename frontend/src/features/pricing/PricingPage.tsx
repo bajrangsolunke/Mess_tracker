@@ -12,6 +12,7 @@ import { VegMark } from "../../components/brand/VegMark";
 import { ThaliIcon } from "../../components/brand/icons";
 import { brand } from "../../app/theme";
 import { rupees } from "../../lib/money";
+import { MealTimesCard } from "../settings/MealTimesCard";
 
 const money = /^\d{1,8}(\.\d{1,2})?$/;
 
@@ -104,6 +105,10 @@ export function PricingPage() {
         <Typography variant="body2" sx={{ color: "text.secondary", mb: 1.5 }}>{t("pricing.messHint")}</Typography>
         {pricing.data ? <MessPrices key={`${pricing.data.one_meal_price}-${pricing.data.two_meal_price}`} pricing={pricing.data} /> : <Skeleton variant="rounded" height={200} sx={{ borderRadius: "16px" }} />}
       </Box>
+
+      <Divider />
+
+      <MealTimesCard />
 
       <Divider />
 

@@ -36,6 +36,8 @@ export interface Member {
   valid_until: string | null;
   renewal_plan: Plan | null;
   renewal_requested_at: string | null;
+  next_plan: Plan | null;
+  next_plan_from: string | null;
 }
 
 export interface Page<T> {
@@ -81,6 +83,8 @@ export interface AttendanceRow {
   on_leave: boolean;
   leave_status: string | null;
   self_marked: boolean;
+  auto: boolean;
+  marked_at: string | null;
 }
 
 export interface AttendanceCounts {
@@ -102,6 +106,8 @@ export interface AttendanceSheet {
   date: string;
   meal_type: MealType;
   locked: boolean;
+  closed: boolean;
+  ends_at: string | null;
   holiday: Holiday | null;
   counts: AttendanceCounts;
   items: AttendanceRow[];
@@ -111,6 +117,9 @@ export interface HistoryItem {
   date: string;
   meal_type: MealType;
   status: AttendanceStatus;
+  marked_at?: string | null;
+  auto?: boolean;
+  self_marked?: boolean;
 }
 
 export interface HistoryOut {
@@ -369,6 +378,10 @@ export interface MealToday {
   self_marked: boolean;
   on_leave: boolean;
   holiday: boolean;
+  closed: boolean;
+  ends_at: string | null;
+  auto: boolean;
+  marked_at: string | null;
 }
 
 export interface MyToday {

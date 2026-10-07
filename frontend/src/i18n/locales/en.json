@@ -228,7 +228,13 @@
       "absent": "Absent",
       "leave": "Leave"
     },
-    "selfMarked": "self"
+    "selfMarked": "self",
+    "byAuto": "auto (missed)",
+    "byOwner": "by owner",
+    "restPresent": "Rest present",
+    "restAbsent": "Rest absent",
+    "mealOpen": "Meal ends at {{time}}. Anyone not marked by then becomes absent.",
+    "mealClosed": "Meal ended at {{time}}. Members not marked were recorded absent."
   },
   "holidays": {
     "title": "Holidays",
@@ -438,7 +444,8 @@
     "sendRequest": "Send request",
     "renewMine": "Renew membership",
     "renewalsDue": "{{count}} renewals due",
-    "renewalsDueHint": "Memberships ending soon or asked to renew"
+    "renewalsDueHint": "Memberships ending soon or asked to renew",
+    "nextPlan": "From {{date}}: {{plan}}"
   },
   "checkin": {
     "title": "Today's meals",
@@ -457,11 +464,25 @@
       "HOLIDAY": "Mess is closed for this meal.",
       "MONTH_CLOSED": "This month is closed.",
       "MEAL_NOT_IN_PLAN": "This meal is not in your plan."
-    }
+    },
+    "missed": "Missed — absent",
+    "timeOver": "Meal time over",
+    "until": "until {{time}}"
   },
   "register": {
     "title": "Register",
     "hint": "Like the notebook: tap a day to mark",
     "member": "Member"
+  },
+  "times": {
+    "title": "Meal times",
+    "hint": "After a meal ends, members who did not mark are recorded absent.",
+    "lunchEnd": "Lunch ends",
+    "dinnerEnd": "Dinner ends",
+    "lunchEndHint": "e.g. 3:30 PM",
+    "dinnerEndHint": "e.g. 11:00 PM",
+    "leaveCutoff": "Leave cutoff (night before)",
+    "leaveCutoffHint": "Leaves after this need your approval",
+    "saved": "Saved."
   }
 }

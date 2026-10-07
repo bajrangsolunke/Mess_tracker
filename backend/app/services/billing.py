@@ -237,7 +237,9 @@ async def send_payment_reminders(db: AsyncSession, org_id: int, month: date) -> 
     return sent
 
 
-async def create_period_bill(db: AsyncSession, member: Member, start: date, end: date) -> Bill:
+async def create_period_bill(
+    db: AsyncSession, member: Member, start: date, end: date, amount: Decimal | None = None
+) -> Bill:
     """Bill for one membership period. Raises 409 PERIOD_EXISTS if that month is already billed."""
     from sqlalchemy.exc import IntegrityError
 
@@ -249,7 +251,7 @@ async def create_period_bill(db: AsyncSession, member: Member, start: date, end:
         month=month_start(start),
         period_start=start,
         period_end=end,
-        amount=member.monthly_fee,
+        amount=member.monthly_fee if amount is None else amount,
     )
     try:
         async with db.begin_nested():

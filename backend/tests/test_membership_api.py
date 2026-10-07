@@ -58,10 +58,9 @@ async def test_owner_renews_continuously_and_can_switch_plan(client, monkeypatch
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["member"]["valid_until"] == "2026-12-06"
-    assert (
-        body["member"]["plan"]["kind"] == "one_dinner"
-        and body["member"]["monthly_fee"] == "2000.00"
-    )
+    # renewed before expiry: switch is booked for the new period; the new bill uses the new price
+    assert body["member"]["plan"]["kind"] == "two"
+    assert body["member"]["next_plan"]["kind"] == "one_dinner"
     assert body["bill"]["period_start"] == "2026-11-07" and body["bill"]["amount"] == "2000.00"
     # member was notified
     r = await client.get("/api/v1/notifications", headers=ch)
@@ -126,7 +125,8 @@ async def test_customer_requests_renewal_owner_sees_and_confirms(client, monkeyp
     )
     # owner confirms using the requested plan by default
     r = await client.post(f"/api/v1/members/{m['id']}/renew", json={}, headers=h)
-    assert r.json()["member"]["plan"]["kind"] == "one_lunch"
+    assert r.json()["member"]["next_plan"]["kind"] == "one_lunch"
+    assert r.json()["member"]["next_plan_from"] == "2026-11-07"
     assert r.json()["member"]["renewal_plan"] is None
     r = await client.get("/api/v1/memberships/due", headers=h)
     assert r.json() == []
@@ -170,3 +170,32 @@ async def test_customer_dashboard_shows_membership(client, monkeypatch):
     r = await client.get("/api/v1/dashboard/me?date=2026-11-01", headers=ch)
     ms = r.json()["membership"]
     assert ms["valid_until"] == "2026-11-06" and ms["days_left"] == 5 and ms["expired"] is False
+
+
+async def test_plan_switch_on_early_renewal_starts_with_new_period(client, monkeypatch):
+    h, ch, m, plans = await setup(client, kind="one_dinner")  # 7 Oct – 6 Nov, dinner only, ₹2000
+    freeze(monkeypatch, 2026, 10, 20)
+    r = await client.post(
+        f"/api/v1/members/{m['id']}/renew", json={"plan_id": plans["two"]["id"]}, headers=h
+    )
+    body = r.json()
+    # current period keeps the old plan; the new bill uses the new plan's price
+    assert (
+        body["member"]["plan"]["kind"] == "one_dinner"
+        and body["member"]["monthly_fee"] == "2000.00"
+    )
+    assert (
+        body["member"]["next_plan"]["kind"] == "two"
+        and body["member"]["next_plan_from"] == "2026-11-07"
+    )
+    assert body["bill"]["amount"] == "3600.00" and body["bill"]["period_start"] == "2026-11-07"
+    r = await client.get("/api/v1/attendance?date=2026-10-20&meal_type=lunch", headers=h)
+    assert r.json()["items"] == []  # still dinner-only today
+    # once the new period starts, the switch applies
+    freeze(monkeypatch, 2026, 11, 7)
+    r = await client.get(f"/api/v1/members/{m['id']}", headers=h)
+    assert (
+        r.json()["plan"]["kind"] == "two"
+        and r.json()["monthly_fee"] == "3600.00"
+        and r.json()["next_plan"] is None
+    )

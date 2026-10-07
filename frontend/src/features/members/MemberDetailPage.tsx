@@ -99,6 +99,11 @@ export function MemberDetailPage() {
             </Box>
             <Button variant="contained" startIcon={<AutorenewIcon />} onClick={() => setRenewing(true)} sx={{ minHeight: 44 }}>{t("membership.renew")}</Button>
           </Box>
+          {m.next_plan && m.next_plan_from ? (
+            <Typography variant="body2" sx={{ mt: 1, color: brand.red, fontWeight: 600 }}>
+              {t("membership.nextPlan", { date: formatDateLong(m.next_plan_from, i18n.language), plan: planName(m.next_plan, t) })}
+            </Typography>
+          ) : null}
           {m.renewal_plan ? <Typography variant="body2" sx={{ mt: 1, color: brand.greenDark, fontWeight: 600 }}>{t("membership.requested", { plan: planName(m.renewal_plan, t) })}</Typography> : null}
         </Box>
       ) : null}

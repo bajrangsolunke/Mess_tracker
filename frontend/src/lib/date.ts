@@ -62,3 +62,15 @@ export function monthGrid(month: string): (string | null)[] {
   for (let d = 1; d <= days; d++) cells.push(first.date(d).format("YYYY-MM-DD"));
   return cells;
 }
+
+/** "1:25 PM" / "दुपारी 1:25" in IST for a timestamp. */
+export function formatTime(iso: string, lang: string): string {
+  const locale = lang === "mr" || lang === "hi" ? lang : "en";
+  return dayjs(iso).tz(IST).locale(locale).format("h:mm A");
+}
+
+/** "15:30:00" → "3:30 PM" in the user's language. */
+export function formatClock(hhmmss: string, lang: string): string {
+  const locale = lang === "mr" || lang === "hi" ? lang : "en";
+  return dayjs(`2000-01-01T${hhmmss.slice(0, 5)}`).locale(locale).format("h:mm A");
+}

@@ -35,14 +35,21 @@ async def renew(
     start: date | None,
 ) -> tuple[Member, Bill]:
     m = await get_member(db, org_id, member_id)
+    today = today_ist()
+    begin = start or next_start(m.valid_until, today)
+    end = membership_end(begin)
     chosen = plan_id or m.renewal_plan_id
+    amount = m.monthly_fee
     if chosen and chosen != m.plan_id:
         plan = await get_plan(db, org_id, chosen)
-        m.plan_id = plan.id
-        m.monthly_fee = plan.monthly_fee
-    begin = start or next_start(m.valid_until, today_ist())
-    end = membership_end(begin)
-    bill = await create_period_bill(db, m, begin, end)
+        amount = plan.monthly_fee
+        if begin <= today:
+            m.plan_id, m.monthly_fee = plan.id, plan.monthly_fee
+            m.next_plan_id = m.next_plan_from = None
+        else:
+            # current period keeps its plan; the switch happens when the new period starts
+            m.next_plan_id, m.next_plan_from = plan.id, begin
+    bill = await create_period_bill(db, m, begin, end, amount)
     m.valid_until = end
     m.renewal_plan_id = None
     m.renewal_requested_at = None
@@ -163,3 +170,32 @@ async def active_plans(db: AsyncSession, org_id: int) -> list[MessPlan]:
             )
         ).scalars()
     )
+
+
+async def apply_pending_plans(db: AsyncSession, org_id: int) -> int:
+    """Switch members to their booked plan once the new period has started."""
+    today = today_ist()
+    rows = (
+        (
+            await db.execute(
+                select(Member).where(
+                    Member.organization_id == org_id,
+                    Member.next_plan_id.is_not(None),
+                    Member.next_plan_from <= today,
+                )
+            )
+        )
+        .scalars()
+        .unique()
+        .all()
+    )
+    for m in rows:
+        plan = await db.get(MessPlan, m.next_plan_id)
+        if plan is not None:
+            m.plan_id, m.monthly_fee = plan.id, plan.monthly_fee
+        m.next_plan_id = m.next_plan_from = None
+    if rows:
+        await db.flush()
+        for m in rows:
+            await db.refresh(m)
+    return len(rows)

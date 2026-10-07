@@ -9,7 +9,7 @@ import { StatCard } from "../../components/brand/StatCard";
 import { StatusChip } from "../../components/brand/StatusChip";
 import { PlateCheckIcon } from "../../components/brand/icons";
 import { brand } from "../../app/theme";
-import { addMonths, formatDateLong, formatMonth, monthKey } from "../../lib/date";
+import { addMonths, formatDateLong, formatMonth, formatTime, monthKey } from "../../lib/date";
 import { AttendanceCalendar } from "./AttendanceCalendar";
 
 export function MonthSwitcher({ month, onChange }: { month: string; onChange: (m: string) => void }) {
@@ -57,7 +57,15 @@ export function MyAttendancePage({ memberId, back }: { memberId?: number; back?:
             return (
               <Box key={meal} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", py: 1 }}>
                 <Typography>{t(`meal.${meal}`)}</Typography>
-                {it ? <StatusChip status={it.status} /> : lv ? <Typography variant="body2" sx={{ color: brand.goldDark, fontWeight: 600 }}>{t("attendance.legend.leave")}</Typography> : <Typography variant="body2" sx={{ color: "text.secondary" }}>—</Typography>}
+                {it ? (
+                  <Box sx={{ textAlign: "right" }}>
+                    <StatusChip status={it.status} />
+                    <Typography variant="caption" sx={{ display: "block", mt: 0.25 }}>
+                      {it.marked_at ? formatTime(it.marked_at, i18n.language) : ""}
+                      {it.auto ? ` · ${t("attendance.byAuto")}` : it.self_marked ? ` · ${t("attendance.selfMarked")}` : ` · ${t("attendance.byOwner")}`}
+                    </Typography>
+                  </Box>
+                ) : lv ? <Typography variant="body2" sx={{ color: brand.goldDark, fontWeight: 600 }}>{t("attendance.legend.leave")}</Typography> : <Typography variant="body2" sx={{ color: "text.secondary" }}>—</Typography>}
               </Box>
             );
           })}

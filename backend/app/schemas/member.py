@@ -66,6 +66,8 @@ class MemberOut(BaseModel):
     valid_until: date | None = None
     renewal_plan: PlanOut | None = None
     renewal_requested_at: datetime | None = None
+    next_plan: PlanOut | None = None
+    next_plan_from: date | None = None
 
 
 class MemberCreated(BaseModel):

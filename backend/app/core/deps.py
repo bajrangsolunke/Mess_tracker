@@ -30,6 +30,10 @@ async def get_current_user(request: Request, db: DbSession) -> User:
         raise ApiError(401, "NOT_AUTHENTICATED", "User not found or inactive")
     if user.organization_id != payload.org:
         raise ApiError(401, "NOT_AUTHENTICATED", "Token organization mismatch")
+    from app.services.membership import apply_pending_plans
+
+    if await apply_pending_plans(db, user.organization_id):
+        await db.commit()
     return user
 
 

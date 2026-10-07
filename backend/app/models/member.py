@@ -64,8 +64,14 @@ class Member(TimestampMixin, Base):
         ForeignKey("mess_plans.id", ondelete="SET NULL")
     )
     renewal_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Plan change booked at renewal; it takes effect when the new period starts.
+    next_plan_id: Mapped[int | None] = mapped_column(
+        ForeignKey("mess_plans.id", ondelete="SET NULL")
+    )
+    next_plan_from: Mapped[date | None] = mapped_column(Date)
 
     plan: Mapped[MessPlan] = relationship(lazy="joined", foreign_keys=[plan_id])
+    next_plan: Mapped[MessPlan | None] = relationship(lazy="joined", foreign_keys=[next_plan_id])
     renewal_plan: Mapped[MessPlan | None] = relationship(
         lazy="joined", foreign_keys=[renewal_plan_id]
     )

@@ -17,6 +17,8 @@ export interface AuthOrganization {
   name: string;
   default_language?: Lang;
   leave_cutoff_time?: string;
+  lunch_end_time?: string;
+  dinner_end_time?: string;
 }
 
 export interface AuthMember {

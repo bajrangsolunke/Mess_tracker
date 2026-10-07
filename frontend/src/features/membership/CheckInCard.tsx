@@ -8,9 +8,11 @@ import type { MealToday, MealType } from "../../api/types";
 import { useCheckIn, useMyToday } from "../../api/useMembership";
 import { ApiError } from "../../api/client";
 import { brand } from "../../app/theme";
+import { formatTime } from "../../lib/date";
 
 function MealButton({ meal, state, onCheck, onUndo, busy }: { meal: MealType; state: MealToday; onCheck: () => void; onUndo: () => void; busy: boolean }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const at = state.marked_at ? formatTime(state.marked_at, i18n.language) : "";
   const icon = meal === "lunch" ? <WbSunnyIcon /> : <NightsStayIcon />;
   if (state.holiday) return <Box sx={{ flex: 1, p: 1.5, borderRadius: "14px", bgcolor: brand.cream, textAlign: "center" }}>{icon}<Typography variant="body2">{t("checkin.closed")}</Typography></Box>;
   if (state.status === "present")
@@ -18,11 +20,25 @@ function MealButton({ meal, state, onCheck, onUndo, busy }: { meal: MealType; st
       <Box sx={{ flex: 1, p: 1.25, borderRadius: "14px", bgcolor: alpha(brand.green, 0.12), border: `1.5px solid ${brand.green}`, textAlign: "center" }}>
         <Box sx={{ color: brand.green, display: "flex", justifyContent: "center", gap: 0.5, alignItems: "center" }}><CheckIcon /> {icon}</Box>
         <Typography variant="body2" sx={{ fontWeight: 700, color: brand.greenDark }}>{t("checkin.done", { meal: t(`meal.${meal}Short`) })}</Typography>
-        {state.self_marked ? <Button size="small" startIcon={<UndoIcon />} onClick={onUndo} disabled={busy} sx={{ minHeight: 32, mt: 0.25 }}>{t("checkin.undo")}</Button> : <Typography variant="caption">{t("checkin.byOwner")}</Typography>}
+        <Typography variant="caption" sx={{ display: "block" }}>{at}{state.self_marked ? "" : ` · ${t("checkin.byOwner")}`}</Typography>
+        {state.self_marked && !state.closed ? <Button size="small" startIcon={<UndoIcon />} onClick={onUndo} disabled={busy} sx={{ minHeight: 32, mt: 0.25 }}>{t("checkin.undo")}</Button> : null}
       </Box>
     );
   if (state.status === "absent")
-    return <Box sx={{ flex: 1, p: 1.5, borderRadius: "14px", bgcolor: "#DC262610", textAlign: "center" }}>{icon}<Typography variant="body2" sx={{ fontWeight: 700, color: "#B91C1C" }}>{t("checkin.markedAbsent")}</Typography><Typography variant="caption">{t("checkin.askOwner")}</Typography></Box>;
+    return (
+      <Box sx={{ flex: 1, p: 1.5, borderRadius: "14px", bgcolor: "#DC262610", textAlign: "center" }}>
+        {icon}
+        <Typography variant="body2" sx={{ fontWeight: 700, color: "#B91C1C" }}>{state.auto ? t("checkin.missed") : t("checkin.markedAbsent")}</Typography>
+        <Typography variant="caption">{at} · {t("checkin.askOwner")}</Typography>
+      </Box>
+    );
+  if (state.closed)
+    return (
+      <Box sx={{ flex: 1, p: 1.5, borderRadius: "14px", bgcolor: brand.cream, textAlign: "center" }}>
+        {icon}
+        <Typography variant="body2" sx={{ fontWeight: 700 }}>{t("checkin.timeOver")}</Typography>
+      </Box>
+    );
   return (
     <Button
       variant="contained"
@@ -32,6 +48,7 @@ function MealButton({ meal, state, onCheck, onUndo, busy }: { meal: MealType; st
     >
       {icon}
       <span>{t("checkin.ate", { meal: t(`meal.${meal}Short`) })}</span>
+      {state.ends_at ? <Typography variant="caption" sx={{ color: "inherit", opacity: 0.85 }}>{t("checkin.until", { time: formatTime(state.ends_at, i18n.language) })}</Typography> : null}
       {state.on_leave ? <Typography variant="caption" sx={{ color: "inherit" }}>{t("checkin.onLeave")}</Typography> : null}
     </Button>
   );

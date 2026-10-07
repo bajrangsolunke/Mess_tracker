@@ -14,7 +14,8 @@ import { SearchBar } from "../../components/SearchBar";
 import { Avatar } from "../../components/brand/Avatar";
 import { PageHeader } from "../../components/brand/PageHeader";
 import { brand } from "../../app/theme";
-import { formatDateLong, todayIst } from "../../lib/date";
+import { formatDateLong, formatTime, todayIst } from "../../lib/date";
+import ScheduleIcon from "@mui/icons-material/ScheduleRounded";
 import { DateStrip } from "./DateStrip";
 
 function Counter({ label, value, color }: { label: string; value: number; color: string }) {
@@ -24,6 +25,18 @@ function Counter({ label, value, color }: { label: string; value: number; color:
       <Typography variant="caption" sx={{ color: "text.secondary" }}>
         {label}
       </Typography>
+    </Box>
+  );
+}
+
+function MarkInfo({ row }: { row: AttendanceRow }) {
+  const { t, i18n } = useTranslation();
+  if (!row.status) return null;
+  const who = row.auto ? t("attendance.byAuto") : row.self_marked ? t("attendance.selfMarked") : t("attendance.byOwner");
+  const color = row.status === "present" ? brand.greenDark : "#B91C1C";
+  return (
+    <Box component="span" sx={{ color, fontWeight: 600 }}>
+      · {row.status === "present" ? "✓" : "✗"} {row.marked_at ? formatTime(row.marked_at, i18n.language) : ""} · {who}
     </Box>
   );
 }
@@ -49,12 +62,10 @@ function Row({ row, locked, onMark }: { row: AttendanceRow; locked: boolean; onM
         <Typography variant="subtitle1" noWrap sx={{ lineHeight: 1.3 }}>
           {row.member.name}
         </Typography>
-        <Typography variant="caption" noWrap sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+        <Typography variant="caption" sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap", lineHeight: 1.4 }}>
           <Box component="span" sx={{ fontWeight: 700, color: brand.red }}>#{row.member.member_no}</Box>
           {row.member.member_type === "tiffin" ? ` · ${t("members.type.tiffin")}${row.member.company ? ` · ${row.member.company}` : ""}` : ""}
-          {row.self_marked ? (
-            <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.25, color: brand.greenDark, fontWeight: 700 }}>· {t("attendance.selfMarked")}</Box>
-          ) : null}
+          <MarkInfo row={row} />
           {row.on_leave ? (
             <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.25, color: brand.goldDark, fontWeight: 600 }}>
               <BeachAccessIcon sx={{ fontSize: 14 }} /> {t("attendance.onLeave")}
@@ -182,13 +193,19 @@ export function AttendancePage() {
             {data.counts.on_leave > 0 ? <Counter label={t("attendance.onLeave")} value={data.counts.on_leave} color={brand.goldDark} /> : null}
           </Box>
 
-          {!locked ? (
+          {data.ends_at ? (
+            <Alert severity={data.closed ? "info" : "success"} icon={<ScheduleIcon />} sx={{ py: 0.25 }}>
+              {data.closed ? t("attendance.mealClosed", { time: formatTime(data.ends_at, i18n.language) }) : t("attendance.mealOpen", { time: formatTime(data.ends_at, i18n.language) })}
+            </Alert>
+          ) : null}
+
+          {!locked && data.counts.unmarked > 0 ? (
             <Box sx={{ display: "flex", gap: 1.5 }}>
               <Button variant="contained" color="success" startIcon={<CheckIcon />} disabled={markAll.isPending} onClick={() => markAll.mutate("present")} sx={{ flex: 1, backgroundImage: "none", bgcolor: brand.green, whiteSpace: "nowrap", fontSize: "0.95rem", "&:hover": { bgcolor: brand.greenDark } }}>
-                {t("attendance.allPresent")}
+                {t("attendance.restPresent")}
               </Button>
               <Button variant="outlined" color="error" startIcon={<CloseIcon />} disabled={markAll.isPending} onClick={() => markAll.mutate("absent")} sx={{ flex: 1, whiteSpace: "nowrap", fontSize: "0.95rem" }}>
-                {t("attendance.allAbsent")}
+                {t("attendance.restAbsent")}
               </Button>
             </Box>
           ) : null}
