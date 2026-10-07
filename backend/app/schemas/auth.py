@@ -4,6 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.phone import normalize_phone
 from app.models.enums import Language, UserRole
+from app.schemas.member import MemberOut
 
 BCRYPT_MAX_BYTES = 72
 
@@ -76,7 +77,7 @@ class OrganizationOut(BaseModel):
 class MeResponse(BaseModel):
     user: UserOut
     organization: OrganizationOut
-    member: dict | None = None  # populated in Phase 2 when members exist
+    member: MemberOut | None = None
 
 
 class TokenResponse(MeResponse):

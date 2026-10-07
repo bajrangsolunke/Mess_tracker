@@ -12,20 +12,29 @@ from app.schemas.auth import (
     UpdateMeRequest,
     UserOut,
 )
+from app.schemas.member import MemberOut
 from app.services import auth as svc
+from app.services.members import member_for_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+async def _member_out(db: DbSession, user: User) -> MemberOut | None:
+    m = await member_for_user(db, user.id)
+    return MemberOut.model_validate(m) if m else None
 
 
 async def _token_response(db: DbSession, user: User) -> TokenResponse:
     access, refresh = await svc.issue_tokens(db, user)
     org = await svc.get_org(db, user.organization_id)
+    member = await _member_out(db, user)
     await db.commit()
     return TokenResponse(
         access_token=access,
         refresh_token=refresh,
         user=UserOut.model_validate(user),
         organization=OrganizationOut.model_validate(org),
+        member=member,
     )
 
 
