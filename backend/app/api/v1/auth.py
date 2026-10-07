@@ -48,7 +48,9 @@ async def refresh(data: RefreshRequest, db: DbSession) -> TokenResponse:
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(data: RefreshRequest, db: DbSession, _: CurrentUser) -> Response:
+async def logout(data: RefreshRequest, db: DbSession) -> Response:
+    """Revoke a refresh token. Needs no access token so logout works after access expiry;
+    possession of the raw refresh token is the credential."""
     await svc.revoke_refresh(db, data.refresh_token)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

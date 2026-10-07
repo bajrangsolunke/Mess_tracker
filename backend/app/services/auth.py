@@ -1,6 +1,7 @@
+import secrets
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,7 +33,7 @@ async def issue_tokens(db: AsyncSession, user: User) -> tuple[str, str]:
 
 
 async def register_owner(db: AsyncSession, data: RegisterOwnerRequest) -> User:
-    if data.invite_code != settings.owner_invite_code:
+    if not secrets.compare_digest(data.invite_code, settings.owner_invite_code):
         raise ApiError(403, "INVALID_INVITE", "Invalid invite code")
     existing = (await db.execute(select(User.id).where(User.phone == data.phone))).first()
     if existing:
@@ -56,22 +57,40 @@ async def register_owner(db: AsyncSession, data: RegisterOwnerRequest) -> User:
     return user
 
 
+# Verified against when the phone is unknown so response time does not reveal which
+# phones exist (bcrypt cost is paid on every login attempt).
+_DUMMY_HASH = hash_password("dummy-password-for-timing")
+
+
 async def authenticate(db: AsyncSession, phone: str, password: str) -> User:
     user = (await db.execute(select(User).where(User.phone == phone))).scalar_one_or_none()
-    if user is None or not user.is_active or not verify_password(password, user.password_hash):
+    ok = verify_password(password, user.password_hash if user else _DUMMY_HASH)
+    if user is None or not ok or not user.is_active:
         raise ApiError(401, "INVALID_CREDENTIALS", "Phone or password is incorrect")
     return user
 
 
 async def rotate_refresh(db: AsyncSession, raw: str) -> User:
-    token = (
-        await db.execute(select(RefreshToken).where(RefreshToken.token_hash == hash_token(raw)))
-    ).scalar_one_or_none()
-    now = datetime.now(UTC)
-    if token is None or token.revoked_at is not None or token.expires_at < now:
+    """Atomically revoke the presented refresh token and return its user.
+
+    A single UPDATE ... WHERE revoked_at IS NULL AND expires_at > now() RETURNING user_id
+    means two concurrent callers with the same token cannot both succeed: the second
+    blocks on the row lock and then matches zero rows.
+    """
+    result = await db.execute(
+        update(RefreshToken)
+        .where(
+            RefreshToken.token_hash == hash_token(raw),
+            RefreshToken.revoked_at.is_(None),
+            RefreshToken.expires_at > func.now(),
+        )
+        .values(revoked_at=func.now())
+        .returning(RefreshToken.user_id)
+    )
+    user_id = result.scalar_one_or_none()
+    if user_id is None:
         raise ApiError(401, "INVALID_REFRESH", "Refresh token is invalid or expired")
-    token.revoked_at = now
-    user = (await db.execute(select(User).where(User.id == token.user_id))).scalar_one_or_none()
+    user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if user is None or not user.is_active:
         raise ApiError(401, "INVALID_REFRESH", "User not found or inactive")
     return user

@@ -34,11 +34,15 @@ async function parseError(res: Response): Promise<ApiError> {
   return new ApiError(res.status, code, detail);
 }
 
-let refreshing: Promise<boolean> | null = null;
+/** "ok": new tokens stored. "rejected": server says the refresh token is dead → log out.
+ *  "unavailable": network error or 5xx (e.g. Render cold start) → keep the session. */
+type RefreshOutcome = "ok" | "rejected" | "unavailable";
 
-async function tryRefresh(): Promise<boolean> {
+let refreshing: Promise<RefreshOutcome> | null = null;
+
+async function tryRefresh(): Promise<RefreshOutcome> {
   const { refresh } = authStore.get();
-  if (!refresh) return false;
+  if (!refresh) return "rejected";
   if (!refreshing) {
     refreshing = (async () => {
       try {
@@ -47,7 +51,8 @@ async function tryRefresh(): Promise<boolean> {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ refresh_token: refresh }),
         });
-        if (!res.ok) return false;
+        if (res.status === 401 || res.status === 403) return "rejected";
+        if (!res.ok) return "unavailable";
         const body = (await res.json()) as TokenResponse;
         authStore.setSession({
           access: body.access_token,
@@ -55,9 +60,9 @@ async function tryRefresh(): Promise<boolean> {
           user: body.user,
           organization: body.organization,
         });
-        return true;
+        return "ok";
       } catch {
-        return false;
+        return "unavailable";
       } finally {
         refreshing = null;
       }
@@ -77,10 +82,13 @@ export async function api<T = unknown>(path: string, init: RequestInit = {}): Pr
 
   let res = await doFetch();
   if (res.status === 401 && !path.startsWith("/auth/login") && !path.startsWith("/auth/refresh")) {
-    const ok = await tryRefresh();
-    if (!ok) {
+    const outcome = await tryRefresh();
+    if (outcome === "rejected") {
       authStore.clear();
       throw await parseError(res);
+    }
+    if (outcome === "unavailable") {
+      throw new ApiError(503, "REFRESH_UNAVAILABLE", "Could not reach the server");
     }
     res = await doFetch();
   }

@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type TokenResponse } from "./client";
 import { authStore, type AuthOrganization, type AuthUser } from "../features/auth/authStore";
+import { changeLanguage } from "../i18n";
+import { LANGS } from "../lib/storage";
 
 function storeTokens(body: TokenResponse) {
   authStore.setSession({
@@ -9,6 +11,9 @@ function storeTokens(body: TokenResponse) {
     user: body.user,
     organization: body.organization,
   });
+  if (body.user.language && (LANGS as string[]).includes(body.user.language)) {
+    changeLanguage(body.user.language);
+  }
 }
 
 export function useLogin() {

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
@@ -20,11 +21,17 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(RequestValidationError)
     async def _validation(_: Request, exc: RequestValidationError) -> JSONResponse:
+        # Only loc/msg/type: pydantic's ctx may hold raw exception objects that are
+        # not JSON serializable, and input may echo passwords back to the client.
+        errors = [
+            {
+                "loc": jsonable_encoder(e.get("loc", ())),
+                "msg": str(e.get("msg", "")),
+                "type": str(e.get("type", "")),
+            }
+            for e in exc.errors()
+        ]
         return JSONResponse(
             status_code=422,
-            content={
-                "detail": "Validation failed",
-                "code": "VALIDATION_ERROR",
-                "errors": exc.errors(),
-            },
+            content={"detail": "Validation failed", "code": "VALIDATION_ERROR", "errors": errors},
         )

@@ -70,6 +70,23 @@ describe("LoginPage", () => {
     expect(await screen.findByText("CUSTOMER HOME")).toBeInTheDocument();
   });
 
+  it("applies the user's saved language after login", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      jsonResponse(200, { ...ownerBody, user: { ...ownerBody.user, language: "mr" } }),
+    );
+    renderWithProviders(<LoginPage />, {
+      route: "/login",
+      extraRoutes: <Route path="/owner" element={<div>OWNER HOME</div>} />,
+    });
+    await userEvent.type(screen.getByLabelText("Mobile number"), "9876543210");
+    await userEvent.type(screen.getByLabelText("Password"), "owner123");
+    await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
+    await screen.findByText("OWNER HOME");
+    expect(i18n.language).toBe("mr");
+    expect(localStorage.getItem("mt.lang")).toBe("mr");
+    expect(document.documentElement.lang).toBe("mr");
+  });
+
   it("shows invalid credentials error", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       jsonResponse(401, { detail: "bad", code: "INVALID_CREDENTIALS" }),

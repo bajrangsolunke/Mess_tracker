@@ -12,6 +12,10 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
+if (typeof document !== "undefined") {
+  document.documentElement.lang = i18n.language;
+}
+
 export function changeLanguage(lang: Lang) {
   storage.setLanguage(lang);
   void i18n.changeLanguage(lang);

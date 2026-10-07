@@ -4,18 +4,20 @@ services:
     runtime: python
     plan: free
     rootDir: backend
+    # Free plan has no preDeployCommand, so migrations run at start.
     buildCommand: pip install uv && uv sync --frozen --no-dev
-    preDeployCommand: uv run alembic upgrade head
-    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: .venv/bin/alembic upgrade head && .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
-        value: "3.12"
-      - key: DATABASE_URL
+        value: "3.12.7"
+      - key: ENV
+        value: production
+      - key: DATABASE_URL        # postgres:// from Render/Neon is rewritten to asyncpg automatically
         sync: false
-      - key: JWT_SECRET
+      - key: JWT_SECRET          # 32+ chars; app refuses to start in production otherwise
         generateValue: true
-      - key: OWNER_INVITE_CODE
+      - key: OWNER_INVITE_CODE   # 8+ chars
         sync: false
-      - key: CORS_ORIGINS
+      - key: CORS_ORIGINS        # JSON list, e.g. ["https://mess.netlify.app"]
         sync: false
