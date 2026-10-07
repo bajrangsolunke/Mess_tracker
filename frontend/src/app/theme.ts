@@ -89,16 +89,18 @@ export const theme = createTheme({
       styleOverrides: { root: { border: `1px solid ${brand.line}` } },
     },
     MuiChip: { styleOverrides: { root: { fontWeight: 600, borderRadius: 999, height: 28 } } },
-    MuiBottomNavigation: { styleOverrides: { root: { backgroundColor: brand.paper, height: 70 } } },
+    MuiBottomNavigation: { styleOverrides: { root: { backgroundColor: brand.paper, height: 72, borderTop: `1px solid ${brand.line}` } } },
     MuiBottomNavigationAction: {
       styleOverrides: {
         root: {
-          minWidth: 48,
+          minWidth: 56,
           color: brand.inkSoft,
           paddingTop: 10,
+          paddingBottom: 8,
+          fontFamily: FONT_LATIN,
           "&.Mui-selected": { color: brand.red },
-          "& .MuiBottomNavigationAction-label": { fontWeight: 600, fontSize: "0.72rem", marginTop: 2 },
-          "& .MuiBottomNavigationAction-label.Mui-selected": { fontSize: "0.74rem" },
+          "& .MuiBottomNavigationAction-label": { fontFamily: FONT_LATIN, fontWeight: 600, fontSize: "0.75rem", lineHeight: 1.2, marginTop: 4 },
+          "& .MuiBottomNavigationAction-label.Mui-selected": { fontSize: "0.75rem" },
         },
       },
     },

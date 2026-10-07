@@ -25,7 +25,7 @@ export function BottomNav({ items }: { items: NavItem[] }) {
         showLabels
         value={current}
         onChange={(_, value: string) => navigate(value)}
-        sx={{ height: 64 }}
+        sx={{ height: 72 }}
       >
         {items.map((item) => (
           <BottomNavigationAction

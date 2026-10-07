@@ -7,7 +7,7 @@ export function AppShell({ items }: { items: NavItem[] }) {
   return (
     <Box sx={{ minHeight: "100dvh", bgcolor: "background.default" }}>
       <BrandBar />
-      <Container maxWidth="sm" sx={{ px: 2, pt: 2.5, pb: "96px" }}>
+      <Container maxWidth="sm" sx={{ px: 2, pt: 3, pb: "104px" }}>
         <Outlet />
       </Container>
       <BottomNav items={items} />

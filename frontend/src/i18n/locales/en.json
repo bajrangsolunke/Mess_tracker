@@ -50,16 +50,20 @@
     "pendingPayments": "Pending payments",
     "quickActions": "Quick actions",
     "addMember": "Add member",
-    "announce": "Announce"
+    "announce": "Announce",
+    "todayGlance": "Today at a glance"
   },
   "meal": {
     "lunch": "Lunch",
-    "dinner": "Dinner"
+    "dinner": "Dinner",
+    "lunchShort": "Lunch",
+    "dinnerShort": "Dinner"
   },
   "menu": {
     "today": "Today's menu",
     "notAdded": "Menu not added yet",
-    "ownerEmpty": "Tap Menu to add today's dishes"
+    "ownerEmpty": "Tap Menu to add today's dishes",
+    "edit": "Edit menu"
   },
   "status": {
     "paid": "Paid",
@@ -98,13 +102,22 @@
     }
   },
   "chef": {
-    "ownerWelcome": "Welcome back! Let's get today's attendance done.",
-    "customerWelcome": "Namaste! Today's meal is on its way.",
+    "ownerWelcome": "Today's attendance isn't marked yet. Shall we start?",
+    "customerWelcome": "Today's meal is being prepared. Hungry?",
     "building": "I'm still cooking this screen. It will be ready soon!",
     "noMembers": "No members yet. Shall we add the first one?",
     "noMenu": "Today's menu isn't set yet."
   },
   "brand": {
     "tagline": "Authentic Taste · Modern Experience"
+  },
+  "profile": {
+    "settings": "Settings",
+    "language": "Language",
+    "changePassword": "Change password"
+  },
+  "role": {
+    "owner": "Owner",
+    "customer": "Member"
   }
 }

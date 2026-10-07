@@ -70,7 +70,7 @@ export function LoginPage() {
           borderBottomLeftRadius: "36px",
           borderBottomRightRadius: "36px",
           pt: "calc(env(safe-area-inset-top) + 20px)",
-          pb: 7,
+          pb: 8,
           px: 3,
           color: brand.paper,
         }}
@@ -90,8 +90,8 @@ export function LoginPage() {
         <Typography sx={{ fontFamily: FONT_DEVA, fontWeight: 600, position: "relative" }}>{brand.tagline.mr}</Typography>
         <Logo
           variant="chef"
-          height={136}
-          sx={{ position: "absolute", right: 10, bottom: -8, filter: "drop-shadow(0 10px 16px rgba(0,0,0,.35))" }}
+          height={124}
+          sx={{ position: "absolute", right: 12, bottom: -8, filter: "drop-shadow(0 10px 16px rgba(0,0,0,.35))" }}
         />
       </Box>
 

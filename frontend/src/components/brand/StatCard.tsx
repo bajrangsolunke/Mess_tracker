@@ -38,8 +38,8 @@ export function StatCard({
         width: "100%",
         bgcolor: brand.paper,
         border: `1px solid ${brand.line}`,
-        borderRadius: "18px",
-        p: 1.75,
+        borderRadius: "16px",
+        p: 2,
         display: "flex",
         flexDirection: "column",
         gap: 0.5,
@@ -58,14 +58,14 @@ export function StatCard({
         },
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, color: t.icon }}>
-        {icon}
-        <Typography variant="subtitle2" sx={{ color: "text.secondary" }}>
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.75, color: t.icon, minHeight: 24 }}>
+        <Box sx={{ display: "grid", placeItems: "center", mt: "1px" }}>{icon}</Box>
+        <Typography variant="subtitle2" sx={{ color: "text.secondary", lineHeight: 1.3 }}>
           {label}
         </Typography>
       </Box>
       <Typography
-        variant="h4"
+        variant="h5"
         component="div"
         sx={{ color: value === undefined ? "text.secondary" : t.fg, fontVariantNumeric: "tabular-nums" }}
       >

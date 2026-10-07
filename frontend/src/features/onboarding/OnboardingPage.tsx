@@ -42,7 +42,7 @@ export function OnboardingPage() {
           mx: 3,
           borderRadius: "28px",
           bgcolor: alpha(slide.color, 0.08),
-          minHeight: 300,
+          minHeight: 240,
           display: "grid",
           placeItems: "center",
           overflow: "hidden",
@@ -51,12 +51,12 @@ export function OnboardingPage() {
         }}
       >
         <BrandPattern color={slide.color} opacity={0.08} />
-        <Box sx={{ width: 128, height: 128, borderRadius: "50%", bgcolor: brand.paper, display: "grid", placeItems: "center", color: slide.color, boxShadow: `0 20px 40px -24px ${alpha(slide.color, 0.6)}` }}>
-          <slide.Icon sx={{ fontSize: 64 }} />
+        <Box sx={{ width: 120, height: 120, borderRadius: "50%", bgcolor: brand.paper, display: "grid", placeItems: "center", color: slide.color, boxShadow: `0 20px 40px -24px ${alpha(slide.color, 0.6)}` }}>
+          <slide.Icon sx={{ fontSize: 60 }} />
         </Box>
       </Box>
 
-      <Container maxWidth="xs" sx={{ flex: 1, pt: 4, pb: 3, display: "flex", flexDirection: "column" }}>
+      <Container maxWidth="xs" sx={{ flex: 1, pt: 3, pb: 3, display: "flex", flexDirection: "column" }}>
         <Typography variant="h4" component="h1">
           {t(`onboarding.${slide.key}.title`)}
         </Typography>

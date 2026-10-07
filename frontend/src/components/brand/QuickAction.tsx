@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ButtonBase, Typography, alpha } from "@mui/material";
+import { Box, ButtonBase, Typography, alpha } from "@mui/material";
 import { brand } from "../../app/theme";
 import type { StatTone } from "./StatCard";
 
@@ -29,23 +29,26 @@ export function QuickAction({
       focusRipple
       sx={{
         width: "100%",
-        minHeight: 64,
+        minHeight: 76,
         borderRadius: "16px",
-        bgcolor: alpha(c, 0.1),
-        border: `1px solid ${alpha(c, 0.25)}`,
+        bgcolor: brand.paper,
+        border: `1px solid ${brand.line}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "flex-start",
         gap: 1.5,
-        px: 1.75,
+        px: 1.5,
+        py: 1.5,
         color: c,
         textAlign: "left",
         transition: "transform 160ms cubic-bezier(.2,.8,.2,1), background-color 160ms",
         "&:active": { transform: "scale(0.98)" },
       }}
     >
-      {icon}
-      <Typography variant="subtitle1" sx={{ color: brand.ink }}>
+      <Box sx={{ width: 40, height: 40, borderRadius: "12px", bgcolor: alpha(c, 0.12), display: "grid", placeItems: "center", flexShrink: 0 }}>
+        {icon}
+      </Box>
+      <Typography variant="subtitle1" sx={{ color: brand.ink, fontSize: "0.95rem", lineHeight: 1.25 }}>
         {label}
       </Typography>
     </ButtonBase>

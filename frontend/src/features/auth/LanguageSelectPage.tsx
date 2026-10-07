@@ -5,6 +5,8 @@ import { Box, Button, ButtonBase, Container, Stack, Typography, alpha } from "@m
 import CheckCircleIcon from "@mui/icons-material/CheckCircleRounded";
 import { changeLanguage } from "../../i18n";
 import { LANGS, storage, type Lang } from "../../lib/storage";
+import { useSession } from "./authStore";
+import { HOME_BY_ROLE } from "./routes";
 import { brand } from "../../app/theme";
 import { Logo } from "../../components/brand/Logo";
 import { BrandPattern } from "../../components/brand/BrandPattern";
@@ -19,6 +21,8 @@ export function LanguageSelectPage({ next = "/login" }: { next?: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [lang, setLang] = useState<Lang>(storage.getLanguage() ?? "mr");
+  const { user, access } = useSession();
+  const target = access && user ? HOME_BY_ROLE[user.role] : next;
 
   return (
     <Box sx={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
@@ -37,7 +41,7 @@ export function LanguageSelectPage({ next = "/login" }: { next?: string }) {
       >
         <BrandPattern opacity={0.08} />
         <Box sx={{ bgcolor: brand.paper, borderRadius: "20px", px: 2.5, py: 1.5, position: "relative" }}>
-          <Logo variant="full" height={72} />
+          <Logo variant="full" height={88} />
         </Box>
       </Box>
 
@@ -90,7 +94,7 @@ export function LanguageSelectPage({ next = "/login" }: { next?: string }) {
           variant="contained"
           onClick={() => {
             changeLanguage(lang);
-            navigate(next, { replace: true });
+            navigate(target, { replace: true });
           }}
           sx={{ mt: 3 }}
         >

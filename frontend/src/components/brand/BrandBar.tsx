@@ -29,7 +29,7 @@ export function BrandBar({
         pt: "env(safe-area-inset-top)",
       }}
     >
-      <Toolbar sx={{ minHeight: 60, px: 2, gap: 1 }}>
+      <Toolbar sx={{ minHeight: 64, px: 2, gap: 1 }}>
         {back ? (
           <IconButton
             edge="start"
@@ -78,7 +78,7 @@ export function BrandBar({
               </Typography>
               <Typography
                 component="span"
-                sx={{ display: "block", fontSize: "0.7rem", fontWeight: 600, opacity: 0.9, letterSpacing: 0.4, mt: 0.25 }}
+                sx={{ display: "block", fontFamily: FONT_DEVA, fontSize: "0.78rem", fontWeight: 600, opacity: 0.92, letterSpacing: 0.3, mt: 0.25 }}
               >
                 भोजनालय &amp; नाश्ता हाऊस
               </Typography>

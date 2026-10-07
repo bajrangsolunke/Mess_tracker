@@ -40,9 +40,9 @@ function Steam({ x, delay }: { x: number; delay: number }) {
       sx={{
         position: "absolute",
         left: `calc(50% + ${x}px)`,
-        top: -6,
-        width: 10,
-        height: 34,
+        top: -22,
+        width: 12,
+        height: 40,
         borderRadius: 999,
         bgcolor: "#FFFFFF",
         filter: "blur(5px)",
@@ -96,36 +96,28 @@ export function SplashPage() {
       }}
     >
       <BrandPattern opacity={0.07} />
-      <Box sx={{ position: "relative", textAlign: "center", animation: `${rise} 800ms cubic-bezier(.2,.8,.2,1) both` }}>
-        <Box sx={{ position: "relative", width: 196, height: 196, mx: "auto", mb: 3 }}>
-          <Steam x={-28} delay={0} />
-          <Steam x={-4} delay={0.7} />
-          <Steam x={22} delay={1.3} />
+      <Box sx={{ position: "relative", textAlign: "center", width: "100%", maxWidth: 340, animation: `${rise} 800ms cubic-bezier(.2,.8,.2,1) both` }}>
+        <Box sx={{ position: "relative", mx: "auto", mb: 4 }}>
+          <Steam x={-56} delay={0} />
+          <Steam x={-28} delay={0.7} />
+          <Steam x={0} delay={1.3} />
           <Box
             sx={{
-              width: 196,
-              height: 196,
-              borderRadius: "50%",
+              position: "relative",
               bgcolor: brand.cream,
-              display: "grid",
-              placeItems: "end center",
-              overflow: "hidden",
-              boxShadow: `0 0 0 10px ${brand.red}33, 0 30px 60px -24px rgba(0,0,0,.7)`,
+              borderRadius: "28px",
+              px: 3,
+              py: 2.5,
+              boxShadow: `0 0 0 8px ${brand.red}40, 0 32px 64px -28px rgba(0,0,0,.75)`,
             }}
           >
-            <Logo variant="chef" height={176} />
+            <Logo variant="full" height="auto" sx={{ width: "100%" }} />
           </Box>
         </Box>
-        <Typography sx={{ fontFamily: FONT_DEVA, fontWeight: 500, opacity: 0.8, fontSize: "0.95rem" }}>
-          लातूरकर यांचे
-        </Typography>
-        <Typography component="h1" sx={{ fontFamily: FONT_DEVA, fontWeight: 800, fontSize: "3.6rem", lineHeight: 1.1, color: brand.gold }}>
-          स्वाद
-        </Typography>
-        <Typography sx={{ fontFamily: FONT_DEVA, fontWeight: 600, fontSize: "1.15rem", mt: 0.5 }}>
+        <Typography sx={{ fontFamily: FONT_DEVA, fontWeight: 700, fontSize: "1.25rem", lineHeight: 1.3 }}>
           {brand.tagline.mr}
         </Typography>
-        <Typography variant="body2" sx={{ mt: 0.5, opacity: 0.75, letterSpacing: 0.4 }}>
+        <Typography variant="body2" sx={{ mt: 0.75, opacity: 0.75, letterSpacing: 0.6, textTransform: "uppercase", fontSize: "0.72rem", fontWeight: 600 }}>
           {brand.tagline.en}
         </Typography>
       </Box>

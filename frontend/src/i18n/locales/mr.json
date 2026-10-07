@@ -50,16 +50,20 @@
     "pendingPayments": "बाकी पेमेंट",
     "quickActions": "झटपट कृती",
     "addMember": "सदस्य जोडा",
-    "announce": "सूचना द्या"
+    "announce": "सूचना द्या",
+    "todayGlance": "आज एका नजरेत"
   },
   "meal": {
     "lunch": "दुपारचे जेवण",
-    "dinner": "रात्रीचे जेवण"
+    "dinner": "रात्रीचे जेवण",
+    "lunchShort": "दुपार",
+    "dinnerShort": "रात्री"
   },
   "menu": {
     "today": "आजचा मेनू",
     "notAdded": "मेनू अजून टाकलेला नाही",
-    "ownerEmpty": "आजचे पदार्थ टाकण्यासाठी मेनूवर टॅप करा"
+    "ownerEmpty": "आजचे पदार्थ टाकण्यासाठी मेनूवर टॅप करा",
+    "edit": "मेनू बदला"
   },
   "status": {
     "paid": "भरले",
@@ -72,8 +76,8 @@
   },
   "customer": {
     "plan": "तुमचा प्लान",
-    "mealsThisMonth": "या महिन्यातील जेवण",
-    "thisMonthBill": "या महिन्याचे बिल",
+    "mealsThisMonth": "महिन्याचे जेवण",
+    "thisMonthBill": "महिन्याचे बिल",
     "skipMeal": "जेवण वगळा"
   },
   "onboarding": {
@@ -98,13 +102,22 @@
     }
   },
   "chef": {
-    "ownerWelcome": "पुन्हा स्वागत! चला आजची उपस्थिती भरून टाकू.",
-    "customerWelcome": "नमस्कार! आजचे जेवण तयार होत आहे.",
+    "ownerWelcome": "आजची उपस्थिती अजून भरलेली नाही. सुरू करूया?",
+    "customerWelcome": "आजचे जेवण तयार होत आहे. भूक लागली?",
     "building": "ही स्क्रीन अजून शिजतेय. लवकरच तयार होईल!",
     "noMembers": "अजून सदस्य नाहीत. पहिला जोडूया?",
     "noMenu": "आजचा मेनू अजून ठरलेला नाही."
   },
   "brand": {
     "tagline": "घरच्या चवीचा विश्वास"
+  },
+  "profile": {
+    "settings": "सेटिंग्ज",
+    "language": "भाषा",
+    "changePassword": "पासवर्ड बदला"
+  },
+  "role": {
+    "owner": "मालक",
+    "customer": "सदस्य"
   }
 }

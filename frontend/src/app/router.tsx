@@ -8,6 +8,7 @@ import { OwnerShell } from "../features/shell/OwnerShell";
 import { CustomerShell } from "../features/shell/CustomerShell";
 import { CustomerHome, OwnerHome } from "../features/dashboard/HomePage";
 import { ComingSoon } from "../features/dashboard/ComingSoon";
+import { ProfilePage } from "../features/profile/ProfilePage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
@@ -26,7 +27,7 @@ export const router = createBrowserRouter([
       { path: "members", element: <ComingSoon titleKey="nav.members" /> },
       { path: "attendance", element: <ComingSoon titleKey="nav.attendance" /> },
       { path: "payments", element: <ComingSoon titleKey="nav.payments" /> },
-      { path: "more", element: <ComingSoon titleKey="nav.more" /> },
+      { path: "more", element: <ProfilePage titleKey="nav.more" /> },
     ],
   },
   {
@@ -41,7 +42,7 @@ export const router = createBrowserRouter([
       { path: "attendance", element: <ComingSoon titleKey="nav.attendance" /> },
       { path: "menu", element: <ComingSoon titleKey="nav.menu" /> },
       { path: "payments", element: <ComingSoon titleKey="nav.payments" /> },
-      { path: "profile", element: <ComingSoon titleKey="nav.profile" /> },
+      { path: "profile", element: <ProfilePage titleKey="nav.profile" /> },
     ],
   },
   { path: "*", element: <Navigate to="/" replace /> },

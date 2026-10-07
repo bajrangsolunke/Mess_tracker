@@ -50,16 +50,20 @@
     "pendingPayments": "बकाया भुगतान",
     "quickActions": "त्वरित कार्य",
     "addMember": "सदस्य जोड़ें",
-    "announce": "सूचना दें"
+    "announce": "सूचना दें",
+    "todayGlance": "आज एक नज़र में"
   },
   "meal": {
     "lunch": "दोपहर का भोजन",
-    "dinner": "रात का भोजन"
+    "dinner": "रात का भोजन",
+    "lunchShort": "दोपहर",
+    "dinnerShort": "रात"
   },
   "menu": {
     "today": "आज का मेनू",
     "notAdded": "मेनू अभी नहीं जोड़ा गया",
-    "ownerEmpty": "आज के व्यंजन जोड़ने के लिए मेनू पर टैप करें"
+    "ownerEmpty": "आज के व्यंजन जोड़ने के लिए मेनू पर टैप करें",
+    "edit": "मेनू बदलें"
   },
   "status": {
     "paid": "भुगतान हुआ",
@@ -72,8 +76,8 @@
   },
   "customer": {
     "plan": "आपका प्लान",
-    "mealsThisMonth": "इस महीने के भोजन",
-    "thisMonthBill": "इस महीने का बिल",
+    "mealsThisMonth": "इस माह के भोजन",
+    "thisMonthBill": "इस माह का बिल",
     "skipMeal": "भोजन छोड़ें"
   },
   "onboarding": {
@@ -98,13 +102,22 @@
     }
   },
   "chef": {
-    "ownerWelcome": "वापसी पर स्वागत! चलिए आज की उपस्थिति भर लें।",
-    "customerWelcome": "नमस्ते! आज का भोजन तैयार हो रहा है।",
+    "ownerWelcome": "आज की उपस्थिति अभी नहीं भरी गई। शुरू करें?",
+    "customerWelcome": "आज का भोजन बन रहा है। भूख लगी?",
     "building": "यह स्क्रीन अभी पक रही है। जल्द तैयार होगी!",
     "noMembers": "अभी कोई सदस्य नहीं। पहला जोड़ें?",
     "noMenu": "आज का मेनू अभी तय नहीं है।"
   },
   "brand": {
     "tagline": "घर के स्वाद का भरोसा"
+  },
+  "profile": {
+    "settings": "सेटिंग्स",
+    "language": "भाषा",
+    "changePassword": "पासवर्ड बदलें"
+  },
+  "role": {
+    "owner": "मालिक",
+    "customer": "सदस्य"
   }
 }
