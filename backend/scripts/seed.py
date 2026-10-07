@@ -1,24 +1,52 @@
-"""Seed a demo organization with one owner and one customer.
+"""Seed a demo mess with plans, members (dine-in + tiffin), attendance, bills, menu and an announcement.
 
 Run: uv run python -m scripts.seed
-Idempotent: re-running does not duplicate rows.
+Idempotent: re-running does not duplicate rows (keyed by phone / date / month).
 """
 
 import asyncio
+from datetime import timedelta
+from decimal import Decimal
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import hash_password
+from app.core.time import month_start, today_ist
 from app.db.session import SessionLocal
-from app.models import Language, Organization, User, UserRole
+from app.models import (
+    Announcement,
+    AttendanceStatus,
+    Language,
+    MealType,
+    Member,
+    MemberType,
+    MessPlan,
+    Organization,
+    User,
+    UserRole,
+)
+from app.services import attendance as att
+from app.services import billing, menus
 
-DEMO_ORG = "Demo Mess"
-DEMO_USERS = [
-    # phone, name, password, role, must_change_password
-    ("9000000001", "Ramesh (Owner)", "owner123", UserRole.owner, False),
-    ("9000000002", "Rahul (Customer)", "cust123", UserRole.customer, True),
+DEMO_ORG = "स्वाद भोजनालय"
+OWNER = ("9000000001", "Ramesh Laturkar", "owner123")
+PLANS = [
+    ("दुपार + रात्री", True, True, "2500"),
+    ("फक्त रात्री", False, True, "1500"),
+    ("टिफिन (दुपार)", True, False, "1800"),
 ]
+MEMBERS = [
+    # phone, name, plan index, room, type, company
+    ("9000000002", "Rahul Sharma", 0, "101", MemberType.dine_in, None),
+    ("9000000011", "Amit Kumar", 0, "102", MemberType.dine_in, None),
+    ("9000000012", "Sneha Patil", 1, "103", MemberType.dine_in, None),
+    ("9000000013", "Sandeep Yadav", 0, "104", MemberType.dine_in, None),
+    ("9000000014", "Priya Deshmukh", 0, "105", MemberType.dine_in, None),
+    ("9000000021", "Infosys Tiffin A", 2, None, MemberType.tiffin, "Infosys"),
+    ("9000000022", "TCS Tiffin", 2, None, MemberType.tiffin, "TCS"),
+]
+CUSTOMER_PASSWORD = "cust123"
 
 
 async def seed(db: AsyncSession) -> None:
@@ -29,20 +57,122 @@ async def seed(db: AsyncSession) -> None:
         org = Organization(name=DEMO_ORG, default_language=Language.mr)
         db.add(org)
         await db.flush()
-    for phone, name, password, role, must_change in DEMO_USERS:
-        exists = (await db.execute(select(User.id).where(User.phone == phone))).first()
-        if exists:
-            continue
+
+    phone, name, pw = OWNER
+    if not (await db.execute(select(User.id).where(User.phone == phone))).first():
         db.add(
             User(
                 organization_id=org.id,
                 phone=phone,
                 name=name,
-                password_hash=hash_password(password),
-                role=role,
+                password_hash=hash_password(pw),
+                role=UserRole.owner,
                 language=Language.mr,
-                must_change_password=must_change,
             )
+        )
+    await db.flush()
+    owner = (await db.execute(select(User).where(User.phone == phone))).scalar_one()
+
+    plans: list[MessPlan] = []
+    for pname, lunch, dinner, fee in PLANS:
+        plan = (
+            await db.execute(
+                select(MessPlan).where(MessPlan.organization_id == org.id, MessPlan.name == pname)
+            )
+        ).scalar_one_or_none()
+        if plan is None:
+            plan = MessPlan(
+                organization_id=org.id,
+                name=pname,
+                includes_lunch=lunch,
+                includes_dinner=dinner,
+                monthly_fee=Decimal(fee),
+            )
+            db.add(plan)
+            await db.flush()
+        plans.append(plan)
+
+    today = today_ist()
+    joined = month_start(today)
+    members: list[Member] = []
+    for mphone, mname, pidx, room, mtype, company in MEMBERS:
+        user = (await db.execute(select(User).where(User.phone == mphone))).scalar_one_or_none()
+        if user is None:
+            user = User(
+                organization_id=org.id,
+                phone=mphone,
+                name=mname,
+                password_hash=hash_password(CUSTOMER_PASSWORD),
+                role=UserRole.customer,
+                language=Language.mr,
+                must_change_password=False,
+            )
+            db.add(user)
+            await db.flush()
+        member = (
+            await db.execute(select(Member).where(Member.user_id == user.id))
+        ).scalar_one_or_none()
+        if member is None:
+            member = Member(
+                organization_id=org.id,
+                user_id=user.id,
+                name=mname,
+                phone=mphone,
+                room_no=room,
+                member_type=mtype,
+                company=company,
+                delivery_address="Hinjewadi Phase 2" if company else None,
+                plan_id=plans[pidx].id,
+                monthly_fee=plans[pidx].monthly_fee,
+                joining_date=joined,
+            )
+            db.add(member)
+            await db.flush()
+        members.append(member)
+
+    # attendance for the past days of this month (everyone present, a few absences)
+    for i in range((today - joined).days):
+        d = joined + timedelta(days=i)
+        for meal in (MealType.lunch, MealType.dinner):
+            expected = await att.expected_members(db, org.id, d, meal)
+            marks = [
+                (m.id, AttendanceStatus.absent if (m.id + i) % 7 == 0 else AttendanceStatus.present)
+                for m in expected
+            ]
+            if marks:
+                await att.bulk_mark(db, org.id, d, meal, marks, owner.id)
+
+    # bills for this month, a few paid
+    await billing.generate(db, org.id, joined)
+    page = await billing.list_bills(db, org.id, joined)
+    for idx, bill in enumerate(page.items):
+        if bill.status.value == "unpaid" and idx % 2 == 0:
+            from app.models import PaymentMethod
+            from app.schemas.billing import PaymentCreate
+
+            await billing.record_payment(
+                db,
+                org.id,
+                bill.id,
+                PaymentCreate(
+                    amount=bill.amount, method=PaymentMethod.upi, paid_on=joined + timedelta(days=3)
+                ),
+                owner.id,
+            )
+
+    # today's menu + an announcement
+    if not await menus.list_menus(db, org.id, today, today):
+        await menus.put_menu(
+            db, org.id, today, MealType.lunch, ["चपाती", "भात", "डाळ", "भाजी", "कोशिंबीर"]
+        )
+        await menus.put_menu(
+            db, org.id, today, MealType.dinner, ["पनीर भुर्जी", "भात", "चपाती", "डाळ"]
+        )
+    if not (
+        await db.execute(select(Announcement.id).where(Announcement.organization_id == org.id))
+    ).first():
+        await menus.create_announcement(
+            db, org.id, owner.id, "रविवारी मेस बंद", "24 ऑक्टोबरला दिवाळीनिमित्त मेस बंद राहील."
         )
     await db.flush()
 
@@ -51,7 +181,9 @@ async def main() -> None:
     async with SessionLocal() as db:
         await seed(db)
         await db.commit()
-    print("Seeded demo org. Owner 9000000001/owner123, Customer 9000000002/cust123")
+    print(
+        f"Seeded '{DEMO_ORG}'. Owner {OWNER[0]}/{OWNER[2]}; customers e.g. 9000000002/{CUSTOMER_PASSWORD}"
+    )
 
 
 if __name__ == "__main__":

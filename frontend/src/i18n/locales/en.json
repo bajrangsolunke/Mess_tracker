@@ -128,7 +128,9 @@
     "allDone": "All marked for today. Great work!",
     "billPending": "₹ {{amount}} is pending this month. Pay at the counter or via UPI.",
     "noMenuCustomer": "Today's menu isn't posted yet. Check back soon.",
-    "noBillYetShort": "Not ready"
+    "noBillYetShort": "Not ready",
+    "forcedPassword": "Welcome! Set your own password before we start.",
+    "changePassword": "Pick something only you remember."
   },
   "brand": {
     "tagline": "Authentic Taste · Modern Experience"
@@ -318,5 +320,18 @@
     "ofBilled": "of {{billed}} billed",
     "byMethod": "By payment method",
     "sixMonths": "Last 6 months"
+  },
+  "password": {
+    "title": "Set password",
+    "temp": "Temporary password",
+    "current": "Current password",
+    "new": "New password",
+    "confirm": "Confirm new password",
+    "min": "At least 6 characters",
+    "tooLong": "Too long",
+    "mismatch": "Passwords do not match",
+    "save": "Save password",
+    "wrongCurrent": "Current password is incorrect",
+    "forcedHint": "You will use this password from now on."
   }
 }

@@ -12,5 +12,9 @@ export function RequireRole({ role, children }: { role: Role; children: ReactNod
   if (session.user.role !== role) {
     return <Navigate to={HOME_BY_ROLE[session.user.role]} replace />;
   }
+  const changePath = `${HOME_BY_ROLE[role]}/change-password`;
+  if (session.user.must_change_password && location.pathname !== changePath) {
+    return <Navigate to={changePath} replace />;
+  }
   return <>{children}</>;
 }

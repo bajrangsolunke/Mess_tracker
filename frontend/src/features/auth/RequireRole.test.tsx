@@ -44,4 +44,15 @@ describe("RequireRole", () => {
     );
     expect(screen.getByText("OWNER")).toBeInTheDocument();
   });
+
+  it("forces a temporary-password user to the change-password screen", () => {
+    authStore.setSession({ access: "a", refresh: "r", user: { id: 2, name: "C", role: "customer", must_change_password: true }, organization: { id: 1, name: "M" } });
+    renderWithProviders(
+      <RequireRole role="customer">
+        <div>HOME</div>
+      </RequireRole>,
+      { route: "/app", extraRoutes: <Route path="/app/change-password" element={<div>CHANGE</div>} /> },
+    );
+    expect(screen.getByText("CHANGE")).toBeInTheDocument();
+  });
 });

@@ -1,21 +1,19 @@
 from sqlalchemy import func, select
 
-from app.models import Organization, User
+from app.models import Bill, Member, MessPlan, Organization, User
 from scripts.seed import seed
 
 
 async def test_seed_is_idempotent(db):
     await seed(db)
     await seed(db)
-    orgs = (await db.execute(select(func.count()).select_from(Organization))).scalar_one()
-    users = (await db.execute(select(func.count()).select_from(User))).scalar_one()
-    assert orgs == 1
-    assert users == 2
+    assert (await db.execute(select(func.count()).select_from(Organization))).scalar_one() == 1
+    assert (await db.execute(select(func.count()).select_from(User))).scalar_one() == 8
+    assert (await db.execute(select(func.count()).select_from(MessPlan))).scalar_one() == 3
+    assert (await db.execute(select(func.count()).select_from(Member))).scalar_one() == 7
+    assert (await db.execute(select(func.count()).select_from(Bill))).scalar_one() == 7
     owner = (await db.execute(select(User).where(User.phone == "9000000001"))).scalar_one()
-    customer = (await db.execute(select(User).where(User.phone == "9000000002"))).scalar_one()
     assert owner.role.value == "owner"
-    assert customer.role.value == "customer"
-    assert customer.must_change_password is True
 
 
 async def test_seeded_users_can_login(client, db):

@@ -115,11 +115,12 @@ export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile"
             <ChevronRightIcon sx={{ color: "text.secondary" }} />
           </ListItemButton>
           <Divider component="li" />
-          <ListItemButton disabled sx={{ minHeight: 60 }}>
-            <ListItemIcon sx={{ minWidth: 44 }}>
+          <ListItemButton onClick={() => navigate(user?.role === "owner" ? "/owner/change-password" : "/app/change-password")} sx={{ minHeight: 60 }}>
+            <ListItemIcon sx={{ color: brand.inkSoft, minWidth: 44 }}>
               <ProfileIcon />
             </ListItemIcon>
-            <ListItemText primary={t("profile.changePassword")} secondary={t("common.comingSoon")} />
+            <ListItemText primary={t("profile.changePassword")} />
+            <ChevronRightIcon sx={{ color: "text.secondary" }} />
           </ListItemButton>
         </List>
       </Box>

@@ -26,6 +26,7 @@ import { MyBillsPage } from "../features/payments/MyBillsPage";
 import { MenuPage } from "../features/menu/MenuPage";
 import { AnnouncementsPage } from "../features/announcements/AnnouncementsPage";
 import { ReportsPage } from "../features/reports/ReportsPage";
+import { ChangePasswordPage } from "../features/profile/ChangePasswordPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
@@ -58,6 +59,7 @@ export const router = createBrowserRouter([
       { path: "payments", element: <PaymentsPage /> },
       { path: "payments/:id", element: <BillDetailPage /> },
       { path: "more", element: <ProfilePage titleKey="nav.more" /> },
+      { path: "change-password", element: <ChangePasswordPage /> },
     ],
   },
   {
@@ -76,6 +78,7 @@ export const router = createBrowserRouter([
       { path: "announcements", element: <AnnouncementsPage /> },
       { path: "payments", element: <MyBillsPage /> },
       { path: "profile", element: <ProfilePage titleKey="nav.profile" /> },
+      { path: "change-password", element: <ChangePasswordPage /> },
     ],
   },
   { path: "*", element: <Navigate to="/" replace /> },
