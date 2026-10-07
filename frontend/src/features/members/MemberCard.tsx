@@ -32,8 +32,13 @@ export function MemberCard({ member, onClick }: { member: Member; onClick: () =>
           {member.name}
         </Typography>
         <Typography variant="body2" sx={{ color: "text.secondary", lineHeight: 1.35 }}>
+          {member.member_type === "tiffin" ? (
+            <Box component="span" sx={{ fontSize: "0.7rem", fontWeight: 700, px: 0.75, py: 0.1, mr: 0.75, borderRadius: 999, bgcolor: `${brand.gold}26`, color: brand.goldDark, verticalAlign: "middle" }}>
+              {t("members.type.tiffin")}
+            </Box>
+          ) : null}
           {planLabel(member, t)} · {rupees(member.monthly_fee)}
-          {member.room_no ? ` · ${t("members.room")} ${member.room_no}` : ""}
+          {member.member_type === "tiffin" && member.company ? ` · ${member.company}` : member.room_no ? ` · ${t("members.room")} ${member.room_no}` : ""}
         </Typography>
       </Box>
       <StatusChip status={member.status} />

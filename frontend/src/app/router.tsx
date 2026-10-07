@@ -18,6 +18,9 @@ import { MyAttendancePage } from "../features/attendance/MyAttendancePage";
 import { HolidaysPage } from "../features/holidays/HolidaysPage";
 import { MonthsPage } from "../features/holidays/MonthsPage";
 import { MemberAttendancePage } from "../features/attendance/MemberAttendancePage";
+import { LeavePage } from "../features/leaves/LeavePage";
+import { OwnerLeavesPage } from "../features/leaves/OwnerLeavesPage";
+import { NotificationsPage } from "../features/notifications/NotificationsPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
@@ -42,6 +45,8 @@ export const router = createBrowserRouter([
       { path: "members/:id/attendance", element: <MemberAttendancePage /> },
       { path: "holidays", element: <HolidaysPage /> },
       { path: "months", element: <MonthsPage /> },
+      { path: "leaves", element: <OwnerLeavesPage /> },
+      { path: "notifications", element: <NotificationsPage /> },
       { path: "payments", element: <ComingSoon titleKey="nav.payments" /> },
       { path: "more", element: <ProfilePage titleKey="nav.more" /> },
     ],
@@ -56,6 +61,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <CustomerHome /> },
       { path: "attendance", element: <MyAttendancePage /> },
+      { path: "leave", element: <LeavePage /> },
+      { path: "notifications", element: <NotificationsPage /> },
       { path: "menu", element: <ComingSoon titleKey="nav.menu" /> },
       { path: "payments", element: <ComingSoon titleKey="nav.payments" /> },
       { path: "profile", element: <ProfilePage titleKey="nav.profile" /> },

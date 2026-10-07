@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Alert, Box, Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { usePlans } from "../../api/usePlans";
 import { useCreateMember, useMember, useUpdateMember } from "../../api/useMembers";
 import { ApiError } from "../../api/client";
@@ -23,6 +23,9 @@ const schema = z.object({
   joining_date: z.string().min(1),
   monthly_fee: money,
   room_no: z.string().trim().max(30),
+  member_type: z.enum(["dine_in", "tiffin"]),
+  company: z.string().trim().max(120),
+  delivery_address: z.string().trim().max(300),
   deposit: money,
   emergency_contact: z.string().trim().max(120),
   notes: z.string().trim().max(2000),
@@ -50,6 +53,9 @@ export function MemberFormPage() {
       joining_date: todayIst(),
       monthly_fee: "",
       room_no: "",
+      member_type: "dine_in",
+      company: "",
+      delivery_address: "",
       deposit: "0",
       emergency_contact: "",
       notes: "",
@@ -67,6 +73,9 @@ export function MemberFormPage() {
         joining_date: m.joining_date,
         monthly_fee: String(Number(m.monthly_fee)),
         room_no: m.room_no ?? "",
+        member_type: m.member_type,
+        company: m.company ?? "",
+        delivery_address: m.delivery_address ?? "",
         deposit: String(Number(m.deposit)),
         emergency_contact: m.emergency_contact ?? "",
         notes: m.notes ?? "",
@@ -75,6 +84,7 @@ export function MemberFormPage() {
   }, [existing.data, reset]);
 
   const planId = useWatch({ control, name: "plan_id" });
+  const memberType = useWatch({ control, name: "member_type" });
   const activePlans = (plans.data ?? []).filter((p) => p.is_active || p.id === planId);
 
   // Default the fee to the chosen plan's fee when creating.
@@ -91,6 +101,9 @@ export function MemberFormPage() {
       joining_date: v.joining_date,
       monthly_fee: v.monthly_fee,
       room_no: v.room_no || null,
+      member_type: v.member_type,
+      company: v.member_type === "tiffin" ? v.company || null : null,
+      delivery_address: v.member_type === "tiffin" ? v.delivery_address || null : null,
       deposit: v.deposit || "0",
       emergency_contact: v.emergency_contact || null,
       notes: v.notes || null,
@@ -125,6 +138,16 @@ export function MemberFormPage() {
         </Alert>
       ) : null}
 
+      <Controller
+        control={control}
+        name="member_type"
+        render={({ field }) => (
+          <ToggleButtonGroup exclusive fullWidth value={field.value} onChange={(_, v: "dine_in" | "tiffin" | null) => v && field.onChange(v)} sx={{ mb: 1 }}>
+            <ToggleButton value="dine_in" sx={{ minHeight: 52, fontWeight: 600 }}>{t("members.type.dine_in")}</ToggleButton>
+            <ToggleButton value="tiffin" sx={{ minHeight: 52, fontWeight: 600 }}>{t("members.type.tiffin")}</ToggleButton>
+          </ToggleButtonGroup>
+        )}
+      />
       <TextField label={t("members.name")} autoFocus={!editing} error={!!errors.name} helperText={helper(errors.name?.message)} {...register("name")} />
       <TextField
         label={t("auth.phone")}
@@ -152,6 +175,12 @@ export function MemberFormPage() {
         <TextField label={t("members.monthlyFee")} inputMode="decimal" error={!!errors.monthly_fee} helperText={helper(errors.monthly_fee?.message)} {...register("monthly_fee")} />
         <TextField label={t("members.joiningDate")} type="date" slotProps={{ inputLabel: { shrink: true } }} error={!!errors.joining_date} helperText=" " {...register("joining_date")} />
       </Box>
+      {memberType === "tiffin" ? (
+        <>
+          <TextField label={t("members.company")} helperText=" " {...register("company")} />
+          <TextField label={t("members.deliveryAddress")} multiline minRows={2} helperText=" " {...register("delivery_address")} />
+        </>
+      ) : null}
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
         <TextField label={t("members.room")} error={!!errors.room_no} helperText=" " {...register("room_no")} />
         <TextField label={t("members.deposit")} inputMode="decimal" error={!!errors.deposit} helperText={helper(errors.deposit?.message)} {...register("deposit")} />

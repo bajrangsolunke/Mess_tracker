@@ -145,7 +145,7 @@ export function CustomerHome() {
         </Stack>
       </Box>
 
-      <Button variant="contained" startIcon={<PlateCheckIcon />} onClick={() => navigate("/app/attendance")}>
+      <Button variant="contained" startIcon={<PlateCheckIcon />} onClick={() => navigate("/app/leave")}>
         {t("customer.skipMeal")}
       </Button>
 

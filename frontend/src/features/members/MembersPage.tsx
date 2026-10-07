@@ -4,7 +4,7 @@ import AddIcon from "@mui/icons-material/AddRounded";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMembers } from "../../api/useMembers";
-import type { MemberStatus } from "../../api/types";
+import type { MemberStatus, MemberType } from "../../api/types";
 import { SearchBar } from "../../components/SearchBar";
 import { PageHeader } from "../../components/brand/PageHeader";
 import { EmptyState } from "../../components/brand/EmptyState";
@@ -18,7 +18,8 @@ export function MembersPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<Filter>("active");
-  const { data, isLoading, isError } = useMembers({ search, status });
+  const [type, setType] = useState<MemberType | "">("");
+  const { data, isLoading, isError } = useMembers({ search, status, member_type: type || undefined });
   const members = data?.items ?? [];
 
   const filters = useMemo<{ key: Filter; label: string }[]>(
@@ -56,7 +57,17 @@ export function MembersPage() {
       ) : (
         <>
           <SearchBar value={search} onChange={setSearch} placeholder={t("members.searchPlaceholder")} />
-          <Box sx={{ display: "flex", gap: 1, overflowX: "auto", pb: 0.5 }}>
+          <Box sx={{ display: "flex", gap: 1, overflowX: "auto", pb: 0.5, scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } }}>
+            {([["", t("members.all")], ["dine_in", t("members.type.dine_in")], ["tiffin", t("members.type.tiffin")]] as const).map(([k, label]) => (
+              <Chip
+                key={`type-${k}`}
+                label={label}
+                onClick={() => setType(k)}
+                variant="outlined"
+                sx={{ height: 36, px: 0.5, bgcolor: type === k ? `${brand.gold}26` : brand.paper, color: type === k ? brand.goldDark : "text.primary", borderColor: type === k ? brand.gold : brand.line, fontWeight: 600 }}
+              />
+            ))}
+            <Box sx={{ width: 1, borderLeft: `1px solid ${brand.line}`, mx: 0.5 }} />
             {filters.map((f) => (
               <Chip
                 key={f.key}

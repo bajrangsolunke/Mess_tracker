@@ -1,4 +1,4 @@
-import { authStore, type AuthOrganization, type AuthUser } from "../features/auth/authStore";
+import { authStore, type AuthMember, type AuthOrganization, type AuthUser } from "../features/auth/authStore";
 
 export const API_BASE: string =
   (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "/api/v1";
@@ -19,6 +19,7 @@ export interface TokenResponse {
   refresh_token: string;
   user: AuthUser;
   organization: AuthOrganization;
+  member?: AuthMember | null;
 }
 
 async function parseError(res: Response): Promise<ApiError> {
@@ -59,6 +60,7 @@ async function tryRefresh(): Promise<RefreshOutcome> {
           refresh: body.refresh_token,
           user: body.user,
           organization: body.organization,
+          member: body.member ?? null,
         });
         return "ok";
       } catch {

@@ -6,7 +6,8 @@ import LockIcon from "@mui/icons-material/LockRounded";
 import BeachAccessIcon from "@mui/icons-material/BeachAccessRounded";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import type { AttendanceRow, MealType } from "../../api/types";
+import type { AttendanceRow, MealType, MemberType } from "../../api/types";
+import { Chip } from "@mui/material";
 import { useAttendanceSheet, useMarkAll, useMarkAttendance } from "../../api/useAttendance";
 import { SearchBar } from "../../components/SearchBar";
 import { Avatar } from "../../components/brand/Avatar";
@@ -48,7 +49,7 @@ function Row({ row, locked, onMark }: { row: AttendanceRow; locked: boolean; onM
           {row.member.name}
         </Typography>
         <Typography variant="caption" noWrap sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          {row.member.room_no ? `${t("members.room")} ${row.member.room_no}` : row.member.phone}
+          {row.member.member_type === "tiffin" ? `${t("members.type.tiffin")}${row.member.company ? ` · ${row.member.company}` : ""}` : row.member.room_no ? `${t("members.room")} ${row.member.room_no}` : row.member.phone}
           {row.on_leave ? (
             <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.25, color: brand.goldDark, fontWeight: 600 }}>
               <BeachAccessIcon sx={{ fontSize: 14 }} /> {t("attendance.onLeave")}
@@ -107,6 +108,7 @@ export function AttendancePage() {
   const setDate = (d: string) => setParams({ date: d, meal }, { replace: true });
   const setMeal = (m: MealType) => setParams({ date, meal: m }, { replace: true });
   const [search, setSearch] = useState("");
+  const [type, setType] = useState<MemberType | "">("");
 
   const { data, isLoading, isError } = useAttendanceSheet(date, meal);
   const mark = useMarkAttendance(date, meal);
@@ -115,8 +117,10 @@ export function AttendancePage() {
   const rows = useMemo(() => {
     const items = data?.items ?? [];
     const q = search.trim().toLowerCase();
-    return q ? items.filter((r) => r.member.name.toLowerCase().includes(q) || r.member.phone.includes(q) || (r.member.room_no ?? "").toLowerCase().includes(q)) : items;
-  }, [data, search]);
+    const typed = type ? items.filter((r) => r.member.member_type === type) : items;
+    return q ? typed.filter((r) => r.member.name.toLowerCase().includes(q) || r.member.phone.includes(q) || (r.member.room_no ?? "").toLowerCase().includes(q) || (r.member.company ?? "").toLowerCase().includes(q)) : typed;
+  }, [data, search, type]);
+  const tiffinCount = (data?.items ?? []).filter((r) => r.member.member_type === "tiffin").length;
 
   const locked = data?.locked ?? false;
 
@@ -181,6 +185,13 @@ export function AttendancePage() {
           ) : null}
 
           <SearchBar value={search} onChange={setSearch} placeholder={t("members.searchPlaceholder")} />
+          {tiffinCount > 0 ? (
+            <Box sx={{ display: "flex", gap: 1 }}>
+              {([["", `${t("members.all")} (${data.items.length})`], ["dine_in", `${t("members.type.dine_in")} (${data.items.length - tiffinCount})`], ["tiffin", `${t("members.type.tiffin")} (${tiffinCount})`]] as const).map(([k, label]) => (
+                <Chip key={k} label={label} onClick={() => setType(k)} sx={{ height: 34, bgcolor: type === k ? brand.red : brand.paper, color: type === k ? "#fff" : "text.primary", border: `1px solid ${type === k ? brand.red : brand.line}`, fontWeight: 600 }} />
+              ))}
+            </Box>
+          ) : null}
 
           <Stack spacing={1.25}>
             {rows.map((r) => (

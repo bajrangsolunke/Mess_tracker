@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
-import type { Member, MemberCreateInput, MemberStatus, MemberUpdateInput, Page } from "./types";
+import type { Member, MemberCreateInput, MemberStatus, MemberType, MemberUpdateInput, Page } from "./types";
 
 export const membersKey = ["members"] as const;
 
@@ -8,6 +8,7 @@ export interface MemberFilters {
   search?: string;
   status?: MemberStatus | "";
   plan_id?: number;
+  member_type?: MemberType;
 }
 
 export function useMembers(filters: MemberFilters = {}) {
@@ -15,6 +16,7 @@ export function useMembers(filters: MemberFilters = {}) {
   if (filters.search) params.set("search", filters.search);
   if (filters.status) params.set("status", filters.status);
   if (filters.plan_id) params.set("plan_id", String(filters.plan_id));
+  if (filters.member_type) params.set("member_type", filters.member_type);
   const qs = params.toString();
   return useQuery({
     queryKey: [...membersKey, filters],

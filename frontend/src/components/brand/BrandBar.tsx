@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
-import { AppBar, Box, IconButton, Toolbar, Typography } from "@mui/material";
+import { AppBar, Badge, Box, IconButton, Toolbar, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useNavigate } from "react-router-dom";
 import { brand, FONT_DEVA } from "../../app/theme";
 import { Logo } from "./Logo";
+import { BellSpoonIcon } from "./icons";
+import { useNotifications } from "../../api/useLeaves";
+import { useSession } from "../../features/auth/authStore";
 
 /** Maroon brand header. With `title` it becomes a page header with a back arrow;
  *  without it, the स्वाद wordmark anchors the shell. */
@@ -17,6 +20,9 @@ export function BrandBar({
   actions?: ReactNode;
 }) {
   const navigate = useNavigate();
+  const { user } = useSession();
+  const { data } = useNotifications(!!user);
+  const unread = data?.unread ?? 0;
   return (
     <AppBar
       position="sticky"
@@ -86,6 +92,13 @@ export function BrandBar({
           </Box>
         )}
         {actions}
+        {user ? (
+          <IconButton color="inherit" aria-label={`notifications${unread ? ` (${unread})` : ""}`} onClick={() => navigate(user.role === "owner" ? "/owner/notifications" : "/app/notifications")}>
+            <Badge badgeContent={unread} color="secondary" max={9} sx={{ "& .MuiBadge-badge": { fontWeight: 700 } }}>
+              <BellSpoonIcon />
+            </Badge>
+          </IconButton>
+        ) : null}
       </Toolbar>
     </AppBar>
   );

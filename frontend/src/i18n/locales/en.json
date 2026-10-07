@@ -110,7 +110,8 @@
     "customerWelcome": "Today's meal is being prepared. Hungry?",
     "building": "I'm still cooking this screen. It will be ready soon!",
     "noMembers": "No members yet. Shall we add the first one?",
-    "noMenu": "Today's menu isn't set yet."
+    "noMenu": "Today's menu isn't set yet.",
+    "leaveHint": "Tell me before {{time}} the night before, and I won't cook for you."
   },
   "brand": {
     "tagline": "Authentic Taste · Modern Experience"
@@ -160,7 +161,14 @@
     "deactivate": "Deactivate member",
     "activate": "Activate member",
     "inactiveFrom": "Inactive from",
-    "viewAttendance": "View attendance"
+    "viewAttendance": "View attendance",
+    "company": "Company",
+    "deliveryAddress": "Delivery address",
+    "type": {
+      "label": "Type",
+      "dine_in": "Mess",
+      "tiffin": "Tiffin"
+    }
   },
   "plans": {
     "title": "Mess plans",
@@ -210,5 +218,33 @@
     "hint": "Closing a month locks attendance and leaves for it. You can reopen any time.",
     "close": "Close",
     "reopen": "Reopen"
+  },
+  "leave": {
+    "title": "Skip a meal",
+    "date": "Date",
+    "reason": "Reason",
+    "reasonPlaceholder": "Going home, travelling…",
+    "submit": "Submit leave",
+    "upcoming": "Your leaves",
+    "none": "No upcoming leaves.",
+    "cancel": "Cancel leave",
+    "pastError": "Choose today or a later date.",
+    "lateWarning": "Past the {{time}} cutoff. The owner will decide this leave.",
+    "status": {
+      "approved": "Approved",
+      "late": "Awaiting owner",
+      "rejected": "Rejected"
+    },
+    "ownerTitle": "Leaves",
+    "ownerHint": "Who is skipping meals",
+    "needsDecision": "Needs decision",
+    "approve": "Approve",
+    "reject": "Reject",
+    "ownerEmpty": "No leaves in this period."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "readAll": "Mark all read",
+    "empty": "Nothing new yet."
   }
 }

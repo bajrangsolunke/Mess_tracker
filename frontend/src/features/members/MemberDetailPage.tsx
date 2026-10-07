@@ -86,7 +86,17 @@ export function MemberDetailPage() {
       <Box sx={{ px: 2, borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}` }}>
         <Row label={t("auth.phone")} value={`+91 ${m.phone}`} />
         <Divider />
-        <Row label={t("members.room")} value={m.room_no} />
+        {m.member_type === "tiffin" ? (
+          <>
+            <Row label={t("members.type.label")} value={t("members.type.tiffin")} />
+            <Divider />
+            <Row label={t("members.company")} value={m.company} />
+            <Divider />
+            <Row label={t("members.deliveryAddress")} value={m.delivery_address} />
+          </>
+        ) : (
+          <Row label={t("members.room")} value={m.room_no} />
+        )}
         <Divider />
         <Row label={t("members.plan")} value={m.plan.name} />
         <Divider />

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, type TokenResponse } from "./client";
-import { authStore, type AuthOrganization, type AuthUser } from "../features/auth/authStore";
+import { authStore, type AuthMember, type AuthOrganization, type AuthUser } from "../features/auth/authStore";
 import { changeLanguage } from "../i18n";
 import { LANGS } from "../lib/storage";
 
@@ -10,6 +10,7 @@ function storeTokens(body: TokenResponse) {
     refresh: body.refresh_token,
     user: body.user,
     organization: body.organization,
+    member: body.member ?? null,
   });
   if (body.user.language && (LANGS as string[]).includes(body.user.language)) {
     changeLanguage(body.user.language);
@@ -27,7 +28,7 @@ export function useLogin() {
 export interface MeResponse {
   user: AuthUser;
   organization: AuthOrganization;
-  member: unknown | null;
+  member: AuthMember | null;
 }
 
 export function useMe(enabled = true) {

@@ -16,6 +16,15 @@ export interface AuthOrganization {
   id: number;
   name: string;
   default_language?: Lang;
+  leave_cutoff_time?: string;
+}
+
+export interface AuthMember {
+  id: number;
+  name: string;
+  member_type?: "dine_in" | "tiffin";
+  monthly_fee: string;
+  plan: { id: number; name: string; includes_lunch: boolean; includes_dinner: boolean; monthly_fee: string };
 }
 
 export interface Session {
@@ -23,24 +32,27 @@ export interface Session {
   refresh: string | null;
   user: AuthUser | null;
   organization: AuthOrganization | null;
+  member?: AuthMember | null;
 }
 
-const EMPTY: Session = { access: null, refresh: null, user: null, organization: null };
+const EMPTY: Session = { access: null, refresh: null, user: null, organization: null, member: null };
 
 function load(): Session {
   const raw = storage.getUserJson();
   let user: AuthUser | null = null;
   let organization: AuthOrganization | null = null;
+  let member: AuthMember | null = null;
   if (raw) {
     try {
-      const parsed = JSON.parse(raw) as { user: AuthUser; organization: AuthOrganization };
+      const parsed = JSON.parse(raw) as { user: AuthUser; organization: AuthOrganization; member?: AuthMember | null };
       user = parsed.user ?? null;
       organization = parsed.organization ?? null;
+      member = parsed.member ?? null;
     } catch {
       /* ignore corrupt storage */
     }
   }
-  return { access: storage.getAccess(), refresh: storage.getRefresh(), user, organization };
+  return { access: storage.getAccess(), refresh: storage.getRefresh(), user, organization, member };
 }
 
 let state: Session = load();
@@ -60,7 +72,7 @@ export const authStore = {
     state = next;
     storage.setTokens(next.access, next.refresh);
     storage.setUserJson(
-      next.user ? JSON.stringify({ user: next.user, organization: next.organization }) : null,
+      next.user ? JSON.stringify({ user: next.user, organization: next.organization, member: next.member ?? null }) : null,
     );
     emit();
   },
