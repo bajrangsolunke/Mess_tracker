@@ -16,6 +16,7 @@ from app.models.enums import (
 )
 from app.models.leave import Leave
 from app.models.member import Member
+from app.models.menu import Announcement, Menu
 from app.models.notification import Notification
 from app.models.organization import Organization
 from app.models.plan import MessPlan
@@ -23,7 +24,9 @@ from app.models.refresh_token import RefreshToken
 from app.models.user import User
 
 __all__ = [
+    "Announcement",
     "Attendance",
+    "Menu",
     "Bill",
     "Payment",
     "Leave",

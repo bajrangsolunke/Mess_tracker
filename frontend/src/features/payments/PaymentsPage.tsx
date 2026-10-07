@@ -90,11 +90,13 @@ export function PaymentsPage() {
                   <Avatar name={b.member.name} size={40} />
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography variant="subtitle1" noWrap>{b.member.name}</Typography>
-                    <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                      {b.status === "paid" ? rupees(b.amount) : `${t("payments.due")} ${rupees(b.due)} / ${rupees(b.amount)}`}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                      <StatusChip status={b.status === "unpaid" ? "pending" : b.status} />
+                      <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                        {b.status === "paid" ? rupees(b.amount) : `${t("payments.due")} ${rupees(b.due)} / ${rupees(b.amount)}`}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <StatusChip status={b.status === "unpaid" ? "pending" : b.status} />
                 </ButtonBase>
                 {b.status !== "paid" ? (
                   <Button size="small" variant="contained" sx={{ minHeight: 40, px: 1.5 }} onClick={() => setSelected(b)}>
