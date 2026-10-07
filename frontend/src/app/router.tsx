@@ -13,6 +13,11 @@ import { MembersPage } from "../features/members/MembersPage";
 import { MemberFormPage } from "../features/members/MemberFormPage";
 import { MemberDetailPage } from "../features/members/MemberDetailPage";
 import { PlansPage } from "../features/plans/PlansPage";
+import { AttendancePage } from "../features/attendance/AttendancePage";
+import { MyAttendancePage } from "../features/attendance/MyAttendancePage";
+import { HolidaysPage } from "../features/holidays/HolidaysPage";
+import { MonthsPage } from "../features/holidays/MonthsPage";
+import { MemberAttendancePage } from "../features/attendance/MemberAttendancePage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
@@ -33,7 +38,10 @@ export const router = createBrowserRouter([
       { path: "members/:id", element: <MemberDetailPage /> },
       { path: "members/:id/edit", element: <MemberFormPage /> },
       { path: "plans", element: <PlansPage /> },
-      { path: "attendance", element: <ComingSoon titleKey="nav.attendance" /> },
+      { path: "attendance", element: <AttendancePage /> },
+      { path: "members/:id/attendance", element: <MemberAttendancePage /> },
+      { path: "holidays", element: <HolidaysPage /> },
+      { path: "months", element: <MonthsPage /> },
       { path: "payments", element: <ComingSoon titleKey="nav.payments" /> },
       { path: "more", element: <ProfilePage titleKey="nav.more" /> },
     ],
@@ -47,7 +55,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <CustomerHome /> },
-      { path: "attendance", element: <ComingSoon titleKey="nav.attendance" /> },
+      { path: "attendance", element: <MyAttendancePage /> },
       { path: "menu", element: <ComingSoon titleKey="nav.menu" /> },
       { path: "payments", element: <ComingSoon titleKey="nav.payments" /> },
       { path: "profile", element: <ProfilePage titleKey="nav.profile" /> },

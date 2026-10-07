@@ -5,6 +5,7 @@ import KeyIcon from "@mui/icons-material/KeyRounded";
 import PhoneIcon from "@mui/icons-material/PhoneRounded";
 import PersonOffIcon from "@mui/icons-material/PersonOffRounded";
 import PersonIcon from "@mui/icons-material/PersonRounded";
+import { PlateCheckIcon } from "../../components/brand/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMember, useResetMemberPassword, useSetMemberStatus } from "../../api/useMembers";
@@ -114,6 +115,9 @@ export function MemberDetailPage() {
       </Box>
 
       <Stack spacing={1.5}>
+        <Button variant="contained" startIcon={<PlateCheckIcon />} onClick={() => navigate(`/owner/members/${m.id}/attendance`)}>
+          {t("members.viewAttendance")}
+        </Button>
         <Button
           variant="outlined"
           startIcon={<KeyIcon />}

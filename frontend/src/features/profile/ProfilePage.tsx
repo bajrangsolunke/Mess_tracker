@@ -8,6 +8,8 @@ import { useSession } from "../auth/authStore";
 import { useLogout } from "../../api/useAuth";
 import { brand } from "../../app/theme";
 import { ProfileIcon, ThaliIcon } from "../../components/brand/icons";
+import BeachAccessIcon from "@mui/icons-material/BeachAccessRounded";
+import LockIcon from "@mui/icons-material/LockRounded";
 import { SectionTitle } from "../../components/brand/SectionTitle";
 
 const LANG_NAME: Record<string, string> = { en: "English", hi: "हिन्दी", mr: "मराठी" };
@@ -50,6 +52,22 @@ export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile"
                   <ThaliIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("plans.title")} secondary={t("plans.hintShort")} />
+                <ChevronRightIcon sx={{ color: "text.secondary" }} />
+              </ListItemButton>
+              <Divider component="li" />
+              <ListItemButton onClick={() => navigate("/owner/holidays")} sx={{ minHeight: 60 }}>
+                <ListItemIcon sx={{ color: brand.gold, minWidth: 44 }}>
+                  <BeachAccessIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("holidays.title")} secondary={t("holidays.hintShort")} />
+                <ChevronRightIcon sx={{ color: "text.secondary" }} />
+              </ListItemButton>
+              <Divider component="li" />
+              <ListItemButton onClick={() => navigate("/owner/months")} sx={{ minHeight: 60 }}>
+                <ListItemIcon sx={{ color: brand.inkSoft, minWidth: 44 }}>
+                  <LockIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("months.title")} secondary={t("months.hintShort")} />
                 <ChevronRightIcon sx={{ color: "text.secondary" }} />
               </ListItemButton>
               <Divider component="li" />

@@ -42,7 +42,8 @@
     "comingSoonHint": "This screen is being built. It will appear here soon.",
     "edit": "Edit",
     "done": "Done",
-    "copy": "Copy"
+    "copy": "Copy",
+    "delete": "Delete"
   },
   "dashboard": {
     "welcome": "Hello, {{name}} 👋",
@@ -158,7 +159,8 @@
     "resetPassword": "Reset password",
     "deactivate": "Deactivate member",
     "activate": "Activate member",
-    "inactiveFrom": "Inactive from"
+    "inactiveFrom": "Inactive from",
+    "viewAttendance": "View attendance"
   },
   "plans": {
     "title": "Mess plans",
@@ -169,5 +171,44 @@
     "hintShort": "Meals and monthly fee",
     "empty": "No plans yet. Create one like “Lunch + Dinner · ₹2500”.",
     "active": "Active"
+  },
+  "attendance": {
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "unmarked": "Unmarked",
+    "onLeave": "On leave",
+    "allPresent": "All present",
+    "allAbsent": "All absent",
+    "locked": "This month is closed. Reopen it to edit attendance.",
+    "manageMonths": "Months",
+    "holiday": "Mess closed today",
+    "messClosed": "Holiday",
+    "manageHolidays": "Manage holidays",
+    "nobodyExpected": "Nobody is expected for this meal.",
+    "mealsTaken": "Meals taken",
+    "missed": "Missed",
+    "legend": {
+      "present": "Present",
+      "absent": "Absent",
+      "leave": "Leave"
+    }
+  },
+  "holidays": {
+    "title": "Holidays",
+    "hintShort": "Days the mess is closed",
+    "hint": "On a holiday nobody is expected and attendance is skipped.",
+    "add": "Add holiday",
+    "date": "Date",
+    "meal": "Meal",
+    "wholeDay": "Whole day",
+    "reason": "Reason (optional)",
+    "empty": "No holidays this month."
+  },
+  "months": {
+    "title": "Close months",
+    "hintShort": "Lock attendance after month end",
+    "hint": "Closing a month locks attendance and leaves for it. You can reopen any time.",
+    "close": "Close",
+    "reopen": "Reopen"
   }
 }

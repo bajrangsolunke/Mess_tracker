@@ -45,3 +45,72 @@ export interface MemberCreateInput {
 }
 
 export type MemberUpdateInput = Partial<Omit<MemberCreateInput, "phone" | "create_login">>;
+
+export type AttendanceStatus = "present" | "absent";
+export type HolidayMeal = "lunch" | "dinner" | "all";
+
+export interface MemberBrief {
+  id: number;
+  name: string;
+  phone: string;
+  room_no: string | null;
+  plan: Plan;
+}
+
+export interface AttendanceRow {
+  member: MemberBrief;
+  status: AttendanceStatus | null;
+  on_leave: boolean;
+  leave_status: string | null;
+}
+
+export interface AttendanceCounts {
+  expected: number;
+  present: number;
+  absent: number;
+  unmarked: number;
+  on_leave: number;
+}
+
+export interface Holiday {
+  id: number;
+  date: string;
+  meal_type: HolidayMeal;
+  reason: string | null;
+}
+
+export interface AttendanceSheet {
+  date: string;
+  meal_type: MealType;
+  locked: boolean;
+  holiday: Holiday | null;
+  counts: AttendanceCounts;
+  items: AttendanceRow[];
+}
+
+export interface HistoryItem {
+  date: string;
+  meal_type: MealType;
+  status: AttendanceStatus;
+}
+
+export interface HistoryOut {
+  member: MemberBrief;
+  month: string;
+  present_count: number;
+  absent_count: number;
+  items: HistoryItem[];
+  leaves: HistoryItem[];
+}
+
+export interface SummaryRow {
+  member: MemberBrief;
+  lunch_present: number;
+  dinner_present: number;
+  total_present: number;
+}
+
+export interface MonthState {
+  month: string;
+  closed: boolean;
+}
