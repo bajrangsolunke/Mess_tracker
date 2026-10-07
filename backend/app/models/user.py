@@ -12,7 +12,7 @@ class User(TimestampMixin, Base):
     organization_id: Mapped[int] = mapped_column(
         ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    phone: Mapped[str] = mapped_column(String(15), nullable=False)
+    phone: Mapped[str] = mapped_column(String(15), nullable=False, unique=True, index=True)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     email: Mapped[str | None] = mapped_column(String(255))
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
