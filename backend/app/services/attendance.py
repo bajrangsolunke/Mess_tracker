@@ -1,12 +1,13 @@
 from collections.abc import Sequence
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.errors import ApiError
-from app.core.time import month_end, month_start
+from app.core.time import IST, month_end, month_start, now_ist
 from app.models import (
     Attendance,
     AttendanceStatus,
@@ -14,11 +15,13 @@ from app.models import (
     HolidayMeal,
     Leave,
     LeaveStatus,
+    MealClosure,
     MealType,
     Member,
     MemberStatus,
     MessPlan,
     MonthClosure,
+    Organization,
 )
 from app.schemas.attendance import (
     AttendanceCounts,
@@ -156,14 +159,24 @@ async def _leaves_for(db: AsyncSession, org_id: int, d: date, meal: MealType) ->
     return {lv.member_id: lv for lv in rows}
 
 
+def meal_end(org: Organization, d: date, meal: MealType) -> datetime:
+    t = org.lunch_end_time if meal is MealType.lunch else org.dinner_end_time
+    return datetime.combine(d, t, tzinfo=IST)
+
+
 async def sheet(db: AsyncSession, org_id: int, d: date, meal: MealType) -> AttendanceSheet:
     locked = await is_month_closed(db, org_id, d)
+    org = await db.get(Organization, org_id)
+    ends_at = meal_end(org, d, meal) if org else None
+    closed = bool(ends_at and now_ist() >= ends_at)
     hol = await holiday_for(db, org_id, d, meal)
     if hol is not None:
         return AttendanceSheet(
             date=d,
             meal_type=meal,
             locked=locked,
+            closed=closed,
+            ends_at=ends_at,
             holiday=HolidayOut.model_validate(hol),
             counts=AttendanceCounts(expected=0, present=0, absent=0, unmarked=0, on_leave=0),
             items=[],
@@ -174,11 +187,13 @@ async def sheet(db: AsyncSession, org_id: int, d: date, meal: MealType) -> Atten
         a.member_id: a
         for a in (
             await db.execute(
-                select(Attendance).where(
+                select(Attendance)
+                .where(
                     Attendance.organization_id == org_id,
                     Attendance.date == d,
                     Attendance.meal_type == meal,
                 )
+                .execution_options(populate_existing=True)
             )
         ).scalars()
     }
@@ -206,12 +221,16 @@ async def sheet(db: AsyncSession, org_id: int, d: date, meal: MealType) -> Atten
                 self_marked=bool(
                     m.user_id and m.id in rows_att and rows_att[m.id].marked_by == m.user_id
                 ),
+                auto=bool(m.id in rows_att and rows_att[m.id].auto),
+                marked_at=rows_att[m.id].marked_at if m.id in rows_att else None,
             )
         )
     return AttendanceSheet(
         date=d,
         meal_type=meal,
         locked=locked,
+        closed=closed,
+        ends_at=ends_at,
         holiday=None,
         counts=AttendanceCounts(
             expected=len(members),
@@ -254,6 +273,8 @@ async def bulk_mark(
                 "meal_type": meal,
                 "status": st,
                 "marked_by": user_id,
+                "marked_at": now_ist(),
+                "auto": False,
             }
             for mid, st in items
         ]
@@ -263,6 +284,8 @@ async def bulk_mark(
         set_={
             "status": stmt.excluded.status,
             "marked_by": stmt.excluded.marked_by,
+            "marked_at": stmt.excluded.marked_at,
+            "auto": False,
             "updated_at": func.now(),
         },
     )
@@ -273,12 +296,24 @@ async def bulk_mark(
 async def mark_all(
     db: AsyncSession, org_id: int, d: date, meal: MealType, status: AttendanceStatus, user_id: int
 ) -> None:
+    """Mark every expected member who has no mark yet; existing marks are left alone."""
     members = await expected_members(db, org_id, d, meal)
     leaves = await _leaves_for(db, org_id, d, meal)
+    marked = {
+        r[0]
+        for r in await db.execute(
+            select(Attendance.member_id).where(
+                Attendance.organization_id == org_id,
+                Attendance.date == d,
+                Attendance.meal_type == meal,
+            )
+        )
+    }
     targets = [
         (m.id, status)
         for m in members
-        if not (
+        if m.id not in marked
+        and not (
             status is AttendanceStatus.present
             and leaves.get(m.id)
             and leaves[m.id].status is LeaveStatus.approved
@@ -322,7 +357,17 @@ async def history(db: AsyncSession, org_id: int, member: Member, month: date) ->
         .scalars()
         .all()
     )
-    items = [HistoryItem(date=a.date, meal_type=a.meal_type, status=a.status) for a in rows]
+    items = [
+        HistoryItem(
+            date=a.date,
+            meal_type=a.meal_type,
+            status=a.status,
+            marked_at=a.marked_at,
+            auto=a.auto,
+            self_marked=bool(member.user_id and a.marked_by == member.user_id),
+        )
+        for a in rows
+    ]
     return HistoryOut(
         member=MemberBrief.model_validate(member),
         month=start,
@@ -433,3 +478,85 @@ async def register(db: AsyncSession, org_id: int, month: date):
         holidays=[RegisterHoliday(date=h.date, meal_type=h.meal_type) for h in hols],
         rows=rows,
     )
+
+
+# --- missed meals → absent ------------------------------------------------------------
+
+AUTO_CLOSE_LOOKBACK_DAYS = 45
+
+
+async def auto_close(db: AsyncSession, org_id: int) -> int:
+    """Record absent for every expected member with no mark once a meal's end time has passed.
+    Approved leaves and holidays are skipped; closed months are left untouched.
+    Idempotent: each (date, meal) is processed once and remembered in meal_closures."""
+    if not settings.auto_close_meals:
+        return 0
+    org = await db.get(Organization, org_id)
+    if org is None:
+        return 0
+    now = now_ist()
+    first = (
+        await db.execute(
+            select(func.min(Member.joining_date)).where(Member.organization_id == org_id)
+        )
+    ).scalar_one_or_none()
+    if first is None:
+        return 0
+    start = max(first, now.date() - timedelta(days=AUTO_CLOSE_LOOKBACK_DAYS))
+    done = {
+        (r[0], r[1])
+        for r in await db.execute(
+            select(MealClosure.date, MealClosure.meal_type).where(
+                MealClosure.organization_id == org_id, MealClosure.date >= start
+            )
+        )
+    }
+    created = 0
+    d = start
+    while d <= now.date():
+        for meal in (MealType.lunch, MealType.dinner):
+            ends = meal_end(org, d, meal)
+            if (d, meal) in done or now < ends:
+                continue
+            if (
+                not await is_month_closed(db, org_id, d)
+                and await holiday_for(db, org_id, d, meal) is None
+            ):
+                members = await expected_members(db, org_id, d, meal)
+                leaves = await _leaves_for(db, org_id, d, meal)
+                rows = [
+                    {
+                        "organization_id": org_id,
+                        "member_id": m.id,
+                        "date": d,
+                        "meal_type": meal,
+                        "status": AttendanceStatus.absent,
+                        "marked_by": None,
+                        "marked_at": ends,
+                        "auto": True,
+                    }
+                    for m in members
+                    if not (leaves.get(m.id) and leaves[m.id].status is LeaveStatus.approved)
+                ]
+                if rows:
+                    res = await db.execute(
+                        insert(Attendance)
+                        .values(rows)
+                        .on_conflict_do_nothing(constraint="uq_attendance_member_date_meal")
+                    )
+                    created += res.rowcount or 0
+            await db.execute(
+                insert(MealClosure)
+                .values(organization_id=org_id, date=d, meal_type=meal)
+                .on_conflict_do_nothing(constraint="uq_meal_closures_org_date_meal")
+            )
+        d += timedelta(days=1)
+    await db.flush()
+    return created
+
+
+async def ensure_closed(db: AsyncSession, org_id: int) -> None:
+    """Called before reading attendance so missed meals already show as absent."""
+    if settings.auto_close_meals:
+        await auto_close(db, org_id)
+        await db.commit()

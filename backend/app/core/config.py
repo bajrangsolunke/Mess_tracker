@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     owner_invite_code: str = INSECURE_INVITE_CODE
     cors_origins: list[str] = ["http://localhost:5173"]
     timezone: str = "Asia/Kolkata"
+    # Mark expected members absent once a meal's end time has passed (disabled in most tests).
+    auto_close_meals: bool = True
 
     @field_validator("database_url")
     @classmethod

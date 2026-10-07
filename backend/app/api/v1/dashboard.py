@@ -8,7 +8,7 @@ from app.core.time import parse_month, today_ist
 from app.schemas.attendance import SummaryRow
 from app.schemas.dashboard import CustomerDashboard, MealsReport, OwnerDashboard, PaymentsReport
 from app.services import dashboard as svc
-from app.services.attendance import summary
+from app.services.attendance import ensure_closed, summary
 from app.services.members import member_for_user
 
 router = APIRouter(tags=["dashboard"])
@@ -25,6 +25,7 @@ def _month(value: str | None) -> date:
 async def owner_dashboard(
     owner: OwnerUser, db: DbSession, date_: date | None = Query(default=None, alias="date")
 ) -> OwnerDashboard:
+    await ensure_closed(db, owner.organization_id)
     return await svc.owner_dashboard(db, owner.organization_id, date_ or today_ist())
 
 
@@ -32,6 +33,7 @@ async def owner_dashboard(
 async def my_dashboard(
     user: CustomerUser, db: DbSession, date_: date | None = Query(default=None, alias="date")
 ) -> CustomerDashboard:
+    await ensure_closed(db, user.organization_id)
     member = await member_for_user(db, user.id)
     if member is None:
         raise ApiError(404, "MEMBER_NOT_FOUND", "No member profile linked to this login")
@@ -42,6 +44,7 @@ async def my_dashboard(
 
 @router.get("/reports/meals", response_model=MealsReport)
 async def meals_report(owner: OwnerUser, db: DbSession, month: str | None = None) -> MealsReport:
+    await ensure_closed(db, owner.organization_id)
     return await svc.meals_report(db, owner.organization_id, _month(month))
 
 
@@ -56,4 +59,5 @@ async def payments_report(
 async def attendance_report(
     owner: OwnerUser, db: DbSession, month: str | None = None
 ) -> list[SummaryRow]:
+    await ensure_closed(db, owner.organization_id)
     return await summary(db, owner.organization_id, _month(month))

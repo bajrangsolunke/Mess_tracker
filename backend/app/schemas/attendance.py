@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -24,6 +24,8 @@ class AttendanceRow(BaseModel):
     on_leave: bool = False
     leave_status: str | None = None
     self_marked: bool = False
+    auto: bool = False
+    marked_at: datetime | None = None
 
 
 class RegisterRow(BaseModel):
@@ -54,6 +56,10 @@ class MealToday(BaseModel):
     self_marked: bool
     on_leave: bool
     holiday: bool
+    closed: bool = False
+    ends_at: datetime | None = None
+    auto: bool = False
+    marked_at: datetime | None = None
 
 
 class MyToday(BaseModel):
@@ -88,6 +94,8 @@ class AttendanceSheet(BaseModel):
     date: date
     meal_type: MealType
     locked: bool
+    closed: bool = False  # meal time is over; missed marks are absent
+    ends_at: datetime | None = None
     holiday: HolidayOut | None
     counts: AttendanceCounts
     items: list[AttendanceRow]
@@ -114,6 +122,9 @@ class HistoryItem(BaseModel):
     date: date
     meal_type: MealType
     status: AttendanceStatus
+    marked_at: datetime | None = None
+    auto: bool = False
+    self_marked: bool = False
 
 
 class HistoryOut(BaseModel):

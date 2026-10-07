@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Response, status
 
-from app.core.deps import CurrentUser, DbSession
+from app.core.deps import CurrentUser, DbSession, OwnerUser
 from app.models import User
 from app.schemas.auth import (
     LoginRequest,
     MeResponse,
     OrganizationOut,
+    OrganizationUpdate,
     RefreshRequest,
     RegisterOwnerRequest,
     TokenResponse,
@@ -81,3 +82,21 @@ async def patch_me(data: UpdateMeRequest, user: CurrentUser, db: DbSession) -> M
     return MeResponse(
         user=UserOut.model_validate(user), organization=OrganizationOut.model_validate(org)
     )
+
+
+org_router = APIRouter(prefix="/organization", tags=["organization"])
+
+
+@org_router.get("", response_model=OrganizationOut)
+async def read_org(user: CurrentUser, db: DbSession) -> OrganizationOut:
+    return OrganizationOut.model_validate(await svc.get_org(db, user.organization_id))
+
+
+@org_router.patch("", response_model=OrganizationOut)
+async def update_org(data: OrganizationUpdate, owner: OwnerUser, db: DbSession) -> OrganizationOut:
+    org = await svc.get_org(db, owner.organization_id)
+    for k, v in data.model_dump(exclude_unset=True).items():
+        if v is not None:
+            setattr(org, k, v)
+    await db.commit()
+    return OrganizationOut.model_validate(org)

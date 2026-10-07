@@ -71,6 +71,8 @@ class OrganizationOut(BaseModel):
     name: str
     default_language: Language
     leave_cutoff_time: time
+    lunch_end_time: time
+    dinner_end_time: time
     timezone: str
 
 
@@ -84,3 +86,10 @@ class TokenResponse(MeResponse):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+
+
+class OrganizationUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=2, max_length=120)
+    leave_cutoff_time: time | None = None
+    lunch_end_time: time | None = None
+    dinner_end_time: time | None = None

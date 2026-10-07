@@ -8,6 +8,7 @@ from app.schemas.attendance import CheckIn, MyToday, Register
 from app.schemas.pricing import PricingOut, PricingPut
 from app.services import attendance as att
 from app.services import checkin
+from app.services.attendance import ensure_closed
 from app.services.auth import get_org
 from app.services.members import member_for_user
 from app.services.pricing import get_pricing, set_pricing
@@ -29,6 +30,7 @@ async def write_pricing(data: PricingPut, owner: OwnerUser, db: DbSession) -> Pr
 
 @router.get("/attendance/register", response_model=Register)
 async def read_register(owner: OwnerUser, db: DbSession, month: str | None = None) -> Register:
+    await ensure_closed(db, owner.organization_id)
     try:
         m = parse_month(month) if month else today_ist().replace(day=1)
     except ValueError as e:
@@ -45,6 +47,7 @@ async def _member(db: DbSession, user: CustomerUser):
 
 @router.get("/me/attendance/today", response_model=MyToday)
 async def my_today(user: CustomerUser, db: DbSession) -> MyToday:
+    await ensure_closed(db, user.organization_id)
     return await checkin.today_status(db, await _member(db, user), user)
 
 

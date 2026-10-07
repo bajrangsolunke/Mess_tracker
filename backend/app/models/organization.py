@@ -20,5 +20,12 @@ class Organization(TimestampMixin, Base):
     )
     leave_cutoff_time: Mapped[time] = mapped_column(Time, default=time(22, 0), nullable=False)
     timezone: Mapped[str] = mapped_column(String(64), default="Asia/Kolkata", nullable=False)
+    # After these times, members with no mark for that meal are recorded absent.
+    lunch_end_time: Mapped[time] = mapped_column(
+        Time, default=time(15, 30), server_default="15:30", nullable=False
+    )
+    dinner_end_time: Mapped[time] = mapped_column(
+        Time, default=time(23, 0), server_default="23:00", nullable=False
+    )
     one_meal_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     two_meal_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))

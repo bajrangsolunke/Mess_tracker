@@ -1,4 +1,4 @@
-from app.models.attendance import Attendance, Holiday, MonthClosure
+from app.models.attendance import Attendance, Holiday, MealClosure, MonthClosure
 from app.models.billing import Bill, Payment
 from app.models.enums import (
     AttendanceStatus,
@@ -40,6 +40,7 @@ __all__ = [
     "Leave",
     "Notification",
     "Holiday",
+    "MealClosure",
     "MonthClosure",
     "AttendanceStatus",
     "BillStatus",

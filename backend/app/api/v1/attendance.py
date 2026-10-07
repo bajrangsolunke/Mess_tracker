@@ -16,6 +16,7 @@ from app.schemas.attendance import (
     SummaryRow,
 )
 from app.services import attendance as svc
+from app.services.attendance import ensure_closed
 from app.services.members import get_member, member_for_user
 
 router = APIRouter(tags=["attendance"])
@@ -35,6 +36,7 @@ async def get_sheet(
     date_: date = Query(alias="date"),
     meal_type: MealType = Query(),
 ) -> AttendanceSheet:
+    await ensure_closed(db, owner.organization_id)
     return await svc.sheet(db, owner.organization_id, date_, meal_type)
 
 
@@ -69,6 +71,7 @@ async def mark_all(
 async def get_history(
     user: CurrentUser, db: DbSession, member_id: int | None = None, month: str | None = None
 ) -> HistoryOut:
+    await ensure_closed(db, user.organization_id)
     if user.role is UserRole.customer:
         member = await member_for_user(db, user.id)
         if member is None:
@@ -84,6 +87,7 @@ async def get_history(
 async def get_summary(
     owner: OwnerUser, db: DbSession, month: str | None = None
 ) -> list[SummaryRow]:
+    await ensure_closed(db, owner.organization_id)
     return await svc.summary(db, owner.organization_id, _month(month))
 
 

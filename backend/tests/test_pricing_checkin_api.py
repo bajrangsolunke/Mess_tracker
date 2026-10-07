@@ -109,12 +109,16 @@ async def test_member_checks_in_for_meal(client, today_oct7):
     r = await client.get("/api/v1/me/attendance/today", headers=ch)
     assert r.status_code == 200, r.text
     assert r.json()["date"] == "2026-10-07"
-    assert r.json()["lunch"] == {
+    lunch = r.json()["lunch"]
+    keys = ("expected", "status", "self_marked", "on_leave", "holiday", "closed", "auto")
+    assert {k: lunch[k] for k in keys} == {
         "expected": True,
         "status": None,
         "self_marked": False,
         "on_leave": False,
         "holiday": False,
+        "closed": False,
+        "auto": False,
     }
     r = await client.post("/api/v1/me/attendance", json={"meal_type": "lunch"}, headers=ch)
     assert r.status_code == 200, r.text

@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, Index, String, UniqueConstraint
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -26,6 +26,28 @@ class Attendance(TimestampMixin, Base):
         Enum(AttendanceStatus, name="attendance_status"), nullable=False
     )
     marked_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    # When the status was last set, and whether the system set it (missed meal → absent).
+    marked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    auto: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false", nullable=False
+    )
+
+
+class MealClosure(TimestampMixin, Base):
+    """A (date, meal) whose missed marks have been recorded as absent."""
+
+    __tablename__ = "meal_closures"
+    __table_args__ = (
+        UniqueConstraint(
+            "organization_id", "date", "meal_type", name="uq_meal_closures_org_date_meal"
+        ),
+    )
+
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    date: Mapped[date] = mapped_column(Date, nullable=False)
+    meal_type: Mapped[MealType] = mapped_column(Enum(MealType, name="meal_type"), nullable=False)
 
 
 class Holiday(TimestampMixin, Base):
