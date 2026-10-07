@@ -1,0 +1,41 @@
+{
+  "app": { "name": "मेस ट्रैकर" },
+  "nav": {
+    "home": "होम",
+    "members": "सदस्य",
+    "attendance": "उपस्थिति",
+    "payments": "भुगतान",
+    "more": "अधिक",
+    "menu": "मेनू",
+    "profile": "प्रोफ़ाइल"
+  },
+  "auth": {
+    "login": "लॉगिन",
+    "phone": "मोबाइल नंबर",
+    "password": "पासवर्ड",
+    "signIn": "साइन इन करें",
+    "invalid": "मोबाइल नंबर या पासवर्ड गलत है",
+    "logout": "लॉगआउट",
+    "phoneRequired": "10 अंकों का मोबाइल नंबर दर्ज करें",
+    "passwordRequired": "अपना पासवर्ड दर्ज करें"
+  },
+  "lang": {
+    "select": "भाषा चुनें",
+    "en": "English",
+    "hi": "हिन्दी",
+    "mr": "मराठी",
+    "continue": "आगे बढ़ें"
+  },
+  "common": {
+    "loading": "लोड हो रहा है…",
+    "error": "कुछ गलत हो गया",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "comingSoon": "जल्द आ रहा है"
+  },
+  "dashboard": {
+    "welcome": "नमस्ते, {{name}} 👋",
+    "ownerIntro": "आपकी मेस एक नज़र में",
+    "customerIntro": "आपके भोजन और भुगतान"
+  }
+}

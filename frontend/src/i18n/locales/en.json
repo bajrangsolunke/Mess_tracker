@@ -1,0 +1,41 @@
+{
+  "app": { "name": "Mess Tracker" },
+  "nav": {
+    "home": "Home",
+    "members": "Members",
+    "attendance": "Attendance",
+    "payments": "Payments",
+    "more": "More",
+    "menu": "Menu",
+    "profile": "Profile"
+  },
+  "auth": {
+    "login": "Login",
+    "phone": "Mobile number",
+    "password": "Password",
+    "signIn": "Sign in",
+    "invalid": "Mobile number or password is incorrect",
+    "logout": "Logout",
+    "phoneRequired": "Enter a 10-digit mobile number",
+    "passwordRequired": "Enter your password"
+  },
+  "lang": {
+    "select": "Select language",
+    "en": "English",
+    "hi": "हिन्दी",
+    "mr": "मराठी",
+    "continue": "Continue"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "comingSoon": "Coming soon"
+  },
+  "dashboard": {
+    "welcome": "Hello, {{name}} 👋",
+    "ownerIntro": "Your mess at a glance",
+    "customerIntro": "Your meals and payments"
+  }
+}
