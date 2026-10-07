@@ -1,5 +1,7 @@
 {
-  "app": { "name": "मेस ट्रॅकर" },
+  "app": {
+    "name": "स्वाद भोजनालय"
+  },
   "nav": {
     "home": "होम",
     "members": "सदस्य",
@@ -17,25 +19,61 @@
     "invalid": "मोबाईल नंबर किंवा पासवर्ड चुकीचा आहे",
     "logout": "लॉगआउट",
     "phoneRequired": "10 अंकी मोबाईल नंबर टाका",
-    "passwordRequired": "तुमचा पासवर्ड टाका"
+    "passwordRequired": "तुमचा पासवर्ड टाका",
+    "loginHint": "मेस मालकाने नोंदवलेला मोबाईल नंबर वापरा",
+    "showPassword": "पासवर्ड दाखवा",
+    "hidePassword": "पासवर्ड लपवा",
+    "noAccount": "लॉगिन नाही? मेस मालकाला तुम्हाला जोडायला सांगा."
   },
   "lang": {
     "select": "भाषा निवडा",
     "en": "English",
     "hi": "हिन्दी",
     "mr": "मराठी",
-    "continue": "पुढे जा"
+    "continue": "पुढे जा",
+    "hint": "हे नंतर प्रोफाइलमधून बदलता येईल"
   },
   "common": {
     "loading": "लोड होत आहे…",
     "error": "काहीतरी चूक झाली",
     "save": "जतन करा",
     "cancel": "रद्द करा",
-    "comingSoon": "लवकरच येत आहे"
+    "comingSoon": "लवकरच येत आहे",
+    "comingSoonHint": "ही स्क्रीन तयार होत आहे. लवकरच इथे दिसेल."
   },
   "dashboard": {
     "welcome": "नमस्कार, {{name}} 👋",
     "ownerIntro": "तुमची मेस एका नजरेत",
-    "customerIntro": "तुमचे जेवण आणि पेमेंट"
+    "customerIntro": "तुमचे जेवण आणि पेमेंट",
+    "members": "सदस्य",
+    "presentToday": "आज उपस्थित",
+    "pendingPayments": "बाकी पेमेंट",
+    "quickActions": "झटपट कृती",
+    "addMember": "सदस्य जोडा",
+    "announce": "सूचना द्या"
+  },
+  "meal": {
+    "lunch": "दुपारचे जेवण",
+    "dinner": "रात्रीचे जेवण"
+  },
+  "menu": {
+    "today": "आजचा मेनू",
+    "notAdded": "मेनू अजून टाकलेला नाही",
+    "ownerEmpty": "आजचे पदार्थ टाकण्यासाठी मेनूवर टॅप करा"
+  },
+  "status": {
+    "paid": "भरले",
+    "pending": "बाकी",
+    "partial": "अंशतः",
+    "present": "उपस्थित",
+    "absent": "अनुपस्थित",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय"
+  },
+  "customer": {
+    "plan": "तुमचा प्लान",
+    "mealsThisMonth": "या महिन्यातील जेवण",
+    "thisMonthBill": "या महिन्याचे बिल",
+    "skipMeal": "जेवण वगळा"
   }
 }

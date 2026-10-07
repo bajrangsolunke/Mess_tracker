@@ -1,5 +1,7 @@
 {
-  "app": { "name": "मेस ट्रैकर" },
+  "app": {
+    "name": "स्वाद भोजनालय"
+  },
   "nav": {
     "home": "होम",
     "members": "सदस्य",
@@ -17,25 +19,61 @@
     "invalid": "मोबाइल नंबर या पासवर्ड गलत है",
     "logout": "लॉगआउट",
     "phoneRequired": "10 अंकों का मोबाइल नंबर दर्ज करें",
-    "passwordRequired": "अपना पासवर्ड दर्ज करें"
+    "passwordRequired": "अपना पासवर्ड दर्ज करें",
+    "loginHint": "वही मोबाइल नंबर डालें जो मेस मालिक ने दर्ज किया है",
+    "showPassword": "पासवर्ड दिखाएँ",
+    "hidePassword": "पासवर्ड छिपाएँ",
+    "noAccount": "लॉगिन नहीं है? मेस मालिक से कहें कि आपको जोड़ें।"
   },
   "lang": {
     "select": "भाषा चुनें",
     "en": "English",
     "hi": "हिन्दी",
     "mr": "मराठी",
-    "continue": "आगे बढ़ें"
+    "continue": "आगे बढ़ें",
+    "hint": "इसे बाद में प्रोफ़ाइल से बदल सकते हैं"
   },
   "common": {
     "loading": "लोड हो रहा है…",
     "error": "कुछ गलत हो गया",
     "save": "सहेजें",
     "cancel": "रद्द करें",
-    "comingSoon": "जल्द आ रहा है"
+    "comingSoon": "जल्द आ रहा है",
+    "comingSoonHint": "यह स्क्रीन बनाई जा रही है। जल्द ही यहाँ दिखेगी।"
   },
   "dashboard": {
     "welcome": "नमस्ते, {{name}} 👋",
     "ownerIntro": "आपकी मेस एक नज़र में",
-    "customerIntro": "आपके भोजन और भुगतान"
+    "customerIntro": "आपके भोजन और भुगतान",
+    "members": "सदस्य",
+    "presentToday": "आज उपस्थित",
+    "pendingPayments": "बकाया भुगतान",
+    "quickActions": "त्वरित कार्य",
+    "addMember": "सदस्य जोड़ें",
+    "announce": "सूचना दें"
+  },
+  "meal": {
+    "lunch": "दोपहर का भोजन",
+    "dinner": "रात का भोजन"
+  },
+  "menu": {
+    "today": "आज का मेनू",
+    "notAdded": "मेनू अभी नहीं जोड़ा गया",
+    "ownerEmpty": "आज के व्यंजन जोड़ने के लिए मेनू पर टैप करें"
+  },
+  "status": {
+    "paid": "भुगतान हुआ",
+    "pending": "बकाया",
+    "partial": "आंशिक",
+    "present": "उपस्थित",
+    "absent": "अनुपस्थित",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय"
+  },
+  "customer": {
+    "plan": "आपका प्लान",
+    "mealsThisMonth": "इस महीने के भोजन",
+    "thisMonthBill": "इस महीने का बिल",
+    "skipMeal": "भोजन छोड़ें"
   }
 }

@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { Landing } from "./Landing";
+import { SplashPage } from "../features/splash/SplashPage";
 import { LanguageSelectPage } from "../features/auth/LanguageSelectPage";
 import { LoginPage } from "../features/auth/LoginPage";
 import { RequireRole } from "../features/auth/RequireRole";
@@ -9,7 +9,7 @@ import { CustomerHome, OwnerHome } from "../features/dashboard/HomePage";
 import { ComingSoon } from "../features/dashboard/ComingSoon";
 
 export const router = createBrowserRouter([
-  { path: "/", element: <Landing /> },
+  { path: "/", element: <SplashPage /> },
   { path: "/select-language", element: <LanguageSelectPage /> },
   { path: "/login", element: <LoginPage /> },
   {

@@ -1,5 +1,7 @@
 {
-  "app": { "name": "Mess Tracker" },
+  "app": {
+    "name": "स्वाद भोजनालय"
+  },
   "nav": {
     "home": "Home",
     "members": "Members",
@@ -17,25 +19,61 @@
     "invalid": "Mobile number or password is incorrect",
     "logout": "Logout",
     "phoneRequired": "Enter a 10-digit mobile number",
-    "passwordRequired": "Enter your password"
+    "passwordRequired": "Enter your password",
+    "loginHint": "Use the mobile number your mess owner registered",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "noAccount": "No login yet? Ask your mess owner to add you."
   },
   "lang": {
     "select": "Select language",
     "en": "English",
     "hi": "हिन्दी",
     "mr": "मराठी",
-    "continue": "Continue"
+    "continue": "Continue",
+    "hint": "You can change this later from your profile"
   },
   "common": {
     "loading": "Loading…",
     "error": "Something went wrong",
     "save": "Save",
     "cancel": "Cancel",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "comingSoonHint": "This screen is being built. It will appear here soon."
   },
   "dashboard": {
     "welcome": "Hello, {{name}} 👋",
     "ownerIntro": "Your mess at a glance",
-    "customerIntro": "Your meals and payments"
+    "customerIntro": "Your meals and payments",
+    "members": "Members",
+    "presentToday": "present today",
+    "pendingPayments": "Pending payments",
+    "quickActions": "Quick actions",
+    "addMember": "Add member",
+    "announce": "Announce"
+  },
+  "meal": {
+    "lunch": "Lunch",
+    "dinner": "Dinner"
+  },
+  "menu": {
+    "today": "Today's menu",
+    "notAdded": "Menu not added yet",
+    "ownerEmpty": "Tap Menu to add today's dishes"
+  },
+  "status": {
+    "paid": "Paid",
+    "pending": "Pending",
+    "partial": "Partial",
+    "present": "Present",
+    "absent": "Absent",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "customer": {
+    "plan": "Your plan",
+    "mealsThisMonth": "Meals this month",
+    "thisMonthBill": "This month's bill",
+    "skipMeal": "Skip a meal"
   }
 }
