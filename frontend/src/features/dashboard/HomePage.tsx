@@ -82,14 +82,14 @@ export function OwnerHome() {
           <QuickAction label={t("nav.attendance")} icon={<PlateCheckIcon />} tone="green" onClick={() => navigate("/owner/attendance")} />
           <QuickAction label={t("dashboard.addMember")} icon={<FamilyIcon />} tone="red" onClick={() => navigate("/owner/members/new")} />
           <QuickAction label={t("nav.payments")} icon={<WalletRupeeIcon />} tone="gold" onClick={() => navigate("/owner/payments")} />
-          <QuickAction label={t("nav.menu")} icon={<ThaliIcon />} tone="neutral" onClick={() => navigate("/owner/more")} />
+          <QuickAction label={t("nav.menu")} icon={<ThaliIcon />} tone="neutral" onClick={() => navigate("/owner/menu")} />
         </Box>
       </Box>
 
       <Box>
         <SectionTitle
           action={
-            <Button size="small" variant="text" startIcon={<EditIcon />} sx={{ minHeight: 36 }} onClick={() => navigate("/owner/more")}>
+            <Button size="small" variant="text" startIcon={<EditIcon />} sx={{ minHeight: 36 }} onClick={() => navigate("/owner/menu")}>
               {t("menu.edit")}
             </Button>
           }

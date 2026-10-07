@@ -194,3 +194,16 @@ export interface BillPage {
   totals: BillTotals;
   items: Bill[];
 }
+
+export interface MenuEntry {
+  date: string;
+  meal_type: MealType;
+  items: string[];
+}
+
+export interface Announcement {
+  id: number;
+  title: string;
+  body: string | null;
+  published_at: string;
+}

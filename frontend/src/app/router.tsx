@@ -7,7 +7,6 @@ import { RequireRole } from "../features/auth/RequireRole";
 import { OwnerShell } from "../features/shell/OwnerShell";
 import { CustomerShell } from "../features/shell/CustomerShell";
 import { CustomerHome, OwnerHome } from "../features/dashboard/HomePage";
-import { ComingSoon } from "../features/dashboard/ComingSoon";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { MembersPage } from "../features/members/MembersPage";
 import { MemberFormPage } from "../features/members/MemberFormPage";
@@ -24,6 +23,8 @@ import { NotificationsPage } from "../features/notifications/NotificationsPage";
 import { PaymentsPage } from "../features/payments/PaymentsPage";
 import { BillDetailPage } from "../features/payments/BillDetailPage";
 import { MyBillsPage } from "../features/payments/MyBillsPage";
+import { MenuPage } from "../features/menu/MenuPage";
+import { AnnouncementsPage } from "../features/announcements/AnnouncementsPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
@@ -49,6 +50,8 @@ export const router = createBrowserRouter([
       { path: "holidays", element: <HolidaysPage /> },
       { path: "months", element: <MonthsPage /> },
       { path: "leaves", element: <OwnerLeavesPage /> },
+      { path: "menu", element: <MenuPage /> },
+      { path: "announcements", element: <AnnouncementsPage /> },
       { path: "notifications", element: <NotificationsPage /> },
       { path: "payments", element: <PaymentsPage /> },
       { path: "payments/:id", element: <BillDetailPage /> },
@@ -67,7 +70,8 @@ export const router = createBrowserRouter([
       { path: "attendance", element: <MyAttendancePage /> },
       { path: "leave", element: <LeavePage /> },
       { path: "notifications", element: <NotificationsPage /> },
-      { path: "menu", element: <ComingSoon titleKey="nav.menu" /> },
+      { path: "menu", element: <MenuPage /> },
+      { path: "announcements", element: <AnnouncementsPage /> },
       { path: "payments", element: <MyBillsPage /> },
       { path: "profile", element: <ProfilePage titleKey="nav.profile" /> },
     ],

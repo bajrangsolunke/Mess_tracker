@@ -67,7 +67,13 @@
     "today": "Today's menu",
     "notAdded": "Menu not added yet",
     "ownerEmpty": "Tap Menu to add today's dishes",
-    "edit": "Edit menu"
+    "edit": "Edit menu",
+    "hintShort": "Today's and this week's dishes",
+    "addDishes": "Add today's dishes",
+    "dishPlaceholder": "Dish name",
+    "addDish": "Add dish",
+    "save": "Save menu",
+    "copyYesterday": "Copy yesterday's menu"
   },
   "status": {
     "paid": "Paid",
@@ -281,5 +287,15 @@
     "noPayments": "No payments yet.",
     "thanks": "Paid. Thank you ❤️",
     "customerDue": "Paid {{paid}} of {{total}}. Pay at the counter or via UPI."
+  },
+  "announcements": {
+    "title": "Announcements",
+    "hintShort": "Message all members",
+    "new": "Announce",
+    "titleField": "Title",
+    "body": "Message (optional)",
+    "notifyHint": "Every member gets an in-app notification.",
+    "publish": "Publish",
+    "empty": "No announcements yet."
   }
 }
