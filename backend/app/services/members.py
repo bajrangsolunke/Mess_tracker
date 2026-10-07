@@ -1,7 +1,7 @@
 import secrets
 from datetime import date
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import String, cast, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -93,6 +93,7 @@ async def list_members(
                 Member.name.ilike(like),
                 Member.phone.ilike(like),
                 Member.room_no.ilike(like),
+                cast(Member.member_no, String).ilike(like),
                 Member.company.ilike(like),
             )
         )
@@ -136,8 +137,16 @@ async def create_member(
         except IntegrityError as e:
             raise ApiError(409, "DUPLICATE_PHONE", "A login with this phone already exists") from e
         user_id = user.id
+    next_no = (
+        await db.execute(
+            select(func.coalesce(func.max(Member.member_no), 1000)).where(
+                Member.organization_id == org_id
+            )
+        )
+    ).scalar_one() + 1
     member = Member(
         organization_id=org_id,
+        member_no=next_no,
         user_id=user_id,
         name=data.name,
         phone=data.phone,

@@ -14,6 +14,9 @@ from app.schemas.tiffin import (
     TiffinClientCreate,
     TiffinClientOut,
     TiffinClientUpdate,
+    TiffinItemCreate,
+    TiffinItemOut,
+    TiffinItemUpdate,
     TiffinPaymentCreate,
     TiffinSummary,
 )
@@ -27,6 +30,29 @@ def _month(value: str | None) -> date:
         return parse_month(value) if value else today_ist().replace(day=1)
     except ValueError as e:
         raise ApiError(422, "VALIDATION_ERROR", "month must be YYYY-MM") from e
+
+
+@router.get("/tiffin-items", response_model=list[TiffinItemOut])
+async def list_items(owner: OwnerUser, db: DbSession) -> list[TiffinItemOut]:
+    return [
+        TiffinItemOut.model_validate(i) for i in await svc.list_items(db, owner.organization_id)
+    ]
+
+
+@router.post("/tiffin-items", response_model=TiffinItemOut, status_code=status.HTTP_201_CREATED)
+async def create_item(data: TiffinItemCreate, owner: OwnerUser, db: DbSession) -> TiffinItemOut:
+    it = await svc.create_item(db, owner.organization_id, data)
+    await db.commit()
+    return TiffinItemOut.model_validate(it)
+
+
+@router.patch("/tiffin-items/{item_id}", response_model=TiffinItemOut)
+async def update_item(
+    item_id: int, data: TiffinItemUpdate, owner: OwnerUser, db: DbSession
+) -> TiffinItemOut:
+    it = await svc.update_item(db, owner.organization_id, item_id, data)
+    await db.commit()
+    return TiffinItemOut.model_validate(it)
 
 
 @router.get("/tiffin-clients", response_model=list[TiffinClientOut])

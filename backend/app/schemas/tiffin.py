@@ -3,7 +3,7 @@ from datetime import date
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.phone import normalize_phone
-from app.models.enums import MealType, PaymentMethod
+from app.models.enums import FoodType, MealType, PaymentMethod
 from app.schemas.common import Money, MoneyIn
 
 
@@ -13,13 +13,42 @@ def _opt_phone(v: str | None) -> str | None:
     return normalize_phone(v)
 
 
+# --- price list ---------------------------------------------------------------------
+
+
+class TiffinItemCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    price: MoneyIn = Field(gt=0)
+    food_type: FoodType = FoodType.veg
+    sort_order: int = 0
+
+
+class TiffinItemUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    price: MoneyIn | None = Field(default=None, gt=0)
+    food_type: FoodType | None = None
+    is_active: bool | None = None
+    sort_order: int | None = None
+
+
+class TiffinItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+    price: Money
+    food_type: FoodType
+    is_active: bool
+    sort_order: int
+
+
+# --- clients ------------------------------------------------------------------------
+
+
 class TiffinClientCreate(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     contact_name: str | None = Field(default=None, max_length=120)
     phone: str | None = None
     address: str | None = Field(default=None, max_length=300)
-    veg_rate: MoneyIn
-    nonveg_rate: MoneyIn
     notes: str | None = Field(default=None, max_length=2000)
 
     _phone = field_validator("phone")(_opt_phone)
@@ -30,8 +59,6 @@ class TiffinClientUpdate(BaseModel):
     contact_name: str | None = Field(default=None, max_length=120)
     phone: str | None = None
     address: str | None = Field(default=None, max_length=300)
-    veg_rate: MoneyIn | None = None
-    nonveg_rate: MoneyIn | None = None
     notes: str | None = Field(default=None, max_length=2000)
     is_active: bool | None = None
 
@@ -45,36 +72,42 @@ class TiffinClientOut(BaseModel):
     contact_name: str | None
     phone: str | None
     address: str | None
-    veg_rate: Money
-    nonveg_rate: Money
     is_active: bool
     notes: str | None
 
 
-class OrderItem(BaseModel):
+# --- daily orders -------------------------------------------------------------------
+
+
+class LineIn(BaseModel):
+    item_id: int
+    quantity: int = Field(ge=0, le=5000)
+
+
+class OrderIn(BaseModel):
     client_id: int
-    veg_count: int = Field(ge=0, le=5000)
-    nonveg_count: int = Field(ge=0, le=5000)
+    lines: list[LineIn] = Field(max_length=50)
     note: str | None = Field(default=None, max_length=200)
 
 
 class OrdersPut(BaseModel):
     date: date
     meal_type: MealType
-    items: list[OrderItem] = Field(max_length=500)
+    items: list[OrderIn] = Field(max_length=500)
 
 
 class OrderRow(BaseModel):
     client: TiffinClientOut
-    veg_count: int
-    nonveg_count: int
+    quantities: dict[str, int]  # item_id -> quantity (only > 0)
     note: str | None
+    total: int
+    amount: Money
 
 
 class OrderTotals(BaseModel):
-    veg: int
-    nonveg: int
     total: int
+    veg: int
+    nonveg: int  # egg + non-veg
     amount: Money
 
 
@@ -82,27 +115,39 @@ class OrderSheet(BaseModel):
     date: date
     meal_type: MealType
     locked: bool
+    items: list[TiffinItemOut]  # active items + any item used that day
     totals: OrderTotals
-    items: list[OrderRow]
+    by_item: dict[str, int]
+    rows: list[OrderRow]
 
 
 class CopyResult(BaseModel):
     copied: int
 
 
+# --- statements ---------------------------------------------------------------------
+
+
 class StatementDay(BaseModel):
     date: date
-    lunch_veg: int
-    lunch_nonveg: int
-    dinner_veg: int
-    dinner_nonveg: int
+    lunch: int
+    dinner: int
+    total: int
+    amount: Money
+
+
+class ItemTotal(BaseModel):
+    item_id: int
+    name: str
+    food_type: FoodType
+    quantity: int
     amount: Money
 
 
 class CountTotals(BaseModel):
+    total: int
     veg: int
     nonveg: int
-    total: int
 
 
 class TiffinPaymentCreate(BaseModel):
@@ -126,6 +171,7 @@ class Statement(BaseModel):
     client: TiffinClientOut
     month: date
     days: list[StatementDay]
+    by_item: list[ItemTotal]
     totals: CountTotals
     amount: Money
     paid: Money
@@ -135,18 +181,18 @@ class Statement(BaseModel):
 
 class SummaryRow(BaseModel):
     client: TiffinClientOut
+    total: int
     veg: int
     nonveg: int
-    total: int
     amount: Money
     paid: Money
     due: Money
 
 
 class SummaryTotals(BaseModel):
+    total: int
     veg: int
     nonveg: int
-    total: int
     amount: Money
     paid: Money
     due: Money
@@ -158,9 +204,16 @@ class TiffinSummary(BaseModel):
     items: list[SummaryRow]
 
 
+class BulkItem(BaseModel):
+    name: str
+    food_type: FoodType
+    quantity: int
+
+
 class BulkToday(BaseModel):
     veg: int
     nonveg: int
     total: int
     lunch: int
     dinner: int
+    items: list[BulkItem] = []

@@ -47,6 +47,7 @@ class MemberUpdate(BaseModel):
 class MemberOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    member_no: int
     user_id: int | None
     name: str
     phone: str

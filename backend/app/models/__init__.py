@@ -4,6 +4,7 @@ from app.models.enums import (
     AttendanceStatus,
     BillStatus,
     BusinessType,
+    FoodType,
     HolidayMeal,
     Language,
     LeaveStatus,
@@ -21,7 +22,13 @@ from app.models.notification import Notification
 from app.models.organization import Organization
 from app.models.plan import MessPlan
 from app.models.refresh_token import RefreshToken
-from app.models.tiffin import TiffinClient, TiffinOrder, TiffinPayment
+from app.models.tiffin import (
+    TiffinClient,
+    TiffinItem,
+    TiffinOrder,
+    TiffinOrderLine,
+    TiffinPayment,
+)
 from app.models.user import User
 
 __all__ = [
@@ -37,6 +44,7 @@ __all__ = [
     "AttendanceStatus",
     "BillStatus",
     "BusinessType",
+    "FoodType",
     "HolidayMeal",
     "Language",
     "LeaveStatus",
@@ -50,6 +58,8 @@ __all__ = [
     "PaymentMethod",
     "RefreshToken",
     "TiffinClient",
+    "TiffinItem",
+    "TiffinOrderLine",
     "TiffinOrder",
     "TiffinPayment",
     "User",

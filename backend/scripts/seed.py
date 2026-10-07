@@ -8,7 +8,7 @@ import asyncio
 from datetime import timedelta
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import hash_password
@@ -17,6 +17,7 @@ from app.db.session import SessionLocal
 from app.models import (
     Announcement,
     AttendanceStatus,
+    FoodType,
     Language,
     MealType,
     Member,
@@ -24,11 +25,12 @@ from app.models import (
     MessPlan,
     Organization,
     TiffinClient,
+    TiffinItem,
     User,
     UserRole,
 )
 from app.schemas.pricing import PricingPut
-from app.schemas.tiffin import OrderItem
+from app.schemas.tiffin import LineIn, OrderIn
 from app.services import attendance as att
 from app.services import billing, menus
 from app.services import tiffin as tiffin_svc
@@ -114,8 +116,16 @@ async def seed(db: AsyncSession) -> None:
             await db.execute(select(Member).where(Member.user_id == user.id))
         ).scalar_one_or_none()
         if member is None:
+            next_no = (
+                await db.execute(
+                    select(func.coalesce(func.max(Member.member_no), 1000)).where(
+                        Member.organization_id == org.id
+                    )
+                )
+            ).scalar_one() + 1
             member = Member(
                 organization_id=org.id,
+                member_no=next_no,
                 user_id=user.id,
                 name=mname,
                 phone=mphone,
@@ -177,9 +187,35 @@ async def seed(db: AsyncSession) -> None:
         await menus.create_announcement(
             db, org.id, owner.id, "रविवारी मेस बंद", "24 ऑक्टोबरला दिवाळीनिमित्त मेस बंद राहील."
         )
-    # bulk company tiffins with varying daily veg / non-veg counts
+    # office tiffin price list + companies with varying daily counts
+    items = {}
+    for idx, (iname, price, ftype) in enumerate(
+        [
+            ("अनलिमिटेड व्हेज थाळी / राईस प्लेट", "90", FoodType.veg),
+            ("अंडा थाळी - चपाती", "120", FoodType.egg),
+            ("अंडा थाळी - भाकरी", "130", FoodType.egg),
+        ]
+    ):
+        it = (
+            await db.execute(
+                select(TiffinItem).where(
+                    TiffinItem.organization_id == org.id, TiffinItem.name == iname
+                )
+            )
+        ).scalar_one_or_none()
+        if it is None:
+            it = TiffinItem(
+                organization_id=org.id,
+                name=iname,
+                price=Decimal(price),
+                food_type=ftype,
+                sort_order=idx,
+            )
+            db.add(it)
+            await db.flush()
+        items[idx] = it
     companies = []
-    for cname, veg, nonveg in [("Infosys", "60", "80"), ("TCS", "55", "75")]:
+    for cname in ("Infosys", "TCS"):
         c = (
             await db.execute(
                 select(TiffinClient).where(
@@ -193,8 +229,6 @@ async def seed(db: AsyncSession) -> None:
                 name=cname,
                 contact_name="Admin desk",
                 address="Hinjewadi Phase 2, Pune",
-                veg_rate=Decimal(veg),
-                nonveg_rate=Decimal(nonveg),
             )
             db.add(c)
             await db.flush()
@@ -209,13 +243,20 @@ async def seed(db: AsyncSession) -> None:
                 d,
                 MealType.lunch,
                 [
-                    OrderItem(
+                    OrderIn(
                         client_id=companies[0].id,
-                        veg_count=40 + (i * 3) % 11,
-                        nonveg_count=8 + i % 5,
+                        lines=[
+                            LineIn(item_id=items[0].id, quantity=40 + (i * 3) % 11),
+                            LineIn(item_id=items[1].id, quantity=6 + i % 4),
+                            LineIn(item_id=items[2].id, quantity=2 + i % 3),
+                        ],
                     ),
-                    OrderItem(
-                        client_id=companies[1].id, veg_count=25 + (i * 7) % 9, nonveg_count=i % 4
+                    OrderIn(
+                        client_id=companies[1].id,
+                        lines=[
+                            LineIn(item_id=items[0].id, quantity=25 + (i * 7) % 9),
+                            LineIn(item_id=items[1].id, quantity=i % 4),
+                        ],
                     ),
                 ],
             )

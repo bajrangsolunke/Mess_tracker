@@ -9,6 +9,7 @@ from app.schemas.member import PlanOut
 class MemberBrief(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    member_no: int
     name: str
     phone: str
     room_no: str | None

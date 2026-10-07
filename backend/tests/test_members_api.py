@@ -184,3 +184,20 @@ async def test_tiffin_member_type_and_filter(client):
         headers=h,
     )
     assert r.json()["member_type"] == "dine_in" and r.json()["company"] is None
+
+
+async def test_member_gets_sequential_4_digit_id_and_is_searchable(client):
+    h, _ = await register_owner(client)
+    plan = await create_plan(client, h)
+    a = (await create_member(client, h, plan["id"], phone="9000000011", name="Rahul"))["member"]
+    b = (await create_member(client, h, plan["id"], phone="9000000012", name="Amit"))["member"]
+    assert a["member_no"] == 1001 and b["member_no"] == 1002
+    r = await client.get("/api/v1/members?search=1002", headers=h)
+    assert [m["name"] for m in r.json()["items"]] == ["Amit"]
+    r = await client.get("/api/v1/attendance?date=2026-10-07&meal_type=lunch", headers=h)
+    assert {x["member"]["member_no"] for x in r.json()["items"]} == {1001, 1002}
+    # numbering is per mess
+    h2, _ = await register_owner(client, phone="9876543211", mess_name="Other Mess")
+    plan2 = await create_plan(client, h2)
+    c = (await create_member(client, h2, plan2["id"], phone="9000000013", name="Other"))["member"]
+    assert c["member_no"] == 1001

@@ -13,10 +13,27 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
-from app.models.enums import MealType, PaymentMethod
+from app.models.enums import FoodType, MealType, PaymentMethod
+
+
+class TiffinItem(TimestampMixin, Base):
+    """Price list for office tiffins, e.g. Veg thali ₹90, Anda thali - Chapati ₹120."""
+
+    __tablename__ = "tiffin_items"
+
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    food_type: Mapped[FoodType] = mapped_column(
+        Enum(FoodType, name="food_type"), default=FoodType.veg, nullable=False
+    )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
 
 class TiffinClient(TimestampMixin, Base):
@@ -31,14 +48,12 @@ class TiffinClient(TimestampMixin, Base):
     contact_name: Mapped[str | None] = mapped_column(String(120))
     phone: Mapped[str | None] = mapped_column(String(15))
     address: Mapped[str | None] = mapped_column(String(300))
-    veg_rate: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
-    nonveg_rate: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     notes: Mapped[str | None] = mapped_column(Text)
 
 
 class TiffinOrder(TimestampMixin, Base):
-    """Veg / non-veg counts for one client, one date, one meal. Rates are snapshotted."""
+    """One client's order for one date and meal; quantities live in lines."""
 
     __tablename__ = "tiffin_orders"
     __table_args__ = (
@@ -56,11 +71,30 @@ class TiffinOrder(TimestampMixin, Base):
     )
     date: Mapped[date] = mapped_column(Date, nullable=False)
     meal_type: Mapped[MealType] = mapped_column(Enum(MealType, name="meal_type"), nullable=False)
-    veg_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    nonveg_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    veg_rate: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
-    nonveg_rate: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     note: Mapped[str | None] = mapped_column(String(200))
+
+    lines: Mapped[list["TiffinOrderLine"]] = relationship(
+        back_populates="order", cascade="all, delete-orphan", lazy="selectin"
+    )
+
+
+class TiffinOrderLine(TimestampMixin, Base):
+    """Quantity of one item in an order; price snapshotted at entry time."""
+
+    __tablename__ = "tiffin_order_lines"
+    __table_args__ = (UniqueConstraint("order_id", "item_id", name="uq_tiffin_lines_order_item"),)
+
+    order_id: Mapped[int] = mapped_column(
+        ForeignKey("tiffin_orders.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    item_id: Mapped[int] = mapped_column(
+        ForeignKey("tiffin_items.id", ondelete="RESTRICT"), nullable=False
+    )
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+
+    order: Mapped[TiffinOrder] = relationship(back_populates="lines")
+    item: Mapped[TiffinItem] = relationship(lazy="joined")
 
 
 class TiffinPayment(TimestampMixin, Base):

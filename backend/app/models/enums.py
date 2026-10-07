@@ -65,3 +65,9 @@ class NotificationType(enum.StrEnum):
 class MemberType(enum.StrEnum):
     dine_in = "dine_in"
     tiffin = "tiffin"
+
+
+class FoodType(enum.StrEnum):
+    veg = "veg"
+    egg = "egg"
+    nonveg = "nonveg"
