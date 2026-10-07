@@ -97,6 +97,7 @@ async def owner_dashboard(db: AsyncSession, org_id: int, d: date) -> OwnerDashbo
         late_leaves=late,
         meals_served_month=await _meals_served(db, org_id, month_start(d), month_end(d)),
         bulk_tiffins=await bulk_today(db, org_id, d),
+        renewals_due=len(await _due(db, org_id, d)),
         holiday_today=(lunch.holiday or dinner.holiday).reason
         if (lunch.holiday or dinner.holiday)
         else None,
@@ -142,6 +143,7 @@ async def customer_dashboard(
         announcements=[
             AnnouncementOut.model_validate(a) for a in await list_announcements(db, org_id, 3)
         ],
+        membership=_membership_info(member, d),
     )
 
 
@@ -221,3 +223,15 @@ async def payments_report(db: AsyncSession, org_id: int, month: date) -> Payment
         m = (m.replace(day=1) - timedelta(days=1)).replace(day=1)
     months.reverse()
     return PaymentsReport(month=start, totals=page.totals, by_method=by_method, months=months)
+
+
+async def _due(db: AsyncSession, org_id: int, d: date):
+    from app.services.membership import due
+
+    return await due(db, org_id, d)
+
+
+def _membership_info(member: Member, d: date):
+    from app.services.membership import info
+
+    return info(member, d)

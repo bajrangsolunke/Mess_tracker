@@ -39,6 +39,8 @@ def to_out(bill: Bill, member: Member) -> BillOut:
         id=bill.id,
         member=MemberBrief.model_validate(member),
         month=bill.month,
+        period_start=bill.period_start,
+        period_end=bill.period_end,
         amount=bill.amount,
         paid=paid,
         due=max(bill.amount - paid, ZERO),
@@ -62,7 +64,8 @@ async def get_bill(db: AsyncSession, org_id: int, bill_id: int) -> tuple[Bill, M
 
 
 async def generate(db: AsyncSession, org_id: int, month: date) -> tuple[int, int]:
-    """Create a bill for every member active during `month` who has none yet."""
+    """Legacy calendar-month bills for members without a membership period (valid_until IS NULL).
+    Period members get their bill on enrollment and renewal instead."""
     end = month_end(month)
     members = (
         (
@@ -70,6 +73,7 @@ async def generate(db: AsyncSession, org_id: int, month: date) -> tuple[int, int
                 select(Member).where(
                     Member.organization_id == org_id,
                     Member.joining_date <= end,
+                    Member.valid_until.is_(None),
                     or_(
                         Member.status == MemberStatus.active,
                         and_(Member.status == MemberStatus.inactive, Member.inactive_from > month),
@@ -231,3 +235,29 @@ async def send_payment_reminders(db: AsyncSession, org_id: int, month: date) -> 
         )
         sent += 1
     return sent
+
+
+async def create_period_bill(db: AsyncSession, member: Member, start: date, end: date) -> Bill:
+    """Bill for one membership period. Raises 409 PERIOD_EXISTS if that month is already billed."""
+    from sqlalchemy.exc import IntegrityError
+
+    from app.core.time import month_start
+
+    bill = Bill(
+        organization_id=member.organization_id,
+        member_id=member.id,
+        month=month_start(start),
+        period_start=start,
+        period_end=end,
+        amount=member.monthly_fee,
+    )
+    try:
+        async with db.begin_nested():
+            db.add(bill)
+            await db.flush()
+    except IntegrityError as e:
+        raise ApiError(
+            409, "PERIOD_EXISTS", "A bill already exists for a period starting this month"
+        ) from e
+    await db.refresh(bill, ["payments"])
+    return bill

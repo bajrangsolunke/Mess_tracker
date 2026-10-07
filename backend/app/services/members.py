@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import ApiError
 from app.core.security import hash_password
-from app.core.time import today_ist
+from app.core.time import membership_end, today_ist
 from app.models import Language, Member, MemberStatus, MemberType, MessPlan, User, UserRole
 from app.schemas.member import MemberCreate, MemberUpdate
 from app.schemas.plan import PlanCreate, PlanUpdate
@@ -151,10 +151,14 @@ async def create_member(
         deposit=data.deposit,
         emergency_contact=data.emergency_contact,
         notes=data.notes,
+        valid_until=membership_end(data.joining_date),
     )
     db.add(member)
     await db.flush()
     await db.refresh(member)
+    from app.services.billing import create_period_bill
+
+    await create_period_bill(db, member, data.joining_date, member.valid_until)
     return member, temp
 
 

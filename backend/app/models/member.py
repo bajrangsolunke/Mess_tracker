@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Date, Enum, ForeignKey, Index, Numeric, String, Text
+from sqlalchemy import Date, DateTime, Enum, ForeignKey, Index, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
@@ -44,5 +44,14 @@ class Member(TimestampMixin, Base):
     emergency_contact: Mapped[str | None] = mapped_column(String(120))
     notes: Mapped[str | None] = mapped_column(Text)
     inactive_from: Mapped[date | None] = mapped_column(Date)
+    # Membership runs in one-month periods from the joining date; NULL = legacy open-ended.
+    valid_until: Mapped[date | None] = mapped_column(Date)
+    renewal_plan_id: Mapped[int | None] = mapped_column(
+        ForeignKey("mess_plans.id", ondelete="SET NULL")
+    )
+    renewal_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    plan: Mapped[MessPlan] = relationship(lazy="joined")
+    plan: Mapped[MessPlan] = relationship(lazy="joined", foreign_keys=[plan_id])
+    renewal_plan: Mapped[MessPlan | None] = relationship(
+        lazy="joined", foreign_keys=[renewal_plan_id]
+    )

@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -25,5 +25,21 @@ def parse_month(value: str) -> date:
 
 
 def month_end(d: date) -> date:
-    nxt = d.replace(day=28) + __import__("datetime").timedelta(days=4)
-    return nxt.replace(day=1) - __import__("datetime").timedelta(days=1)
+    nxt = d.replace(day=28) + timedelta(days=4)
+    return nxt.replace(day=1) - timedelta(days=1)
+
+
+def add_months(d: date, n: int) -> date:
+    """Same day n months later, clamped to the last day of the target month."""
+    y, m = divmod(d.month - 1 + n, 12)
+    target = date(d.year + y, m + 1, 1)
+    return target.replace(day=min(d.day, month_end(target).day))
+
+
+def membership_end(start: date) -> date:
+    """Last day of a one-month membership that starts on `start` (7 Oct → 6 Nov, 1 Oct → 31 Oct).
+    When the next month is shorter (31 Jan), the membership runs to the end of that month."""
+    nxt = add_months(start, 1)
+    if nxt.day < start.day:
+        return nxt
+    return nxt - timedelta(days=1)

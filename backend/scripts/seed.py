@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import hash_password
-from app.core.time import month_start, today_ist
+from app.core.time import membership_end, month_start, today_ist
 from app.db.session import SessionLocal
 from app.models import (
     Announcement,
@@ -27,18 +27,18 @@ from app.models import (
     User,
     UserRole,
 )
+from app.schemas.pricing import PricingPut
 from app.schemas.tiffin import OrderItem
 from app.services import attendance as att
 from app.services import billing, menus
 from app.services import tiffin as tiffin_svc
+from app.services.pricing import set_pricing
 
 DEMO_ORG = "स्वाद भोजनालय"
 OWNER = ("9000000001", "Ramesh Laturkar", "owner123")
-PLANS = [
-    ("दुपार + रात्री", True, True, "2500"),
-    ("फक्त रात्री", False, True, "1500"),
-    ("टिफिन (दुपार)", True, False, "1800"),
-]
+ONE_MEAL_PRICE, TWO_MEAL_PRICE = "2000", "3600"
+# plan index → standard plan kind
+PLAN_KINDS = ["two", "one_dinner", "one_lunch"]
 MEMBERS = [
     # phone, name, plan index, room, type, company
     ("9000000002", "Rahul Sharma", 0, "101", MemberType.dine_in, None),
@@ -76,24 +76,22 @@ async def seed(db: AsyncSession) -> None:
     await db.flush()
     owner = (await db.execute(select(User).where(User.phone == phone))).scalar_one()
 
-    plans: list[MessPlan] = []
-    for pname, lunch, dinner, fee in PLANS:
-        plan = (
-            await db.execute(
-                select(MessPlan).where(MessPlan.organization_id == org.id, MessPlan.name == pname)
-            )
-        ).scalar_one_or_none()
-        if plan is None:
-            plan = MessPlan(
-                organization_id=org.id,
-                name=pname,
-                includes_lunch=lunch,
-                includes_dinner=dinner,
-                monthly_fee=Decimal(fee),
-            )
-            db.add(plan)
-            await db.flush()
-        plans.append(plan)
+    if org.one_meal_price is None:
+        await set_pricing(
+            db,
+            org,
+            PricingPut(
+                one_meal_price=Decimal(ONE_MEAL_PRICE), two_meal_price=Decimal(TWO_MEAL_PRICE)
+            ),
+        )
+    std = {
+        p.kind: p
+        for p in (
+            await db.execute(select(MessPlan).where(MessPlan.organization_id == org.id))
+        ).scalars()
+        if p.kind
+    }
+    plans: list[MessPlan] = [std[k] for k in PLAN_KINDS]
 
     today = today_ist()
     joined = month_start(today)
@@ -128,9 +126,12 @@ async def seed(db: AsyncSession) -> None:
                 plan_id=plans[pidx].id,
                 monthly_fee=plans[pidx].monthly_fee,
                 joining_date=joined,
+                valid_until=membership_end(joined),
             )
             db.add(member)
             await db.flush()
+            await db.refresh(member)
+            await billing.create_period_bill(db, member, joined, member.valid_until)
         members.append(member)
 
     # attendance for the past days of this month (everyone present, a few absences)
@@ -145,8 +146,7 @@ async def seed(db: AsyncSession) -> None:
             if marks:
                 await att.bulk_mark(db, org.id, d, meal, marks, owner.id)
 
-    # bills for this month, a few paid
-    await billing.generate(db, org.id, joined)
+    # a few of this month's bills paid
     page = await billing.list_bills(db, org.id, joined)
     for idx, bill in enumerate(page.items):
         if bill.status.value == "unpaid" and idx % 2 == 0:

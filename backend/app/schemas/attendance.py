@@ -22,6 +22,49 @@ class AttendanceRow(BaseModel):
     status: AttendanceStatus | None  # None = unmarked
     on_leave: bool = False
     leave_status: str | None = None
+    self_marked: bool = False
+
+
+class RegisterRow(BaseModel):
+    member: MemberBrief
+    joining_date: date
+    inactive_from: date | None
+    valid_until: date | None = None
+    marks: dict[str, dict[str, AttendanceStatus]]
+    present: int
+
+
+class RegisterHoliday(BaseModel):
+    date: date
+    meal_type: HolidayMeal
+
+
+class Register(BaseModel):
+    month: date
+    days: int
+    locked: bool
+    holidays: list[RegisterHoliday]
+    rows: list[RegisterRow]
+
+
+class MealToday(BaseModel):
+    expected: bool
+    status: AttendanceStatus | None
+    self_marked: bool
+    on_leave: bool
+    holiday: bool
+
+
+class MyToday(BaseModel):
+    date: date
+    lunch: MealToday
+    dinner: MealToday
+    valid_until: date | None = None
+    expired: bool = False
+
+
+class CheckIn(BaseModel):
+    meal_type: MealType
 
 
 class AttendanceCounts(BaseModel):

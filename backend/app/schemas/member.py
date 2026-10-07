@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -62,6 +62,9 @@ class MemberOut(BaseModel):
     emergency_contact: str | None
     notes: str | None
     inactive_from: date | None
+    valid_until: date | None = None
+    renewal_plan: PlanOut | None = None
+    renewal_requested_at: datetime | None = None
 
 
 class MemberCreated(BaseModel):
@@ -71,3 +74,12 @@ class MemberCreated(BaseModel):
 
 class TempPassword(BaseModel):
     temp_password: str
+
+
+class RenewIn(BaseModel):
+    plan_id: int | None = None
+    start_date: date | None = None
+
+
+class RenewalRequest(BaseModel):
+    plan_id: int

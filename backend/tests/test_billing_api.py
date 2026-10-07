@@ -11,11 +11,8 @@ async def setup(client):
     return h, a["member"], b["member"], a["temp_password"]
 
 
-async def test_generate_bills_for_month(client):
+async def test_enrollment_creates_period_bills(client):
     h, a, b, _ = await setup(client)
-    r = await client.post("/api/v1/bills/generate?month=2026-10", headers=h)
-    assert r.status_code == 200, r.text
-    assert r.json()["created"] == 2
     r = await client.get("/api/v1/bills?month=2026-10", headers=h)
     body = r.json()
     assert body["totals"] == {
@@ -27,17 +24,27 @@ async def test_generate_bills_for_month(client):
     }
     fees = {x["member"]["name"]: x["amount"] for x in body["items"]}
     assert fees == {"Rahul": "2500.00", "Amit": "2000.00"}
-    assert all(x["status"] == "unpaid" for x in body["items"])
-    # idempotent
-    r = await client.post("/api/v1/bills/generate?month=2026-10", headers=h)
+    assert all(
+        x["status"] == "unpaid"
+        and x["period_start"] == "2026-10-01"
+        and x["period_end"] == "2026-10-31"
+        for x in body["items"]
+    )
+    # calendar-month generation is legacy-only and does nothing for period members
+    r = await client.post("/api/v1/bills/generate?month=2026-11", headers=h)
     assert r.json()["created"] == 0
 
 
-async def test_generate_skips_members_who_joined_later_or_inactive(client):
+async def test_legacy_generate_for_members_without_period(client, db):
+    from sqlalchemy import update
+
+    from app.models import Member
+
     h, a, b, _ = await setup(client)
+    await db.execute(update(Member).where(Member.id == a["id"]).values(valid_until=None))
     await client.post(f"/api/v1/members/{b['id']}/deactivate", headers=h)
     r = await client.post("/api/v1/bills/generate?month=2026-11", headers=h)
-    assert r.json()["created"] == 1  # only Rahul
+    assert r.json()["created"] == 1  # only the legacy member
     r = await client.post("/api/v1/bills/generate?month=2026-09", headers=h)
     assert r.json()["created"] == 0  # nobody had joined
 

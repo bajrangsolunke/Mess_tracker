@@ -22,6 +22,8 @@ class Bill(TimestampMixin, Base):
         ForeignKey("members.id", ondelete="CASCADE"), nullable=False
     )
     month: Mapped[date] = mapped_column(Date, nullable=False)  # first day of month
+    period_start: Mapped[date | None] = mapped_column(Date)
+    period_end: Mapped[date | None] = mapped_column(Date)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     status: Mapped[BillStatus] = mapped_column(
         Enum(BillStatus, name="bill_status"), default=BillStatus.unpaid, nullable=False

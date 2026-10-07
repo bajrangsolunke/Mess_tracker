@@ -3,7 +3,7 @@ from datetime import date
 from pydantic import BaseModel
 
 from app.schemas.attendance import AttendanceCounts, MemberBrief, SummaryRow
-from app.schemas.billing import BillOut, BillTotals
+from app.schemas.billing import BillOut, BillTotals, MembershipInfo
 from app.schemas.common import Money
 from app.schemas.leave import LeaveOut
 from app.schemas.menu import AnnouncementOut
@@ -27,6 +27,7 @@ class OwnerDashboard(BaseModel):
     meals_served_month: int
     holiday_today: str | None = None
     bulk_tiffins: BulkToday
+    renewals_due: int = 0
 
 
 class CustomerDashboard(BaseModel):
@@ -38,6 +39,7 @@ class CustomerDashboard(BaseModel):
     upcoming_leaves: list[LeaveOut]
     unread_notifications: int
     announcements: list[AnnouncementOut]
+    membership: MembershipInfo
 
 
 class DayMeals(BaseModel):

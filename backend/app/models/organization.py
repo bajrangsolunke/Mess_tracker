@@ -1,6 +1,7 @@
 from datetime import time
+from decimal import Decimal
 
-from sqlalchemy import Enum, String, Time
+from sqlalchemy import Enum, Numeric, String, Time
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -19,3 +20,5 @@ class Organization(TimestampMixin, Base):
     )
     leave_cutoff_time: Mapped[time] = mapped_column(Time, default=time(22, 0), nullable=False)
     timezone: Mapped[str] = mapped_column(String(64), default="Asia/Kolkata", nullable=False)
+    one_meal_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    two_meal_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))

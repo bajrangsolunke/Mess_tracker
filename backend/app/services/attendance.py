@@ -130,6 +130,7 @@ async def expected_members(db: AsyncSession, org_id: int, d: date, meal: MealTyp
         .where(
             Member.organization_id == org_id,
             Member.joining_date <= d,
+            or_(Member.valid_until.is_(None), Member.valid_until >= d),
             _meal_column(meal).is_(True),
             or_(
                 Member.status == MemberStatus.active,
@@ -169,8 +170,8 @@ async def sheet(db: AsyncSession, org_id: int, d: date, meal: MealType) -> Atten
         )
     members = await expected_members(db, org_id, d, meal)
     leaves = await _leaves_for(db, org_id, d, meal)
-    marks = {
-        a.member_id: a.status
+    rows_att = {
+        a.member_id: a
         for a in (
             await db.execute(
                 select(Attendance).where(
@@ -181,6 +182,7 @@ async def sheet(db: AsyncSession, org_id: int, d: date, meal: MealType) -> Atten
             )
         ).scalars()
     }
+    marks = {mid: a.status for mid, a in rows_att.items()}
     items: list[AttendanceRow] = []
     present = absent = unmarked = on_leave = 0
     for m in members:
@@ -201,6 +203,9 @@ async def sheet(db: AsyncSession, org_id: int, d: date, meal: MealType) -> Atten
                 status=status,
                 on_leave=approved_leave,
                 leave_status=lv.status.value if lv else None,
+                self_marked=bool(
+                    m.user_id and m.id in rows_att and rows_att[m.id].marked_by == m.user_id
+                ),
             )
         )
     return AttendanceSheet(
@@ -369,3 +374,62 @@ async def summary(db: AsyncSession, org_id: int, month: date) -> list[SummaryRow
             )
         )
     return out
+
+
+async def register(db: AsyncSession, org_id: int, month: date):
+    """Notebook-style month grid: every member who was active at some point in the month."""
+    from app.schemas.attendance import Register, RegisterHoliday, RegisterRow
+
+    start, end = month_start(month), month_end(month)
+    members = (
+        (
+            await db.execute(
+                select(Member)
+                .where(
+                    Member.organization_id == org_id,
+                    Member.joining_date <= end,
+                    or_(Member.status == MemberStatus.active, Member.inactive_from >= start),
+                )
+                .order_by(Member.name)
+            )
+        )
+        .scalars()
+        .unique()
+        .all()
+    )
+    marks: dict[int, dict[str, dict[str, AttendanceStatus]]] = {m.id: {} for m in members}
+    for a in (
+        await db.execute(
+            select(Attendance).where(
+                Attendance.organization_id == org_id,
+                Attendance.date >= start,
+                Attendance.date <= end,
+            )
+        )
+    ).scalars():
+        if a.member_id in marks:
+            marks[a.member_id].setdefault(a.date.isoformat(), {})[a.meal_type.value] = a.status
+    hols = await list_holidays(db, org_id, start, end)
+    rows = [
+        RegisterRow(
+            member=MemberBrief.model_validate(m),
+            joining_date=m.joining_date,
+            inactive_from=m.inactive_from,
+            valid_until=m.valid_until,
+            marks=marks[m.id],
+            present=sum(
+                1
+                for day in marks[m.id].values()
+                for st in day.values()
+                if st is AttendanceStatus.present
+            ),
+        )
+        for m in members
+    ]
+    return Register(
+        month=start,
+        days=(end - start).days + 1,
+        locked=await is_month_closed(db, org_id, start),
+        holidays=[RegisterHoliday(date=h.date, meal_type=h.meal_type) for h in hols],
+        rows=rows,
+    )

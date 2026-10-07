@@ -32,3 +32,4 @@ class PlanOut(BaseModel):
     includes_dinner: bool
     monthly_fee: Money
     is_active: bool
+    kind: str | None = None
