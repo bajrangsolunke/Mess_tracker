@@ -21,6 +21,9 @@ import { MemberAttendancePage } from "../features/attendance/MemberAttendancePag
 import { LeavePage } from "../features/leaves/LeavePage";
 import { OwnerLeavesPage } from "../features/leaves/OwnerLeavesPage";
 import { NotificationsPage } from "../features/notifications/NotificationsPage";
+import { PaymentsPage } from "../features/payments/PaymentsPage";
+import { BillDetailPage } from "../features/payments/BillDetailPage";
+import { MyBillsPage } from "../features/payments/MyBillsPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
@@ -47,7 +50,8 @@ export const router = createBrowserRouter([
       { path: "months", element: <MonthsPage /> },
       { path: "leaves", element: <OwnerLeavesPage /> },
       { path: "notifications", element: <NotificationsPage /> },
-      { path: "payments", element: <ComingSoon titleKey="nav.payments" /> },
+      { path: "payments", element: <PaymentsPage /> },
+      { path: "payments/:id", element: <BillDetailPage /> },
       { path: "more", element: <ProfilePage titleKey="nav.more" /> },
     ],
   },
@@ -64,7 +68,7 @@ export const router = createBrowserRouter([
       { path: "leave", element: <LeavePage /> },
       { path: "notifications", element: <NotificationsPage /> },
       { path: "menu", element: <ComingSoon titleKey="nav.menu" /> },
-      { path: "payments", element: <ComingSoon titleKey="nav.payments" /> },
+      { path: "payments", element: <MyBillsPage /> },
       { path: "profile", element: <ProfilePage titleKey="nav.profile" /> },
     ],
   },

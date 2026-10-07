@@ -157,3 +157,40 @@ export interface NotificationPage {
   items: Notification[];
   unread: number;
 }
+
+export type BillStatus = "unpaid" | "partial" | "paid";
+export type PaymentMethod = "cash" | "upi" | "bank";
+
+export interface Payment {
+  id: number;
+  amount: string;
+  method: PaymentMethod;
+  paid_on: string;
+  note: string | null;
+}
+
+export interface Bill {
+  id: number;
+  member: MemberBrief;
+  month: string;
+  amount: string;
+  paid: string;
+  due: string;
+  status: BillStatus;
+  note: string | null;
+  payments: Payment[];
+}
+
+export interface BillTotals {
+  billed: string;
+  collected: string;
+  pending: string;
+  members: number;
+  paid: number;
+}
+
+export interface BillPage {
+  month: string;
+  totals: BillTotals;
+  items: Bill[];
+}

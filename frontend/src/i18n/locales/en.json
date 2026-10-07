@@ -111,7 +111,9 @@
     "building": "I'm still cooking this screen. It will be ready soon!",
     "noMembers": "No members yet. Shall we add the first one?",
     "noMenu": "Today's menu isn't set yet.",
-    "leaveHint": "Tell me before {{time}} the night before, and I won't cook for you."
+    "leaveHint": "Tell me before {{time}} the night before, and I won't cook for you.",
+    "noBills": "No bills for this month yet. Shall I prepare them?",
+    "noBillYet": "Your bill for this month isn't ready yet."
   },
   "brand": {
     "tagline": "Authentic Taste · Modern Experience"
@@ -246,5 +248,38 @@
     "title": "Notifications",
     "readAll": "Mark all read",
     "empty": "Nothing new yet."
+  },
+  "payments": {
+    "collected": "Collected",
+    "pending": "Pending",
+    "billed": "Billed",
+    "paid": "Paid",
+    "due": "Due",
+    "bill": "Bill",
+    "pay": "Pay",
+    "record": "Record payment",
+    "amount": "Amount (₹)",
+    "paidOn": "Paid on",
+    "note": "Note",
+    "method": {
+      "cash": "Cash",
+      "upi": "UPI",
+      "bank": "Bank"
+    },
+    "overpayment": "More than the amount due.",
+    "generate": "Prepare bills",
+    "generateMissing": "Prepare missing bills",
+    "generated": "{{count}} bills prepared",
+    "remind": "Send reminders",
+    "remindersSent": "{{count}} reminders sent",
+    "noBillsTitle": "No bills this month",
+    "noBillsHint": "Bills use each member's monthly fee. Prepare them, then record cash or UPI payments.",
+    "noneInFilter": "No bills match.",
+    "progress": "{{pct}}% collected · {{paid}} of {{total}} paid",
+    "editBill": "Edit bill amount",
+    "history": "Payments",
+    "noPayments": "No payments yet.",
+    "thanks": "Paid. Thank you ❤️",
+    "customerDue": "Paid {{paid}} of {{total}}. Pay at the counter or via UPI."
   }
 }
