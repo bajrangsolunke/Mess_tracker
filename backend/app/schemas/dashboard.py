@@ -7,6 +7,7 @@ from app.schemas.billing import BillOut, BillTotals
 from app.schemas.common import Money
 from app.schemas.leave import LeaveOut
 from app.schemas.menu import AnnouncementOut
+from app.schemas.tiffin import BulkToday
 
 
 class MenuToday(BaseModel):
@@ -25,6 +26,7 @@ class OwnerDashboard(BaseModel):
     late_leaves: int
     meals_served_month: int
     holiday_today: str | None = None
+    bulk_tiffins: BulkToday
 
 
 class CustomerDashboard(BaseModel):

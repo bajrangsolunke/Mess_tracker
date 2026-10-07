@@ -21,6 +21,7 @@ from app.models.notification import Notification
 from app.models.organization import Organization
 from app.models.plan import MessPlan
 from app.models.refresh_token import RefreshToken
+from app.models.tiffin import TiffinClient, TiffinOrder, TiffinPayment
 from app.models.user import User
 
 __all__ = [
@@ -48,6 +49,9 @@ __all__ = [
     "Organization",
     "PaymentMethod",
     "RefreshToken",
+    "TiffinClient",
+    "TiffinOrder",
+    "TiffinPayment",
     "User",
     "UserRole",
 ]

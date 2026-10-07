@@ -35,6 +35,7 @@ from app.services import attendance as att
 from app.services import billing
 from app.services.menus import list_announcements, list_menus
 from app.services.notifications import list_for_user
+from app.services.tiffin import bulk_today
 
 ZERO = Decimal("0.00")
 
@@ -95,6 +96,7 @@ async def owner_dashboard(db: AsyncSession, org_id: int, d: date) -> OwnerDashbo
         menu=await _menu_today(db, org_id, d),
         late_leaves=late,
         meals_served_month=await _meals_served(db, org_id, month_start(d), month_end(d)),
+        bulk_tiffins=await bulk_today(db, org_id, d),
         holiday_today=(lunch.holiday or dinner.holiday).reason
         if (lunch.holiday or dinner.holiday)
         else None,

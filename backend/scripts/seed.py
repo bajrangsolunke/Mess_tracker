@@ -23,11 +23,14 @@ from app.models import (
     MemberType,
     MessPlan,
     Organization,
+    TiffinClient,
     User,
     UserRole,
 )
+from app.schemas.tiffin import OrderItem
 from app.services import attendance as att
 from app.services import billing, menus
+from app.services import tiffin as tiffin_svc
 
 DEMO_ORG = "स्वाद भोजनालय"
 OWNER = ("9000000001", "Ramesh Laturkar", "owner123")
@@ -174,6 +177,48 @@ async def seed(db: AsyncSession) -> None:
         await menus.create_announcement(
             db, org.id, owner.id, "रविवारी मेस बंद", "24 ऑक्टोबरला दिवाळीनिमित्त मेस बंद राहील."
         )
+    # bulk company tiffins with varying daily veg / non-veg counts
+    companies = []
+    for cname, veg, nonveg in [("Infosys", "60", "80"), ("TCS", "55", "75")]:
+        c = (
+            await db.execute(
+                select(TiffinClient).where(
+                    TiffinClient.organization_id == org.id, TiffinClient.name == cname
+                )
+            )
+        ).scalar_one_or_none()
+        if c is None:
+            c = TiffinClient(
+                organization_id=org.id,
+                name=cname,
+                contact_name="Admin desk",
+                address="Hinjewadi Phase 2, Pune",
+                veg_rate=Decimal(veg),
+                nonveg_rate=Decimal(nonveg),
+            )
+            db.add(c)
+            await db.flush()
+        companies.append(c)
+    for i in range((today - joined).days + 1):
+        d = joined + timedelta(days=i)
+        sheet = await tiffin_svc.sheet(db, org.id, d, MealType.lunch)
+        if sheet.totals.total == 0:
+            await tiffin_svc.put_orders(
+                db,
+                org.id,
+                d,
+                MealType.lunch,
+                [
+                    OrderItem(
+                        client_id=companies[0].id,
+                        veg_count=40 + (i * 3) % 11,
+                        nonveg_count=8 + i % 5,
+                    ),
+                    OrderItem(
+                        client_id=companies[1].id, veg_count=25 + (i * 7) % 9, nonveg_count=i % 4
+                    ),
+                ],
+            )
     await db.flush()
 
 
