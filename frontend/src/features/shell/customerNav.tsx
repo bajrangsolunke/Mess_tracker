@@ -1,14 +1,10 @@
-import HomeIcon from "@mui/icons-material/Home";
-import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
-import PaymentsIcon from "@mui/icons-material/Payments";
-import PersonIcon from "@mui/icons-material/Person";
 import type { NavItem } from "../../components/BottomNav";
+import { HomeIcon, PlateCheckIcon, ProfileIcon, ThaliIcon, WalletRupeeIcon } from "../../components/brand/icons";
 
 export const CUSTOMER_NAV: NavItem[] = [
   { labelKey: "nav.home", to: "/app", icon: <HomeIcon /> },
-  { labelKey: "nav.attendance", to: "/app/attendance", icon: <EventAvailableIcon /> },
-  { labelKey: "nav.menu", to: "/app/menu", icon: <RestaurantMenuIcon /> },
-  { labelKey: "nav.payments", to: "/app/payments", icon: <PaymentsIcon /> },
-  { labelKey: "nav.profile", to: "/app/profile", icon: <PersonIcon /> },
+  { labelKey: "nav.attendance", to: "/app/attendance", icon: <PlateCheckIcon /> },
+  { labelKey: "nav.menu", to: "/app/menu", icon: <ThaliIcon /> },
+  { labelKey: "nav.payments", to: "/app/payments", icon: <WalletRupeeIcon /> },
+  { labelKey: "nav.profile", to: "/app/profile", icon: <ProfileIcon /> },
 ];

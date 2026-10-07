@@ -4,10 +4,9 @@ import { brand } from "../../app/theme";
 import type { StatTone } from "./StatCard";
 
 const TONES: Record<StatTone, string> = {
-  maroon: brand.maroon,
-  saffron: brand.saffron,
-  leaf: brand.leaf,
-  amber: "#D39B00",
+  red: brand.red,
+  gold: brand.gold,
+  green: brand.green,
   neutral: brand.inkSoft,
 };
 
@@ -15,7 +14,7 @@ const TONES: Record<StatTone, string> = {
 export function QuickAction({
   label,
   icon,
-  tone = "maroon",
+  tone = "red",
   onClick,
 }: {
   label: string;

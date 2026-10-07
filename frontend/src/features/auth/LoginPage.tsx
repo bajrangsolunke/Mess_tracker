@@ -21,8 +21,9 @@ import { useState } from "react";
 import { useLogin } from "../../api/useAuth";
 import { ApiError } from "../../api/client";
 import { HOME_BY_ROLE } from "./routes";
-import { brand } from "../../app/theme";
+import { brand, FONT_DEVA } from "../../app/theme";
 import { Logo } from "../../components/brand/Logo";
+import { BrandPattern } from "../../components/brand/BrandPattern";
 import { normalizePhoneInput } from "../../lib/phone";
 
 const schema = z.object({
@@ -64,7 +65,8 @@ export function LoginPage() {
       <Box
         sx={{
           position: "relative",
-          background: `linear-gradient(180deg, ${brand.maroon}, ${brand.maroonDark})`,
+          bgcolor: brand.red,
+          overflow: "hidden",
           borderBottomLeftRadius: "36px",
           borderBottomRightRadius: "36px",
           pt: "calc(env(safe-area-inset-top) + 20px)",
@@ -80,15 +82,16 @@ export function LoginPage() {
         >
           <LanguageIcon />
         </IconButton>
-        <Typography sx={{ fontFamily: '"Baloo 2"', fontWeight: 600, opacity: 0.85 }}>लातूरकर यांचे…</Typography>
-        <Typography component="h1" sx={{ fontFamily: '"Baloo 2"', fontWeight: 800, fontSize: "2.6rem", lineHeight: 1, color: brand.amber }}>
+        <BrandPattern opacity={0.08} />
+        <Typography sx={{ fontFamily: FONT_DEVA, fontWeight: 500, opacity: 0.85, position: "relative" }}>लातूरकर यांचे</Typography>
+        <Typography component="h1" sx={{ fontFamily: FONT_DEVA, fontWeight: 800, fontSize: "2.6rem", lineHeight: 1.1, color: brand.gold, position: "relative" }}>
           स्वाद
         </Typography>
-        <Typography sx={{ fontFamily: '"Baloo 2"', fontWeight: 700 }}>भोजनालय &amp; नाश्ता हाऊस</Typography>
+        <Typography sx={{ fontFamily: FONT_DEVA, fontWeight: 600, position: "relative" }}>{brand.tagline.mr}</Typography>
         <Logo
           variant="chef"
-          height={150}
-          sx={{ position: "absolute", right: 8, bottom: -6, filter: "drop-shadow(0 10px 16px rgba(0,0,0,.35))" }}
+          height={136}
+          sx={{ position: "absolute", right: 10, bottom: -8, filter: "drop-shadow(0 10px 16px rgba(0,0,0,.35))" }}
         />
       </Box>
 

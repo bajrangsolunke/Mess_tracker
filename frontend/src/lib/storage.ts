@@ -6,6 +6,7 @@ const KEYS = {
   access: "mt.access",
   refresh: "mt.refresh",
   user: "mt.user",
+  onboarded: "mt.onboarded",
 } as const;
 
 function get(key: string): string | null {
@@ -38,4 +39,6 @@ export const storage = {
     set(KEYS.refresh, refresh);
   },
   setUserJson: (json: string | null) => set(KEYS.user, json),
+  getOnboarded: () => get(KEYS.onboarded) === "1",
+  setOnboarded: () => set(KEYS.onboarded, "1"),
 };

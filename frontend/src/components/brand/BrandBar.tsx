@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { AppBar, Box, IconButton, Toolbar, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useNavigate } from "react-router-dom";
-import { brand } from "../../app/theme";
+import { brand, FONT_DEVA } from "../../app/theme";
 import { Logo } from "./Logo";
 
 /** Maroon brand header. With `title` it becomes a page header with a back arrow;
@@ -22,7 +22,7 @@ export function BrandBar({
       position="sticky"
       elevation={0}
       sx={{
-        background: `linear-gradient(180deg, ${brand.maroon} 0%, ${brand.maroonDark} 100%)`,
+        bgcolor: brand.red,
         color: "primary.contrastText",
         borderBottomLeftRadius: "22px",
         borderBottomRightRadius: "22px",
@@ -52,7 +52,7 @@ export function BrandBar({
                 width: 40,
                 height: 40,
                 borderRadius: "50%",
-                bgcolor: brand.paper,
+                bgcolor: brand.cream,
                 display: "grid",
                 placeItems: "end center",
                 overflow: "hidden",
@@ -66,11 +66,11 @@ export function BrandBar({
                 component="span"
                 sx={{
                   display: "block",
-                  fontFamily: '"Baloo 2", "Mukta", sans-serif',
+                  fontFamily: FONT_DEVA,
                   fontWeight: 800,
-                  fontSize: "1.55rem",
+                  fontSize: "1.45rem",
                   lineHeight: 1,
-                  color: brand.amber,
+                  color: brand.gold,
                   letterSpacing: 0.3,
                 }}
               >

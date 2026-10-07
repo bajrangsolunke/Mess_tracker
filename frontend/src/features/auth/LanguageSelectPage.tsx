@@ -7,6 +7,7 @@ import { changeLanguage } from "../../i18n";
 import { LANGS, storage, type Lang } from "../../lib/storage";
 import { brand } from "../../app/theme";
 import { Logo } from "../../components/brand/Logo";
+import { BrandPattern } from "../../components/brand/BrandPattern";
 
 const NATIVE: Record<Lang, { name: string; sample: string }> = {
   en: { name: "English", sample: "Attendance • Payments • Menu" },
@@ -23,7 +24,9 @@ export function LanguageSelectPage({ next = "/login" }: { next?: string }) {
     <Box sx={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <Box
         sx={{
-          background: `linear-gradient(180deg, ${brand.maroon}, ${brand.maroonDark})`,
+          bgcolor: brand.red,
+          position: "relative",
+          overflow: "hidden",
           borderBottomLeftRadius: "32px",
           borderBottomRightRadius: "32px",
           pt: "calc(env(safe-area-inset-top) + 28px)",
@@ -32,7 +35,8 @@ export function LanguageSelectPage({ next = "/login" }: { next?: string }) {
           placeItems: "center",
         }}
       >
-        <Box sx={{ bgcolor: brand.paper, borderRadius: "20px", px: 2.5, py: 1.5 }}>
+        <BrandPattern opacity={0.08} />
+        <Box sx={{ bgcolor: brand.paper, borderRadius: "20px", px: 2.5, py: 1.5, position: "relative" }}>
           <Logo variant="full" height={72} />
         </Box>
       </Box>
@@ -64,18 +68,18 @@ export function LanguageSelectPage({ next = "/login" }: { next?: string }) {
                   py: 1.5,
                   minHeight: 68,
                   borderRadius: "16px",
-                  bgcolor: selected ? alpha(brand.maroon, 0.06) : brand.paper,
-                  border: `1.5px solid ${selected ? brand.maroon : brand.line}`,
+                  bgcolor: selected ? alpha(brand.red, 0.06) : brand.paper,
+                  border: `1.5px solid ${selected ? brand.red : brand.line}`,
                   transition: "border-color 160ms, background-color 160ms",
                 }}
               >
                 <Box>
-                  <Typography variant="subtitle1" sx={{ fontSize: "1.15rem", fontFamily: '"Baloo 2"', fontWeight: 700 }}>
+                  <Typography variant="subtitle1" sx={{ fontSize: "1.15rem", fontWeight: 600 }}>
                     {NATIVE[l].name}
                   </Typography>
                   <Typography variant="caption">{NATIVE[l].sample}</Typography>
                 </Box>
-                <CheckCircleIcon sx={{ color: selected ? brand.maroon : brand.line, fontSize: 28 }} />
+                <CheckCircleIcon sx={{ color: selected ? brand.red : brand.line, fontSize: 28 }} />
               </ButtonBase>
             );
           })}

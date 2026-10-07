@@ -16,7 +16,7 @@ export function MealCard({
 }) {
   const { t } = useTranslation();
   const isLunch = meal === "lunch";
-  const accent = isLunch ? brand.saffron : brand.maroon;
+  const accent = isLunch ? brand.gold : brand.red;
   return (
     <Box
       sx={{

@@ -2,14 +2,13 @@ import type { ReactNode } from "react";
 import { Box, Typography, alpha } from "@mui/material";
 import { brand } from "../../app/theme";
 
-export type StatTone = "maroon" | "saffron" | "leaf" | "amber" | "neutral";
+export type StatTone = "red" | "gold" | "green" | "neutral";
 
 const TONES: Record<StatTone, { bg: string; fg: string; icon: string }> = {
-  maroon: { bg: alpha(brand.maroon, 0.08), fg: brand.maroon, icon: brand.maroon },
-  saffron: { bg: alpha(brand.saffron, 0.14), fg: "#9A4B00", icon: brand.saffron },
-  leaf: { bg: alpha(brand.leaf, 0.12), fg: "#0B6B4F", icon: brand.leaf },
-  amber: { bg: alpha(brand.amber, 0.2), fg: "#7A5800", icon: "#D39B00" },
-  neutral: { bg: brand.creamDark, fg: brand.ink, icon: brand.inkSoft },
+  red: { bg: alpha(brand.red, 0.08), fg: brand.red, icon: brand.red },
+  gold: { bg: alpha(brand.gold, 0.16), fg: brand.goldDark, icon: brand.gold },
+  green: { bg: alpha(brand.green, 0.12), fg: brand.greenDark, icon: brand.green },
+  neutral: { bg: brand.cream, fg: brand.ink, icon: brand.inkSoft },
 };
 
 /** Compact number tile. `value` undefined renders an em dash — data not wired yet. */

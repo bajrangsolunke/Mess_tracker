@@ -1,13 +1,7 @@
 import { Box, Button, Stack, Typography, alpha } from "@mui/material";
-import GroupIcon from "@mui/icons-material/GroupsRounded";
 import WbSunnyIcon from "@mui/icons-material/WbSunnyRounded";
 import NightsStayIcon from "@mui/icons-material/NightsStayRounded";
-import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupeeRounded";
-import FactCheckIcon from "@mui/icons-material/FactCheckRounded";
-import PersonAddIcon from "@mui/icons-material/PersonAddAlt1Rounded";
-import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenuRounded";
 import CampaignIcon from "@mui/icons-material/CampaignRounded";
-import EventBusyIcon from "@mui/icons-material/EventBusyRounded";
 import LogoutIcon from "@mui/icons-material/LogoutRounded";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -18,21 +12,28 @@ import { QuickAction } from "../../components/brand/QuickAction";
 import { SectionTitle } from "../../components/brand/SectionTitle";
 import { MealCard } from "../../components/brand/MealCard";
 import { StatusChip } from "../../components/brand/StatusChip";
+import { ChefSays } from "../../components/brand/ChefSays";
+import { FamilyIcon, PlateCheckIcon, ThaliIcon, WalletRupeeIcon, BellSpoonIcon } from "../../components/brand/icons";
 import { brand } from "../../app/theme";
 import { formatTodayLong } from "../../lib/date";
 
-function Greeting() {
+function Greeting({ says }: { says: string }) {
   const { t, i18n } = useTranslation();
   const { user, organization } = useSession();
   return (
-    <Box>
-      <Typography variant="h5" component="h1">
-        {t("dashboard.welcome", { name: user?.name?.split(" ")[0] ?? "" })}
-      </Typography>
-      <Typography variant="body2" sx={{ color: "text.secondary" }}>
-        {organization?.name} · {formatTodayLong(i18n.language)}
-      </Typography>
-    </Box>
+    <Stack spacing={1.5}>
+      <Box>
+        <Typography variant="h5" component="h1">
+          {t("dashboard.welcome", { name: user?.name?.split(" ")[0] ?? "" })}
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          {organization?.name} · {formatTodayLong(i18n.language)}
+        </Typography>
+      </Box>
+      <ChefSays pose="waving" size={64}>
+        {says}
+      </ChefSays>
+    </Stack>
   );
 }
 
@@ -53,20 +54,20 @@ function LogoutRow() {
   );
 }
 
-/* Counts and menu arrive with Phases 3–7; until then tiles show "—" and menu teaches the next step. */
+/* Counts and menu arrive with Phases 3–7; until then tiles show "—" and the menu teaches the next step. */
 export function OwnerHome() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   return (
     <Stack spacing={2.5}>
-      <Greeting />
+      <Greeting says={t("chef.ownerWelcome")} />
 
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.25 }}>
         <Box sx={{ gridColumn: "1 / -1" }}>
-          <StatCard label={t("dashboard.members")} value={undefined} tone="maroon" icon={<GroupIcon fontSize="small" />} onClick={() => navigate("/owner/members")} />
+          <StatCard label={t("dashboard.members")} value={undefined} tone="red" icon={<FamilyIcon fontSize="small" />} onClick={() => navigate("/owner/members")} />
         </Box>
-        <StatCard label={t("meal.lunch")} value={undefined} tone="saffron" icon={<WbSunnyIcon fontSize="small" />} hint={t("dashboard.presentToday")} />
-        <StatCard label={t("meal.dinner")} value={undefined} tone="leaf" icon={<NightsStayIcon fontSize="small" />} hint={t("dashboard.presentToday")} />
+        <StatCard label={t("meal.lunch")} value={undefined} tone="gold" icon={<WbSunnyIcon fontSize="small" />} hint={t("dashboard.presentToday")} />
+        <StatCard label={t("meal.dinner")} value={undefined} tone="green" icon={<NightsStayIcon fontSize="small" />} hint={t("dashboard.presentToday")} />
       </Box>
 
       <Box
@@ -76,16 +77,16 @@ export function OwnerHome() {
           gap: 1.5,
           p: 1.75,
           borderRadius: "18px",
-          bgcolor: alpha(brand.saffron, 0.12),
-          border: `1px solid ${alpha(brand.saffron, 0.3)}`,
+          bgcolor: alpha(brand.gold, 0.12),
+          border: `1px solid ${alpha(brand.gold, 0.35)}`,
         }}
       >
-        <CurrencyRupeeIcon sx={{ color: brand.saffron }} />
+        <WalletRupeeIcon sx={{ color: brand.goldDark }} />
         <Box sx={{ flex: 1 }}>
           <Typography variant="subtitle2" sx={{ color: "text.secondary" }}>
             {t("dashboard.pendingPayments")}
           </Typography>
-          <Typography variant="h5" component="div" sx={{ color: "#9A4B00" }}>
+          <Typography variant="h5" component="div" sx={{ color: brand.goldDark }}>
             —
           </Typography>
         </Box>
@@ -95,10 +96,10 @@ export function OwnerHome() {
       <Box>
         <SectionTitle>{t("dashboard.quickActions")}</SectionTitle>
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.25 }}>
-          <QuickAction label={t("nav.attendance")} icon={<FactCheckIcon />} tone="leaf" onClick={() => navigate("/owner/attendance")} />
-          <QuickAction label={t("dashboard.addMember")} icon={<PersonAddIcon />} tone="maroon" onClick={() => navigate("/owner/members")} />
-          <QuickAction label={t("nav.payments")} icon={<CurrencyRupeeIcon />} tone="saffron" onClick={() => navigate("/owner/payments")} />
-          <QuickAction label={t("nav.menu")} icon={<RestaurantMenuIcon />} tone="amber" onClick={() => navigate("/owner/more")} />
+          <QuickAction label={t("nav.attendance")} icon={<PlateCheckIcon />} tone="green" onClick={() => navigate("/owner/attendance")} />
+          <QuickAction label={t("dashboard.addMember")} icon={<FamilyIcon />} tone="red" onClick={() => navigate("/owner/members")} />
+          <QuickAction label={t("nav.payments")} icon={<WalletRupeeIcon />} tone="gold" onClick={() => navigate("/owner/payments")} />
+          <QuickAction label={t("nav.menu")} icon={<ThaliIcon />} tone="neutral" onClick={() => navigate("/owner/more")} />
         </Box>
       </Box>
 
@@ -128,29 +129,21 @@ export function CustomerHome() {
   const navigate = useNavigate();
   return (
     <Stack spacing={2.5}>
-      <Greeting />
+      <Greeting says={t("chef.customerWelcome")} />
 
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.25 }}>
-        <StatCard label={t("customer.plan")} value={undefined} tone="maroon" icon={<RestaurantMenuIcon fontSize="small" />} />
-        <StatCard label={t("customer.mealsThisMonth")} value={undefined} tone="leaf" icon={<FactCheckIcon fontSize="small" />} onClick={() => navigate("/app/attendance")} />
+        <StatCard label={t("customer.plan")} value={undefined} tone="red" icon={<ThaliIcon fontSize="small" />} />
+        <StatCard label={t("customer.mealsThisMonth")} value={undefined} tone="green" icon={<PlateCheckIcon fontSize="small" />} onClick={() => navigate("/app/attendance")} />
       </Box>
 
       <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1.5,
-          p: 1.75,
-          borderRadius: "18px",
-          bgcolor: brand.paper,
-          border: `1px solid ${brand.line}`,
-        }}
+        sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.75, borderRadius: "18px", bgcolor: brand.paper, border: `1px solid ${brand.line}`, cursor: "pointer" }}
         role="button"
         tabIndex={0}
         onClick={() => navigate("/app/payments")}
         onKeyDown={(e) => e.key === "Enter" && navigate("/app/payments")}
       >
-        <CurrencyRupeeIcon sx={{ color: brand.maroon }} />
+        <WalletRupeeIcon sx={{ color: brand.red }} />
         <Box sx={{ flex: 1 }}>
           <Typography variant="subtitle2" sx={{ color: "text.secondary" }}>
             {t("customer.thisMonthBill")}
@@ -159,7 +152,7 @@ export function CustomerHome() {
             —
           </Typography>
         </Box>
-        <Typography variant="caption">{t("common.comingSoon")}</Typography>
+        <BellSpoonIcon sx={{ color: brand.inkSoft }} />
       </Box>
 
       <Box>
@@ -170,7 +163,7 @@ export function CustomerHome() {
         </Stack>
       </Box>
 
-      <Button variant="contained" startIcon={<EventBusyIcon />} onClick={() => navigate("/app/attendance")}>
+      <Button variant="contained" startIcon={<PlateCheckIcon />} onClick={() => navigate("/app/attendance")}>
         {t("customer.skipMeal")}
       </Button>
 

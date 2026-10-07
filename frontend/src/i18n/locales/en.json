@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "स्वाद भोजनालय"
+    "name": "स्वाद"
   },
   "nav": {
     "home": "Home",
@@ -75,5 +75,36 @@
     "mealsThisMonth": "Meals this month",
     "thisMonthBill": "This month's bill",
     "skipMeal": "Skip a meal"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "start": "Get started",
+    "members": {
+      "title": "Track members",
+      "body": "Add members, their plan and room in seconds. Everyone in one place."
+    },
+    "payments": {
+      "title": "Manage payments",
+      "body": "Monthly bills, cash or UPI, and a clear list of who is pending."
+    },
+    "reports": {
+      "title": "See reports",
+      "body": "Meals served, collection and attendance for any month."
+    },
+    "serve": {
+      "title": "Serve better",
+      "body": "Members skip meals in advance, so you cook the right amount."
+    }
+  },
+  "chef": {
+    "ownerWelcome": "Welcome back! Let's get today's attendance done.",
+    "customerWelcome": "Namaste! Today's meal is on its way.",
+    "building": "I'm still cooking this screen. It will be ready soon!",
+    "noMembers": "No members yet. Shall we add the first one?",
+    "noMenu": "Today's menu isn't set yet."
+  },
+  "brand": {
+    "tagline": "Authentic Taste · Modern Experience"
   }
 }
