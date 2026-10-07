@@ -1,4 +1,5 @@
 from app.models.attendance import Attendance, Holiday, MonthClosure
+from app.models.billing import Bill, Payment
 from app.models.enums import (
     AttendanceStatus,
     BillStatus,
@@ -23,6 +24,8 @@ from app.models.user import User
 
 __all__ = [
     "Attendance",
+    "Bill",
+    "Payment",
     "Leave",
     "Notification",
     "Holiday",
