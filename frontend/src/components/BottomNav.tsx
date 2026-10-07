@@ -13,8 +13,12 @@ export function BottomNav({ items }: { items: NavItem[] }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  // Longest matching prefix wins: "/owner" is a prefix of every owner page, so it must lose
+  // to "/owner/attendance" when the user is on attendance.
   const current =
-    items.find((i) => pathname === i.to || pathname.startsWith(i.to + "/"))?.to ?? items[0].to;
+    items
+      .filter((i) => pathname === i.to || pathname.startsWith(i.to + "/"))
+      .sort((a, b) => b.to.length - a.to.length)[0]?.to ?? items[0].to;
 
   return (
     <Paper

@@ -76,7 +76,7 @@ export function TiffinClientDetailPage() {
     <Stack spacing={2.5}>
       <PageHeader
         title={c.name}
-        subtitle={`${t("tiffin.veg")} ${rupees(c.veg_rate)} · ${t("tiffin.nonveg")} ${rupees(c.nonveg_rate)}`}
+        subtitle={c.contact_name ?? undefined}
         back="/owner/tiffin-clients"
         action={<Button variant="outlined" size="medium" startIcon={<EditIcon />} onClick={() => setEditing(true)} sx={{ minHeight: 44 }}>{t("common.edit")}</Button>}
       />
@@ -97,27 +97,43 @@ export function TiffinClientDetailPage() {
       <MonthSwitcher month={month} onChange={setMonth} />
 
       <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1.5 }}>
-        <StatCard label={t("tiffin.tiffins")} value={data.totals.total} tone="red" hint={`${t("tiffin.veg")} ${data.totals.veg} · ${t("tiffin.nonvegShort")} ${data.totals.nonveg}`} />
+        <StatCard label={t("tiffin.tiffins")} value={data.totals.total} tone="red" hint={`${t("tiffin.veg")} ${data.totals.veg} · ${t("tiffin.nonvegEgg")} ${data.totals.nonveg}`} />
         <StatCard label={t("payments.billed")} value={rupees(data.amount)} tone="neutral" hint={`${t("payments.paid")} ${rupees(data.paid)}`} />
         <StatCard label={due < 0 ? t("tiffin.advance") : t("payments.due")} value={rupees(Math.abs(due))} tone={due > 0 ? "gold" : "green"} />
       </Box>
 
       <Button variant="contained" onClick={() => setPaying(true)}>{t("payments.record")}</Button>
 
+      {data.by_item.length > 0 ? (
+        <Box>
+          <Typography variant="h6" component="h2" sx={{ mb: 1 }}>{t("tiffin.byItem")}</Typography>
+          <Box sx={{ borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}`, px: 1.5 }}>
+            {data.by_item.map((it, i) => (
+              <Box key={it.item_id} sx={{ display: "flex", alignItems: "center", gap: 1, py: 1.1, borderTop: i ? `1px solid ${brand.line}` : "none" }}>
+                <VegMark kind={it.food_type} size={14} />
+                <Typography variant="body2" sx={{ flex: 1, fontWeight: 600 }}>{it.name}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 800, width: 48, textAlign: "right" }}>{it.quantity}</Typography>
+                <Typography variant="body2" sx={{ width: 84, textAlign: "right" }}>{rupees(it.amount)}</Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      ) : null}
+
       <Box>
         <Typography variant="h6" component="h2" sx={{ mb: 1 }}>{t("tiffin.dailyOrders")}</Typography>
         <Box sx={{ borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}`, overflow: "hidden" }}>
-          <Box sx={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", px: 1.5, py: 1, bgcolor: brand.cream }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: "1.3fr .8fr .8fr 1fr", px: 1.5, py: 1, bgcolor: brand.cream }}>
             <Typography variant="caption" sx={{ fontWeight: 700 }}>{t("holidays.date")}</Typography>
-            <Box sx={{ display: "flex", justifyContent: "center" }}><VegMark kind="veg" size={14} /></Box>
-            <Box sx={{ display: "flex", justifyContent: "center" }}><VegMark kind="nonveg" size={14} /></Box>
+            <Typography variant="caption" sx={{ fontWeight: 700, textAlign: "center" }}>{t("meal.lunchShort")}</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, textAlign: "center" }}>{t("meal.dinnerShort")}</Typography>
             <Typography variant="caption" sx={{ fontWeight: 700, textAlign: "right" }}>₹</Typography>
           </Box>
           {data.days.map((d) => (
-            <Box key={d.date} sx={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", px: 1.5, py: 1, borderTop: `1px solid ${brand.line}`, alignItems: "center" }}>
+            <Box key={d.date} sx={{ display: "grid", gridTemplateColumns: "1.3fr .8fr .8fr 1fr", px: 1.5, py: 1, borderTop: `1px solid ${brand.line}`, alignItems: "center" }}>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>{dayjs(d.date).locale(locale).format("D MMM, ddd")}</Typography>
-              <Typography variant="body2" sx={{ textAlign: "center", fontVariantNumeric: "tabular-nums" }}>{d.lunch_veg + d.dinner_veg}</Typography>
-              <Typography variant="body2" sx={{ textAlign: "center", fontVariantNumeric: "tabular-nums" }}>{d.lunch_nonveg + d.dinner_nonveg}</Typography>
+              <Typography variant="body2" sx={{ textAlign: "center", fontVariantNumeric: "tabular-nums" }}>{d.lunch || "—"}</Typography>
+              <Typography variant="body2" sx={{ textAlign: "center", fontVariantNumeric: "tabular-nums" }}>{d.dinner || "—"}</Typography>
               <Typography variant="body2" sx={{ textAlign: "right", fontWeight: 600 }}>{rupees(d.amount)}</Typography>
             </Box>
           ))}

@@ -31,7 +31,7 @@ export function TiffinClientsPage() {
       ) : data ? (
         <>
           <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1.5 }}>
-            <StatCard label={t("tiffin.tiffins")} value={data.totals.total} tone="red" hint={`${t("tiffin.veg")} ${data.totals.veg} · ${t("tiffin.nonvegShort")} ${data.totals.nonveg}`} />
+            <StatCard label={t("tiffin.tiffins")} value={data.totals.total} tone="red" hint={`${t("tiffin.veg")} ${data.totals.veg} · ${t("tiffin.nonvegEgg")} ${data.totals.nonveg}`} />
             <StatCard label={t("payments.billed")} value={rupees(data.totals.amount)} tone="neutral" />
             <StatCard label={Number(data.totals.due) < 0 ? t("tiffin.advance") : t("payments.due")} value={rupees(Math.abs(Number(data.totals.due)))} tone={Number(data.totals.due) > 0 ? "gold" : "green"} />
           </Box>

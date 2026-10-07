@@ -1,8 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { api } from "./client";
 import type { AttendanceSheet, AttendanceStatus, HistoryOut, Holiday, HolidayMeal, MealType, MonthState, SummaryRow } from "./types";
 
 export const attendanceKey = ["attendance"] as const;
+
+/** After any attendance change, refresh everything that shows attendance-derived numbers:
+ *  home dashboards, member calendars, register, summary, reports and the member's own today card.
+ *  The open sheet is skipped — it is already updated from the server response. */
+export function refreshAttendanceViews(qc: QueryClient) {
+  void qc.invalidateQueries({ queryKey: ["dashboard"] });
+  void qc.invalidateQueries({ queryKey: attendanceKey, predicate: (q) => q.queryKey[1] !== "sheet" });
+  void qc.invalidateQueries({ queryKey: ["reports"] });
+  void qc.invalidateQueries({ queryKey: ["me"] });
+}
 
 export function useAttendanceSheet(date: string, meal: MealType) {
   return useQuery({
@@ -38,7 +48,7 @@ export function useMarkAttendance(date: string, meal: MealType) {
     },
     onError: (_e, _v, ctx) => ctx?.prev && qc.setQueryData(key, ctx.prev),
     onSuccess: (sheet) => qc.setQueryData(key, sheet),
-    onSettled: () => qc.invalidateQueries({ queryKey: [...attendanceKey, "history"] }),
+    onSettled: () => refreshAttendanceViews(qc),
   });
 }
 
@@ -47,7 +57,10 @@ export function useMarkAll(date: string, meal: MealType) {
   return useMutation({
     mutationFn: (status: AttendanceStatus) =>
       api<AttendanceSheet>(`/attendance/mark-all?date=${date}&meal_type=${meal}&status=${status}`, { method: "POST" }),
-    onSuccess: (sheet) => qc.setQueryData([...attendanceKey, "sheet", date, meal], sheet),
+    onSuccess: (sheet) => {
+      qc.setQueryData([...attendanceKey, "sheet", date, meal], sheet);
+      refreshAttendanceViews(qc);
+    },
   });
 }
 
@@ -76,6 +89,7 @@ export function useCreateHoliday() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["holidays"] });
       void qc.invalidateQueries({ queryKey: attendanceKey });
+      refreshAttendanceViews(qc);
     },
   });
 }
@@ -87,6 +101,7 @@ export function useDeleteHoliday() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["holidays"] });
       void qc.invalidateQueries({ queryKey: attendanceKey });
+      refreshAttendanceViews(qc);
     },
   });
 }
@@ -103,6 +118,7 @@ export function useSetMonthClosed() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["months"] });
       void qc.invalidateQueries({ queryKey: attendanceKey });
+      refreshAttendanceViews(qc);
     },
   });
 }

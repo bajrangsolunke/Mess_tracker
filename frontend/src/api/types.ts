@@ -8,12 +8,16 @@ export interface Plan {
   includes_dinner: boolean;
   monthly_fee: string;
   is_active: boolean;
+  kind?: PlanKind | null;
 }
+
+export type PlanKind = "one_lunch" | "one_dinner" | "two";
 
 export type MemberType = "dine_in" | "tiffin";
 
 export interface Member {
   id: number;
+  member_no: number;
   user_id: number | null;
   name: string;
   phone: string;
@@ -29,6 +33,9 @@ export interface Member {
   emergency_contact: string | null;
   notes: string | null;
   inactive_from: string | null;
+  valid_until: string | null;
+  renewal_plan: Plan | null;
+  renewal_requested_at: string | null;
 }
 
 export interface Page<T> {
@@ -59,6 +66,7 @@ export type HolidayMeal = "lunch" | "dinner" | "all";
 
 export interface MemberBrief {
   id: number;
+  member_no: number;
   name: string;
   phone: string;
   room_no: string | null;
@@ -72,6 +80,7 @@ export interface AttendanceRow {
   status: AttendanceStatus | null;
   on_leave: boolean;
   leave_status: string | null;
+  self_marked: boolean;
 }
 
 export interface AttendanceCounts {
@@ -173,6 +182,8 @@ export interface Bill {
   id: number;
   member: MemberBrief;
   month: string;
+  period_start: string | null;
+  period_end: string | null;
   amount: string;
   paid: string;
   due: string;
@@ -225,6 +236,7 @@ export interface OwnerDashboard {
   meals_served_month: number;
   holiday_today: string | null;
   bulk_tiffins: BulkToday;
+  renewals_due: number;
 }
 
 export interface CustomerDashboard {
@@ -236,6 +248,7 @@ export interface CustomerDashboard {
   upcoming_leaves: Leave[];
   unread_notifications: number;
   announcements: Announcement[];
+  membership: MembershipInfo;
 }
 
 export interface MealsReport {
@@ -251,38 +264,51 @@ export interface PaymentsReport {
   months: { month: string; billed: string; collected: string }[];
 }
 
+export type FoodType = "veg" | "egg" | "nonveg";
+
+export interface TiffinItem {
+  id: number;
+  name: string;
+  price: string;
+  food_type: FoodType;
+  is_active: boolean;
+  sort_order: number;
+}
+
 export interface TiffinClient {
   id: number;
   name: string;
   contact_name: string | null;
   phone: string | null;
   address: string | null;
-  veg_rate: string;
-  nonveg_rate: string;
   is_active: boolean;
   notes: string | null;
 }
 
 export interface TiffinOrderRow {
   client: TiffinClient;
-  veg_count: number;
-  nonveg_count: number;
+  quantities: Record<string, number>;
   note: string | null;
+  total: number;
+  amount: string;
 }
 
 export interface TiffinSheet {
   date: string;
   meal_type: MealType;
   locked: boolean;
-  totals: { veg: number; nonveg: number; total: number; amount: string };
-  items: TiffinOrderRow[];
+  items: TiffinItem[];
+  totals: { total: number; veg: number; nonveg: number; amount: string };
+  by_item: Record<string, number>;
+  rows: TiffinOrderRow[];
 }
 
 export interface TiffinStatement {
   client: TiffinClient;
   month: string;
-  days: { date: string; lunch_veg: number; lunch_nonveg: number; dinner_veg: number; dinner_nonveg: number; amount: string }[];
-  totals: { veg: number; nonveg: number; total: number };
+  days: { date: string; lunch: number; dinner: number; total: number; amount: string }[];
+  by_item: { item_id: number; name: string; food_type: FoodType; quantity: number; amount: string }[];
+  totals: { total: number; veg: number; nonveg: number };
   amount: string;
   paid: string;
   due: string;
@@ -291,9 +317,9 @@ export interface TiffinStatement {
 
 export interface TiffinSummaryRow {
   client: TiffinClient;
+  total: number;
   veg: number;
   nonveg: number;
-  total: number;
   amount: string;
   paid: string;
   due: string;
@@ -301,7 +327,7 @@ export interface TiffinSummaryRow {
 
 export interface TiffinSummary {
   month: string;
-  totals: { veg: number; nonveg: number; total: number; amount: string; paid: string; due: string };
+  totals: { total: number; veg: number; nonveg: number; amount: string; paid: string; due: string };
   items: TiffinSummaryRow[];
 }
 
@@ -311,4 +337,59 @@ export interface BulkToday {
   total: number;
   lunch: number;
   dinner: number;
+  items: { name: string; food_type: FoodType; quantity: number }[];
+}
+
+export interface MembershipInfo {
+  valid_until: string | null;
+  days_left: number | null;
+  expired: boolean;
+  renewal_plan: Plan | null;
+  renewal_requested_at: string | null;
+}
+
+export interface DueRow {
+  member: MemberBrief;
+  valid_until: string;
+  days_left: number;
+  renewal_plan: Plan | null;
+  renewal_requested_at: string | null;
+}
+
+export interface Pricing {
+  one_meal_price: string | null;
+  two_meal_price: string | null;
+  plans: { one_lunch: Plan | null; one_dinner: Plan | null; two: Plan | null };
+  updated_members: number;
+}
+
+export interface MealToday {
+  expected: boolean;
+  status: AttendanceStatus | null;
+  self_marked: boolean;
+  on_leave: boolean;
+  holiday: boolean;
+}
+
+export interface MyToday {
+  date: string;
+  lunch: MealToday;
+  dinner: MealToday;
+  valid_until: string | null;
+  expired: boolean;
+}
+
+export interface Register {
+  month: string;
+  days: number;
+  locked: boolean;
+  holidays: { date: string; meal_type: HolidayMeal }[];
+  rows: {
+    member: MemberBrief;
+    joining_date: string;
+    inactive_from: string | null;
+    valid_until: string | null;
+    marks: Record<string, Partial<Record<MealType, AttendanceStatus>>>;
+    present: number;
+  }[];
 }

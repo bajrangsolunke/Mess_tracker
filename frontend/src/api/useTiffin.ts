@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
-import type { MealType, PaymentMethod, TiffinClient, TiffinSheet, TiffinStatement, TiffinSummary } from "./types";
+import type { FoodType, MealType, PaymentMethod, TiffinClient, TiffinItem, TiffinSheet, TiffinStatement, TiffinSummary } from "./types";
 
 export const tiffinKey = ["tiffin"] as const;
 
@@ -9,10 +9,31 @@ export interface TiffinClientInput {
   contact_name?: string | null;
   phone?: string | null;
   address?: string | null;
-  veg_rate: string;
-  nonveg_rate: string;
   notes?: string | null;
   is_active?: boolean;
+}
+
+export interface TiffinItemInput {
+  name: string;
+  price: string;
+  food_type: FoodType;
+  is_active?: boolean;
+  sort_order?: number;
+}
+
+export function useTiffinItems() {
+  return useQuery({ queryKey: [...tiffinKey, "items"], queryFn: () => api<TiffinItem[]>("/tiffin-items") });
+}
+
+export function useSaveTiffinItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: Partial<TiffinItemInput> & { id?: number }) =>
+      id
+        ? api<TiffinItem>(`/tiffin-items/${id}`, { method: "PATCH", body: JSON.stringify(data) })
+        : api<TiffinItem>("/tiffin-items", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: tiffinKey }),
+  });
 }
 
 export function useTiffinClients() {
@@ -41,7 +62,7 @@ export function useTiffinSheet(date: string, meal: MealType) {
 export function useSaveTiffinOrders(date: string, meal: MealType) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (items: { client_id: number; veg_count: number; nonveg_count: number; note?: string | null }[]) =>
+    mutationFn: (items: { client_id: number; lines: { item_id: number; quantity: number }[]; note?: string | null }[]) =>
       api<TiffinSheet>("/tiffin-orders", { method: "PUT", body: JSON.stringify({ date, meal_type: meal, items }) }),
     onSuccess: (sheet) => {
       qc.setQueryData([...tiffinKey, "sheet", date, meal], sheet);

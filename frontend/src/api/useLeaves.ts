@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
 import type { Leave, LeaveStatus, LeaveWithMember, MealType, NotificationPage } from "./types";
-import { attendanceKey } from "./useAttendance";
+import { attendanceKey, refreshAttendanceViews } from "./useAttendance";
 
 export function useMyLeaves(from: string, to: string) {
   return useQuery({ queryKey: ["leaves", "me", from, to], queryFn: () => api<Leave[]>(`/me/leaves?from=${from}&to=${to}`) });
@@ -15,6 +15,7 @@ export function useCreateLeave() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["leaves"] });
       void qc.invalidateQueries({ queryKey: attendanceKey });
+      refreshAttendanceViews(qc);
     },
   });
 }
@@ -26,6 +27,7 @@ export function useCancelLeave() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["leaves"] });
       void qc.invalidateQueries({ queryKey: attendanceKey });
+      refreshAttendanceViews(qc);
     },
   });
 }
@@ -44,6 +46,7 @@ export function useDecideLeave() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["leaves"] });
       void qc.invalidateQueries({ queryKey: attendanceKey });
+      refreshAttendanceViews(qc);
     },
   });
 }
