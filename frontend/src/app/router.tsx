@@ -27,6 +27,9 @@ import { MenuPage } from "../features/menu/MenuPage";
 import { AnnouncementsPage } from "../features/announcements/AnnouncementsPage";
 import { ReportsPage } from "../features/reports/ReportsPage";
 import { ChangePasswordPage } from "../features/profile/ChangePasswordPage";
+import { TiffinOrdersPage } from "../features/tiffin/TiffinOrdersPage";
+import { TiffinClientsPage } from "../features/tiffin/TiffinClientsPage";
+import { TiffinClientDetailPage } from "../features/tiffin/TiffinClientDetailPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
@@ -56,6 +59,9 @@ export const router = createBrowserRouter([
       { path: "announcements", element: <AnnouncementsPage /> },
       { path: "notifications", element: <NotificationsPage /> },
       { path: "reports", element: <ReportsPage /> },
+      { path: "tiffins", element: <TiffinOrdersPage /> },
+      { path: "tiffin-clients", element: <TiffinClientsPage /> },
+      { path: "tiffin-clients/:id", element: <TiffinClientDetailPage /> },
       { path: "payments", element: <PaymentsPage /> },
       { path: "payments/:id", element: <BillDetailPage /> },
       { path: "more", element: <ProfilePage titleKey="nav.more" /> },

@@ -16,6 +16,7 @@ Mobile-first, multilingual (English / हिन्दी / मराठी) PWA 
 | Attendance | Daily lunch/dinner sheet, one-tap present/absent, mark all, date strip, search, mess/tiffin filter, holidays, month close/lock, per-member history | Monthly calendar with lunch/dinner dots, meals taken |
 | Leaves | List by date, approve/reject late requests (notifies member) | Skip meals in advance; cutoff rule (default 22:00 the night before), cancel future leaves |
 | Billing | Prepare monthly bills from fees, record cash/UPI/bank payments, partial payments, edit bill, pending list, collection progress, payment reminders | Current bill status, payment history |
+| Company tiffins | Companies with their own veg and non-veg rates; daily lunch/dinner counts per company with − / + steppers and notes (Jain, extra roti); copy yesterday; live totals; monthly statement per company with payments and advance; today's count on the home screen | — |
 | Menu | Day editor with dish chips and suggestions, copy yesterday | Today's and weekly menu |
 | Announcements | Publish to all members (in-app notifications) | Read; notification bell with unread badge |
 | Dashboard & reports | Live today-at-a-glance, pending payments, chef's next-action hint; meals per day, collection by method, 6-month trend, per-member attendance | Plan, meals this month, bill, menu, upcoming leaves, announcements |
@@ -51,6 +52,8 @@ Demo logins (seeded):
 | Owner | 9000000001 | owner123 |
 | Member | 9000000002 | cust123 |
 | Tiffin member | 9000000021 | cust123 |
+
+Demo company tiffin clients: Infosys (veg ₹60, non-veg ₹80) and TCS (veg ₹55, non-veg ₹75) with daily orders for the current month.
 
 API docs: http://localhost:8000/docs
 

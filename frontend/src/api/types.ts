@@ -224,6 +224,7 @@ export interface OwnerDashboard {
   late_leaves: number;
   meals_served_month: number;
   holiday_today: string | null;
+  bulk_tiffins: BulkToday;
 }
 
 export interface CustomerDashboard {
@@ -248,4 +249,66 @@ export interface PaymentsReport {
   totals: BillTotals;
   by_method: Record<PaymentMethod, string>;
   months: { month: string; billed: string; collected: string }[];
+}
+
+export interface TiffinClient {
+  id: number;
+  name: string;
+  contact_name: string | null;
+  phone: string | null;
+  address: string | null;
+  veg_rate: string;
+  nonveg_rate: string;
+  is_active: boolean;
+  notes: string | null;
+}
+
+export interface TiffinOrderRow {
+  client: TiffinClient;
+  veg_count: number;
+  nonveg_count: number;
+  note: string | null;
+}
+
+export interface TiffinSheet {
+  date: string;
+  meal_type: MealType;
+  locked: boolean;
+  totals: { veg: number; nonveg: number; total: number; amount: string };
+  items: TiffinOrderRow[];
+}
+
+export interface TiffinStatement {
+  client: TiffinClient;
+  month: string;
+  days: { date: string; lunch_veg: number; lunch_nonveg: number; dinner_veg: number; dinner_nonveg: number; amount: string }[];
+  totals: { veg: number; nonveg: number; total: number };
+  amount: string;
+  paid: string;
+  due: string;
+  payments: Payment[];
+}
+
+export interface TiffinSummaryRow {
+  client: TiffinClient;
+  veg: number;
+  nonveg: number;
+  total: number;
+  amount: string;
+  paid: string;
+  due: string;
+}
+
+export interface TiffinSummary {
+  month: string;
+  totals: { veg: number; nonveg: number; total: number; amount: string; paid: string; due: string };
+  items: TiffinSummaryRow[];
+}
+
+export interface BulkToday {
+  veg: number;
+  nonveg: number;
+  total: number;
+  lunch: number;
+  dinner: number;
 }

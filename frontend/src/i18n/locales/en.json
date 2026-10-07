@@ -130,7 +130,8 @@
     "noMenuCustomer": "Today's menu isn't posted yet. Check back soon.",
     "noBillYetShort": "Not ready",
     "forcedPassword": "Welcome! Set your own password before we start.",
-    "changePassword": "Pick something only you remember."
+    "changePassword": "Pick something only you remember.",
+    "noCompanies": "Add the companies you send tiffins to, then enter each day's count."
   },
   "brand": {
     "tagline": "Authentic Taste · Modern Experience"
@@ -333,5 +334,34 @@
     "save": "Save password",
     "wrongCurrent": "Current password is incorrect",
     "forcedHint": "You will use this password from now on."
+  },
+  "tiffin": {
+    "title": "Company tiffins",
+    "short": "Company tiffins",
+    "hintShort": "Daily veg / non-veg counts per company",
+    "companies": "Companies",
+    "addCompany": "Add company",
+    "editCompany": "Edit company",
+    "companyName": "Company name",
+    "vegRate": "Veg rate (₹)",
+    "nonvegRate": "Non-veg rate (₹)",
+    "contactName": "Contact person",
+    "active": "Active",
+    "veg": "Veg",
+    "nonveg": "Non-veg",
+    "nonvegShort": "Non-veg",
+    "totalTiffins": "Total tiffins",
+    "tiffins": "Tiffins",
+    "tiffinCount": "{{count}} tiffins",
+    "notePlaceholder": "Note (Jain, extra roti…)",
+    "saveOrders": "Save · {{count}} tiffins",
+    "copyYesterday": "Copy yesterday's counts",
+    "noCompaniesTitle": "No companies yet",
+    "noCompaniesHint": "Each company has its own veg and non-veg rate. Counts can change every day.",
+    "todayCompany": "Company tiffins today",
+    "enterToday": "Tap to enter today's counts",
+    "advance": "Advance",
+    "dailyOrders": "Daily orders",
+    "noOrders": "No orders this month."
   }
 }

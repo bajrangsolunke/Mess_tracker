@@ -12,6 +12,7 @@ import BeachAccessIcon from "@mui/icons-material/BeachAccessRounded";
 import LockIcon from "@mui/icons-material/LockRounded";
 import EventBusyIcon from "@mui/icons-material/EventBusyRounded";
 import CampaignIcon from "@mui/icons-material/CampaignRounded";
+import LocalShippingIcon from "@mui/icons-material/LocalShippingRounded";
 import { SectionTitle } from "../../components/brand/SectionTitle";
 
 const LANG_NAME: Record<string, string> = { en: "English", hi: "हिन्दी", mr: "मराठी" };
@@ -54,6 +55,14 @@ export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile"
                   <ThaliIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("plans.title")} secondary={t("plans.hintShort")} />
+                <ChevronRightIcon sx={{ color: "text.secondary" }} />
+              </ListItemButton>
+              <Divider component="li" />
+              <ListItemButton onClick={() => navigate("/owner/tiffins")} sx={{ minHeight: 60 }}>
+                <ListItemIcon sx={{ color: brand.red, minWidth: 44 }}>
+                  <LocalShippingIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("tiffin.title")} secondary={t("tiffin.hintShort")} />
                 <ChevronRightIcon sx={{ color: "text.secondary" }} />
               </ListItemButton>
               <Divider component="li" />

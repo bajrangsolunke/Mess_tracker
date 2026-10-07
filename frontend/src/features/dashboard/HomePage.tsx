@@ -16,6 +16,8 @@ import { StatusChip } from "../../components/brand/StatusChip";
 import { ChefSays } from "../../components/brand/ChefSays";
 import { FamilyIcon, PlateCheckIcon, ThaliIcon, WalletRupeeIcon, NotebookIcon } from "../../components/brand/icons";
 import { brand } from "../../app/theme";
+import { VegMark, VEG_COLOR, NONVEG_COLOR } from "../../components/brand/VegMark";
+import LocalShippingIcon from "@mui/icons-material/LocalShippingRounded";
 import { formatDateLong, formatTodayLong } from "../../lib/date";
 import { rupees } from "../../lib/money";
 
@@ -73,6 +75,32 @@ export function OwnerHome() {
       <Box
         role="button"
         tabIndex={0}
+        onClick={() => navigate("/owner/tiffins")}
+        onKeyDown={(e) => e.key === "Enter" && navigate("/owner/tiffins")}
+        sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 2, borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}`, cursor: "pointer" }}
+      >
+        <Box sx={{ width: 44, height: 44, borderRadius: "12px", bgcolor: alpha(brand.red, 0.1), color: brand.red, display: "grid", placeItems: "center", flexShrink: 0 }}>
+          <LocalShippingIcon />
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="subtitle2" sx={{ color: "text.secondary" }}>{t("tiffin.todayCompany")}</Typography>
+          <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.25, flexWrap: "wrap" }}>
+            <Typography variant="h5" component="div">{data ? data.bulk_tiffins.total : "—"}</Typography>
+            {data && data.bulk_tiffins.total > 0 ? (
+              <>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}><VegMark kind="veg" size={14} /><Typography sx={{ fontWeight: 700, color: VEG_COLOR }}>{data.bulk_tiffins.veg}</Typography></Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}><VegMark kind="nonveg" size={14} /><Typography sx={{ fontWeight: 700, color: NONVEG_COLOR }}>{data.bulk_tiffins.nonveg}</Typography></Box>
+              </>
+            ) : null}
+          </Box>
+          {data && data.bulk_tiffins.total === 0 ? <Typography variant="caption">{t("tiffin.enterToday")}</Typography> : null}
+        </Box>
+        <ChevronRightIcon sx={{ color: "text.secondary" }} />
+      </Box>
+
+      <Box
+        role="button"
+        tabIndex={0}
         onClick={() => navigate("/owner/payments")}
         onKeyDown={(e) => e.key === "Enter" && navigate("/owner/payments")}
         sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 2, borderRadius: "16px", bgcolor: alpha(brand.gold, 0.12), border: `1px solid ${alpha(brand.gold, 0.35)}`, cursor: "pointer" }}
@@ -98,6 +126,7 @@ export function OwnerHome() {
           <QuickAction label={t("nav.attendance")} icon={<PlateCheckIcon />} tone="green" onClick={() => navigate("/owner/attendance")} />
           <QuickAction label={t("dashboard.addMember")} icon={<FamilyIcon />} tone="red" onClick={() => navigate("/owner/members/new")} />
           <QuickAction label={t("nav.payments")} icon={<WalletRupeeIcon />} tone="gold" onClick={() => navigate("/owner/payments")} />
+          <QuickAction label={t("tiffin.short")} icon={<LocalShippingIcon />} tone="red" onClick={() => navigate("/owner/tiffins")} />
           <QuickAction label={t("reports.title")} icon={<NotebookIcon />} tone="neutral" onClick={() => navigate("/owner/reports")} />
         </Box>
       </Box>
