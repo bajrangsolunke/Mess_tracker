@@ -60,3 +60,8 @@ class NotificationType(enum.StrEnum):
     leave_decided = "leave_decided"
     announcement = "announcement"
     general = "general"
+
+
+class MemberType(enum.StrEnum):
+    dine_in = "dine_in"
+    tiffin = "tiffin"

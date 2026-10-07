@@ -2,7 +2,7 @@ from datetime import date
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models.enums import AttendanceStatus, HolidayMeal, MealType
+from app.models.enums import AttendanceStatus, HolidayMeal, MealType, MemberType
 from app.schemas.member import PlanOut
 
 
@@ -12,6 +12,8 @@ class MemberBrief(BaseModel):
     name: str
     phone: str
     room_no: str | None
+    member_type: MemberType = MemberType.dine_in
+    company: str | None = None
     plan: PlanOut
 
 

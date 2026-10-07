@@ -153,3 +153,34 @@ async def test_customer_forbidden_on_members(client):
     ch, _ = await login(client, "9000000011", m["temp_password"])
     r = await client.get("/api/v1/members", headers=ch)
     assert r.status_code == 403
+
+
+async def test_tiffin_member_type_and_filter(client):
+    h, _ = await register_owner(client)
+    plan = await create_plan(client, h, name="Tiffin", lunch=True, dinner=False, fee="1800")
+    t1 = await create_member(
+        client,
+        h,
+        plan["id"],
+        phone="9000000021",
+        name="Infosys Tiffin 1",
+        member_type="tiffin",
+        company="Infosys",
+        delivery_address="Gate 2, Hinjewadi",
+    )
+    assert t1["member"]["member_type"] == "tiffin"
+    assert t1["member"]["company"] == "Infosys"
+    await create_member(client, h, plan["id"], phone="9000000022", name="Dine In Guy")
+    r = await client.get("/api/v1/members?member_type=tiffin", headers=h)
+    assert [m["name"] for m in r.json()["items"]] == ["Infosys Tiffin 1"]
+    r = await client.get("/api/v1/members?search=infosys", headers=h)
+    assert r.json()["total"] == 1
+    r = await client.get("/api/v1/attendance?date=2026-10-07&meal_type=lunch", headers=h)
+    types = {x["member"]["name"]: x["member"]["member_type"] for x in r.json()["items"]}
+    assert types == {"Infosys Tiffin 1": "tiffin", "Dine In Guy": "dine_in"}
+    r = await client.patch(
+        f"/api/v1/members/{t1['member']['id']}",
+        json={"member_type": "dine_in", "company": None},
+        headers=h,
+    )
+    assert r.json()["member_type"] == "dine_in" and r.json()["company"] is None

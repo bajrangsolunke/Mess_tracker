@@ -4,7 +4,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.phone import normalize_phone
-from app.models.enums import MemberStatus
+from app.models.enums import MemberStatus, MemberType
 from app.schemas.common import Money, MoneyIn
 from app.schemas.plan import PlanOut
 
@@ -16,6 +16,9 @@ class MemberCreate(BaseModel):
     joining_date: date
     monthly_fee: MoneyIn | None = None  # defaults to plan fee
     room_no: str | None = Field(default=None, max_length=30)
+    member_type: MemberType = MemberType.dine_in
+    company: str | None = Field(default=None, max_length=120)
+    delivery_address: str | None = Field(default=None, max_length=300)
     deposit: MoneyIn = Decimal("0")
     emergency_contact: str | None = Field(default=None, max_length=120)
     notes: str | None = Field(default=None, max_length=2000)
@@ -32,6 +35,9 @@ class MemberUpdate(BaseModel):
     plan_id: int | None = None
     monthly_fee: MoneyIn | None = None
     room_no: str | None = Field(default=None, max_length=30)
+    member_type: MemberType | None = None
+    company: str | None = Field(default=None, max_length=120)
+    delivery_address: str | None = Field(default=None, max_length=300)
     joining_date: date | None = None
     deposit: MoneyIn | None = None
     emergency_contact: str | None = Field(default=None, max_length=120)
@@ -45,6 +51,9 @@ class MemberOut(BaseModel):
     name: str
     phone: str
     room_no: str | None
+    member_type: MemberType
+    company: str | None
+    delivery_address: str | None
     plan: PlanOut
     monthly_fee: Money
     joining_date: date

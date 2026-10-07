@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import ApiError
 from app.core.security import hash_password
 from app.core.time import today_ist
-from app.models import Language, Member, MemberStatus, MessPlan, User, UserRole
+from app.models import Language, Member, MemberStatus, MemberType, MessPlan, User, UserRole
 from app.schemas.member import MemberCreate, MemberUpdate
 from app.schemas.plan import PlanCreate, PlanUpdate
 
@@ -81,6 +81,7 @@ async def list_members(
     search: str | None = None,
     status: MemberStatus | None = None,
     plan_id: int | None = None,
+    member_type: MemberType | None = None,
     limit: int = 200,
     offset: int = 0,
 ) -> tuple[list[Member], int]:
@@ -88,12 +89,19 @@ async def list_members(
     if search:
         like = f"%{search.strip()}%"
         q = q.where(
-            or_(Member.name.ilike(like), Member.phone.ilike(like), Member.room_no.ilike(like))
+            or_(
+                Member.name.ilike(like),
+                Member.phone.ilike(like),
+                Member.room_no.ilike(like),
+                Member.company.ilike(like),
+            )
         )
     if status is not None:
         q = q.where(Member.status == status)
     if plan_id is not None:
         q = q.where(Member.plan_id == plan_id)
+    if member_type is not None:
+        q = q.where(Member.member_type == member_type)
     total = (await db.execute(select(func.count()).select_from(q.subquery()))).scalar_one()
     rows = (await db.execute(q.order_by(Member.name).limit(limit).offset(offset))).scalars()
     return list(rows), total
@@ -134,6 +142,9 @@ async def create_member(
         name=data.name,
         phone=data.phone,
         room_no=data.room_no,
+        member_type=data.member_type,
+        company=data.company,
+        delivery_address=data.delivery_address,
         plan_id=plan.id,
         monthly_fee=data.monthly_fee if data.monthly_fee is not None else plan.monthly_fee,
         joining_date=data.joining_date,

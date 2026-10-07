@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query, status
 
 from app.core.deps import DbSession, OwnerUser
-from app.models import MemberStatus
+from app.models import MemberStatus, MemberType
 from app.schemas.common import Page
 from app.schemas.member import MemberCreate, MemberCreated, MemberOut, MemberUpdate, TempPassword
 from app.services import auth as auth_svc
@@ -17,6 +17,7 @@ async def list_members(
     search: str | None = Query(default=None, max_length=60),
     status_: MemberStatus | None = Query(default=None, alias="status"),
     plan_id: int | None = None,
+    member_type: MemberType | None = None,
     limit: int = Query(default=200, le=500),
     offset: int = Query(default=0, ge=0),
 ) -> Page[MemberOut]:
@@ -26,6 +27,7 @@ async def list_members(
         search=search,
         status=status_,
         plan_id=plan_id,
+        member_type=member_type,
         limit=limit,
         offset=offset,
     )
