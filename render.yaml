@@ -3,6 +3,7 @@ services:
     name: mess-tracker-api
     runtime: python
     plan: free
+    region: singapore
     rootDir: backend
     # Free plan has no preDeployCommand, so migrations run at start.
     buildCommand: pip install uv && uv sync --frozen --no-dev
@@ -19,5 +20,5 @@ services:
         generateValue: true
       - key: OWNER_INVITE_CODE   # 8+ chars
         sync: false
-      - key: CORS_ORIGINS        # JSON list, e.g. ["https://mess.netlify.app"]
+      - key: CORS_ORIGINS        # JSON list, e.g. ["https://swad-mess.netlify.app"]
         sync: false

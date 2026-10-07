@@ -144,6 +144,9 @@ export function LoginPage() {
           <Typography variant="caption" sx={{ textAlign: "center", pt: 1 }}>
             {t("auth.noAccount")}
           </Typography>
+          <Button variant="text" size="small" onClick={() => navigate("/register-mess")} sx={{ alignSelf: "center", minHeight: 40 }}>
+            {t("registerMess.link")}
+          </Button>
         </Stack>
       </Container>
     </Box>

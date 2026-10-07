@@ -25,12 +25,24 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def _asyncpg_url(cls, v: str) -> str:
-        """Render/Neon hand out postgres:// or postgresql:// URLs; SQLAlchemy needs asyncpg."""
-        if v.startswith("postgres://"):
-            return "postgresql+asyncpg://" + v[len("postgres://") :]
-        if v.startswith("postgresql://"):
-            return "postgresql+asyncpg://" + v[len("postgresql://") :]
-        return v
+        """Render/Neon hand out postgres:// or postgresql:// URLs with libpq options
+        (sslmode, channel_binding) that asyncpg rejects; convert to the asyncpg form."""
+        from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+        for prefix in ("postgres://", "postgresql://"):
+            if v.startswith(prefix):
+                v = "postgresql+asyncpg://" + v[len(prefix) :]
+        parts = urlsplit(v)
+        if not parts.query:
+            return v
+        query = []
+        for key, value in parse_qsl(parts.query, keep_blank_values=True):
+            if key == "sslmode":
+                if value != "disable":
+                    query.append(("ssl", "require"))
+            elif key != "channel_binding":
+                query.append((key, value))
+        return urlunsplit(parts._replace(query=urlencode(query)))
 
     @model_validator(mode="after")
     def _refuse_insecure_production(self) -> "Settings":

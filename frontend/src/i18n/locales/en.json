@@ -484,5 +484,17 @@
     "leaveCutoff": "Leave cutoff (night before)",
     "leaveCutoffHint": "Leaves after this need your approval",
     "saved": "Saved."
+  },
+  "registerMess": {
+    "title": "Register your mess",
+    "hint": "One-time setup. You become the owner; members are added from inside the app.",
+    "messName": "Mess name",
+    "ownerName": "Owner name",
+    "invite": "Setup code",
+    "inviteHint": "The OWNER_INVITE_CODE set on the server",
+    "badInvite": "Setup code is wrong",
+    "submit": "Create mess",
+    "haveLogin": "Already registered? Log in",
+    "link": "New mess? Register here"
   }
 }

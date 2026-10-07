@@ -165,3 +165,32 @@ async def test_inactive_user_login_401(client, db):
 
 def test_hash_token_is_stable():
     assert hash_token("a") == hash_token("a")
+
+
+# --- Deploy: Neon connection strings and production docs ------------------------
+
+
+def test_neon_url_sslmode_converted_for_asyncpg():
+    s = Settings(
+        database_url="postgresql://u:p@ep-x.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+        _env_file=None,
+    )
+    assert (
+        s.database_url
+        == "postgresql+asyncpg://u:p@ep-x.ap-southeast-1.aws.neon.tech/neondb?ssl=require"
+    )
+
+
+def test_plain_url_untouched():
+    s = Settings(database_url="postgresql+asyncpg://mess:mess@localhost:5434/mess", _env_file=None)
+    assert s.database_url == "postgresql+asyncpg://mess:mess@localhost:5434/mess"
+
+
+def test_docs_hidden_in_production():
+    from app.main import create_app
+
+    prod = Settings(
+        env="production", jwt_secret="x" * 40, owner_invite_code="s3cret-invite", _env_file=None
+    )
+    assert create_app(prod).docs_url is None and create_app(prod).openapi_url is None
+    assert create_app(Settings(_env_file=None)).docs_url == "/docs"

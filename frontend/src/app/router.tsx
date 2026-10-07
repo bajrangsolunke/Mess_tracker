@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { SplashPage } from "../features/splash/SplashPage";
 import { LanguageSelectPage } from "../features/auth/LanguageSelectPage";
 import { LoginPage } from "../features/auth/LoginPage";
+import { RegisterMessPage } from "../features/auth/RegisterMessPage";
 import { OnboardingPage } from "../features/onboarding/OnboardingPage";
 import { RequireRole } from "../features/auth/RequireRole";
 import { OwnerShell } from "../features/shell/OwnerShell";
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
   { path: "/select-language", element: <LanguageSelectPage /> },
   { path: "/welcome", element: <OnboardingPage /> },
   { path: "/login", element: <LoginPage /> },
+  { path: "/register-mess", element: <RegisterMessPage /> },
   {
     path: "/owner",
     element: (

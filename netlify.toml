@@ -1,0 +1,15 @@
+# Netlify reads this from the repo root. The app lives in frontend/.
+[build]
+  base = "frontend"
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "24"
+  # Set VITE_API_URL in Netlify → Site configuration → Environment variables,
+  # e.g. https://mess-tracker-api.onrender.com/api/v1
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
