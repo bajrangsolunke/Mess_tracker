@@ -10,6 +10,6 @@ export const OWNER_NAV: NavItem[] = [
     labelKey: "nav.more",
     to: "/owner/more",
     icon: <MoreIcon />,
-    also: ["/owner/pricing", "/owner/plans", "/owner/months", "/owner/menu", "/owner/announcements", "/owner/reports", "/owner/tiffins", "/owner/tiffin-clients", "/owner/change-password", "/owner/notifications"],
+    also: ["/owner/pricing", "/owner/plans", "/owner/months", "/owner/menu", "/owner/announcements", "/owner/reports", "/owner/tiffins", "/owner/tiffin-clients", "/owner/change-password", "/owner/notifications", "/owner/staff", "/owner/ledger"],
   },
 ];

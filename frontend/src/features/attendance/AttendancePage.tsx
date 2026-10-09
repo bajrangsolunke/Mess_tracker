@@ -17,6 +17,7 @@ import { brand } from "../../app/theme";
 import { formatDateLong, formatTime, todayIst } from "../../lib/date";
 import ScheduleIcon from "@mui/icons-material/ScheduleRounded";
 import { DateStrip } from "./DateStrip";
+import { useSession } from "../auth/authStore";
 
 function Counter({ label, value, color }: { label: string; value: number; color: string }) {
   return (
@@ -45,6 +46,7 @@ function Row({ row, locked, onMark }: { row: AttendanceRow; locked: boolean; onM
   const { t } = useTranslation();
   const present = row.status === "present";
   const absent = row.status === "absent";
+  const fixed = row.status !== null || locked;
   return (
     <Box
       sx={{
@@ -73,44 +75,51 @@ function Row({ row, locked, onMark }: { row: AttendanceRow; locked: boolean; onM
           ) : null}
         </Typography>
       </Box>
-      <Box sx={{ display: "flex", gap: 0.75 }}>
-        <ButtonBase
-          aria-label={`${row.member.name}: ${t("status.present")}`}
-          aria-pressed={present}
-          disabled={locked}
-          onClick={() => onMark("present")}
-          sx={{
-            width: 48,
-            height: 48,
-            borderRadius: "14px",
-            bgcolor: present ? brand.green : alpha(brand.green, 0.1),
-            color: present ? "#fff" : brand.green,
-            border: `1.5px solid ${present ? brand.green : alpha(brand.green, 0.3)}`,
-            transition: "background-color 120ms, transform 120ms",
-            "&:active": { transform: "scale(.94)" },
-          }}
-        >
-          <CheckIcon />
-        </ButtonBase>
-        <ButtonBase
-          aria-label={`${row.member.name}: ${t("status.absent")}`}
-          aria-pressed={absent}
-          disabled={locked}
-          onClick={() => onMark("absent")}
-          sx={{
-            width: 48,
-            height: 48,
-            borderRadius: "14px",
-            bgcolor: absent ? "#DC2626" : alpha("#DC2626", 0.08),
-            color: absent ? "#fff" : "#DC2626",
-            border: `1.5px solid ${absent ? "#DC2626" : alpha("#DC2626", 0.25)}`,
-            transition: "background-color 120ms, transform 120ms",
-            "&:active": { transform: "scale(.94)" },
-          }}
-        >
-          <CloseIcon />
-        </ButtonBase>
-      </Box>
+      {fixed ? (
+        <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, borderRadius: "999px", px: 1.15, py: 0.6, bgcolor: present ? alpha(brand.green, 0.12) : absent ? alpha("#DC2626", 0.12) : alpha(brand.inkSoft, 0.08), color: present ? brand.greenDark : absent ? "#B91C1C" : "text.secondary", fontWeight: 700 }}>
+          <LockIcon sx={{ fontSize: 16 }} />
+          {present ? t("status.present") : absent ? t("status.absent") : t("attendance.unmarked")}
+        </Box>
+      ) : (
+        <Box sx={{ display: "flex", gap: 0.75 }}>
+          <ButtonBase
+            aria-label={`${row.member.name}: ${t("status.present")}`}
+            aria-pressed={present}
+            disabled={locked}
+            onClick={() => onMark("present")}
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: "14px",
+              bgcolor: present ? brand.green : alpha(brand.green, 0.1),
+              color: present ? "#fff" : brand.green,
+              border: `1.5px solid ${present ? brand.green : alpha(brand.green, 0.3)}`,
+              transition: "background-color 120ms, transform 120ms",
+              "&:active": { transform: "scale(.94)" },
+            }}
+          >
+            <CheckIcon />
+          </ButtonBase>
+          <ButtonBase
+            aria-label={`${row.member.name}: ${t("status.absent")}`}
+            aria-pressed={absent}
+            disabled={locked}
+            onClick={() => onMark("absent")}
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: "14px",
+              bgcolor: absent ? "#DC2626" : alpha("#DC2626", 0.08),
+              color: absent ? "#fff" : "#DC2626",
+              border: `1.5px solid ${absent ? "#DC2626" : alpha("#DC2626", 0.25)}`,
+              transition: "background-color 120ms, transform 120ms",
+              "&:active": { transform: "scale(.94)" },
+            }}
+          >
+            <CloseIcon />
+          </ButtonBase>
+        </Box>
+      )}
     </Box>
   );
 }
@@ -118,6 +127,8 @@ function Row({ row, locked, onMark }: { row: AttendanceRow; locked: boolean; onM
 export function AttendancePage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useSession();
+  const isOwner = user?.role === "owner";
   const [params, setParams] = useSearchParams();
   const date = params.get("date") ?? todayIst();
   const meal = (params.get("meal") as MealType | null) ?? "lunch";
@@ -145,7 +156,7 @@ export function AttendancePage() {
       <PageHeader
         title={t("nav.attendance")}
         subtitle={formatDateLong(date, i18n.language)}
-        action={<Button variant="outlined" size="medium" startIcon={<MenuBookIcon />} onClick={() => navigate("/owner/register")} sx={{ minHeight: 44 }}>{t("register.title")}</Button>}
+        action={isOwner ? <Button variant="outlined" size="medium" startIcon={<MenuBookIcon />} onClick={() => navigate("/owner/register")} sx={{ minHeight: 44 }}>{t("register.title")}</Button> : undefined}
       />
       <DateStrip value={date} onChange={setDate} />
 
@@ -155,7 +166,7 @@ export function AttendancePage() {
       </Tabs>
 
       {locked ? (
-        <Alert severity="warning" icon={<LockIcon />} action={<Button size="small" onClick={() => navigate("/owner/months")}>{t("attendance.manageMonths")}</Button>}>
+        <Alert severity="warning" icon={<LockIcon />} action={isOwner ? <Button size="small" onClick={() => navigate("/owner/months")}>{t("attendance.manageMonths")}</Button> : undefined}>
           {t("attendance.locked")}
         </Alert>
       ) : null}

@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { storage, type Lang } from "../../lib/storage";
 
-export type Role = "owner" | "customer";
+export type Role = "owner" | "staff" | "customer";
 
 export interface AuthUser {
   id: number;

@@ -9,6 +9,7 @@ from app.api.v1 import (
     members,
     membership,
     menus,
+    operations,
     plans,
     pricing,
     tiffin,
@@ -27,3 +28,4 @@ api_router.include_router(billing.router)
 api_router.include_router(menus.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(tiffin.router)
+api_router.include_router(operations.router)

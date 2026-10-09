@@ -13,6 +13,7 @@ class Language(enum.StrEnum):
 
 class UserRole(enum.StrEnum):
     owner = "owner"
+    staff = "staff"
     customer = "customer"
 
 
@@ -71,3 +72,11 @@ class FoodType(enum.StrEnum):
     veg = "veg"
     egg = "egg"
     nonveg = "nonveg"
+
+
+class LedgerKind(enum.StrEnum):
+    expense = "expense"
+    income = "income"
+    staff_advance = "staff_advance"
+    salary_payment = "salary_payment"
+    advance_repayment = "advance_repayment"

@@ -34,6 +34,9 @@ import { RenewalsPage } from "../features/membership/RenewalsPage";
 import { RegisterPage } from "../features/register/RegisterPage";
 import { TiffinClientsPage } from "../features/tiffin/TiffinClientsPage";
 import { TiffinClientDetailPage } from "../features/tiffin/TiffinClientDetailPage";
+import { StaffPage } from "../features/operations/StaffPage";
+import { LedgerPage } from "../features/operations/LedgerPage";
+import { StaffShell, StaffHome } from "../features/shell/StaffShell";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
@@ -72,7 +75,22 @@ export const router = createBrowserRouter([
       { path: "tiffin-clients/:id", element: <TiffinClientDetailPage /> },
       { path: "payments", element: <PaymentsPage /> },
       { path: "payments/:id", element: <BillDetailPage /> },
+      { path: "staff", element: <StaffPage /> },
+      { path: "ledger", element: <LedgerPage /> },
       { path: "more", element: <ProfilePage titleKey="nav.more" /> },
+      { path: "change-password", element: <ChangePasswordPage /> },
+    ],
+  },
+  {
+    path: "/staff",
+    element: (
+      <RequireRole role="staff">
+        <StaffShell />
+      </RequireRole>
+    ),
+    children: [
+      { index: true, element: <StaffHome /> },
+      { path: "attendance", element: <AttendancePage /> },
       { path: "change-password", element: <ChangePasswordPage /> },
     ],
   },

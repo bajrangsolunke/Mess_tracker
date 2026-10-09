@@ -52,5 +52,12 @@ async def require_customer(user: CurrentUser) -> User:
     return user
 
 
+async def require_attendance_operator(user: CurrentUser) -> User:
+    if user.role not in (UserRole.owner, UserRole.staff):
+        raise ApiError(403, "FORBIDDEN", "Staff or owner access required")
+    return user
+
+
 OwnerUser = Annotated[User, Depends(require_owner)]
 CustomerUser = Annotated[User, Depends(require_customer)]
+AttendanceOperator = Annotated[User, Depends(require_attendance_operator)]

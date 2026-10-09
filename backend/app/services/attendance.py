@@ -264,8 +264,22 @@ async def bulk_mark(
     missing = ids - known
     if missing:
         raise ApiError(404, "MEMBER_NOT_FOUND", f"Unknown member ids: {sorted(missing)}")
-    stmt = insert(Attendance).values(
-        [
+    existing = {
+        r[0]: r[1]
+        for r in await db.execute(
+            select(Attendance.member_id, Attendance.status).where(
+                Attendance.organization_id == org_id,
+                Attendance.date == d,
+                Attendance.meal_type == meal,
+                Attendance.member_id.in_(ids),
+            )
+        )
+    }
+    targets = []
+    for mid, st in items:
+        if mid in existing:
+            raise ApiError(409, "ATTENDANCE_LOCKED", "This attendance mark is already set and cannot be changed")
+        targets.append(
             {
                 "organization_id": org_id,
                 "member_id": mid,
@@ -276,19 +290,11 @@ async def bulk_mark(
                 "marked_at": now_ist(),
                 "auto": False,
             }
-            for mid, st in items
-        ]
-    )
-    stmt = stmt.on_conflict_do_update(
-        constraint="uq_attendance_member_date_meal",
-        set_={
-            "status": stmt.excluded.status,
-            "marked_by": stmt.excluded.marked_by,
-            "marked_at": stmt.excluded.marked_at,
-            "auto": False,
-            "updated_at": func.now(),
-        },
-    )
+        )
+    if not targets:
+        return
+    stmt = insert(Attendance).values(targets)
+    stmt = stmt.on_conflict_do_nothing(index_elements=["organization_id", "member_id", "date", "meal_type"])
     await db.execute(stmt)
     await db.flush()
 

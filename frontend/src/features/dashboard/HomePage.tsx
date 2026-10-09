@@ -1,7 +1,6 @@
 import { Box, Button, Skeleton, Stack, Typography, alpha } from "@mui/material";
 import WbSunnyIcon from "@mui/icons-material/WbSunnyRounded";
 import NightsStayIcon from "@mui/icons-material/NightsStayRounded";
-import EditIcon from "@mui/icons-material/EditRounded";
 import CampaignIcon from "@mui/icons-material/CampaignRounded";
 import ChevronRightIcon from "@mui/icons-material/ChevronRightRounded";
 import { useTranslation } from "react-i18next";
@@ -11,7 +10,6 @@ import { useCustomerDashboard, useOwnerDashboard } from "../../api/useDashboard"
 import { StatCard } from "../../components/brand/StatCard";
 import { QuickAction } from "../../components/brand/QuickAction";
 import { SectionTitle } from "../../components/brand/SectionTitle";
-import { MealCard } from "../../components/brand/MealCard";
 import { StatusChip } from "../../components/brand/StatusChip";
 import { ChefSays } from "../../components/brand/ChefSays";
 import { FamilyIcon, PlateCheckIcon, ThaliIcon, WalletRupeeIcon, NotebookIcon } from "../../components/brand/icons";
@@ -155,22 +153,6 @@ export function OwnerHome() {
         </Box>
       </Box>
 
-      <Box>
-        <SectionTitle
-          action={
-            <Button size="small" variant="text" startIcon={<EditIcon />} sx={{ minHeight: 36 }} onClick={() => navigate("/owner/menu")}>
-              {t("menu.edit")}
-            </Button>
-          }
-        >
-          {t("menu.today")}
-        </SectionTitle>
-        <Stack spacing={1.5}>
-          <MealCard meal="lunch" items={data?.menu.lunch ?? []} emptyHint={t("menu.ownerEmpty")} />
-          <MealCard meal="dinner" items={data?.menu.dinner ?? []} emptyHint={t("menu.ownerEmpty")} />
-        </Stack>
-      </Box>
-
       <Button variant="outlined" startIcon={<CampaignIcon />} onClick={() => navigate("/owner/announcements")}>
         {t("dashboard.announce")}
       </Button>
@@ -216,14 +198,6 @@ export function CustomerHome() {
           </Typography>
         </Box>
         {bill ? <StatusChip status={bill.status === "unpaid" ? "pending" : bill.status} /> : <Typography variant="caption">{t("chef.noBillYetShort")}</Typography>}
-      </Box>
-
-      <Box>
-        <SectionTitle>{t("menu.today")}</SectionTitle>
-        <Stack spacing={1.5}>
-          <MealCard meal="lunch" items={data?.menu.lunch ?? []} />
-          <MealCard meal="dinner" items={data?.menu.dinner ?? []} />
-        </Stack>
       </Box>
 
       {data && data.upcoming_leaves.length > 0 ? (

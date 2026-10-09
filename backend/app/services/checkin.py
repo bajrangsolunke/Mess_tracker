@@ -1,5 +1,7 @@
 """Member self check-in: the digital replacement for signing the mess notebook."""
 
+from datetime import date, timedelta
+
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -72,12 +74,19 @@ async def today_status(db: AsyncSession, member: Member, user: User) -> MyToday:
     return MyToday(date=d, valid_until=member.valid_until, expired=expired, **out)
 
 
+def _grace_window_end(member: Member, d: date) -> date | None:
+    if member.valid_until is None:
+        return None
+    return member.valid_until + timedelta(days=6)
+
+
 async def check_in(db: AsyncSession, member: Member, user: User, meal: MealType) -> None:
     now = now_ist()
     d = now.date()
     if not _includes(member, meal) or member.joining_date > d:
         raise ApiError(422, "MEAL_NOT_IN_PLAN", "This meal is not part of your plan")
-    if member.valid_until is not None and member.valid_until < d:
+    grace_end = _grace_window_end(member, d)
+    if grace_end is not None and d > grace_end:
         raise ApiError(409, "MEMBERSHIP_EXPIRED", "Your membership has ended; please renew")
     if await holiday_for(db, member.organization_id, d, meal) is not None:
         raise ApiError(409, "HOLIDAY", "Mess is closed for this meal today")

@@ -406,3 +406,50 @@ export interface Register {
     present: number;
   }[];
 }
+
+export interface StaffListItem {
+  id: number;
+  user_id: number;
+  name: string;
+  phone: string;
+  monthly_salary: string;
+  is_active: boolean;
+  joined_date: string;
+}
+
+export interface StaffCreatedInput {
+  name: string;
+  phone: string;
+  monthly_salary: string;
+}
+
+export interface StaffCreated extends StaffListItem {
+  temp_password: string;
+}
+
+export type LedgerKind = "income" | "expense" | "staff_advance" | "salary_payment" | "advance_repayment";
+
+export interface LedgerEntry {
+  id: number;
+  kind: LedgerKind;
+  amount: string;
+  date: string;
+  description: string;
+  note: string | null;
+  staff_user_id: number | null;
+  recorded_by: number;
+}
+
+export interface LedgerReport {
+  from: string;
+  to: string;
+  entries: LedgerEntry[];
+  totals: {
+    income: string;
+    expense: string;
+    staff_advance: string;
+    salary_payment: string;
+    advance_repayment: string;
+    net: string;
+  };
+}

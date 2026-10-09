@@ -2,7 +2,7 @@ from datetime import date
 
 from fastapi import APIRouter, Query, Response, status
 
-from app.core.deps import CurrentUser, DbSession, OwnerUser
+from app.core.deps import AttendanceOperator, CurrentUser, DbSession, OwnerUser
 from app.core.errors import ApiError
 from app.core.time import parse_month, today_ist
 from app.models import AttendanceStatus, Holiday, MealType, UserRole
@@ -31,40 +31,40 @@ def _month(value: str | None) -> date:
 
 @router.get("/attendance", response_model=AttendanceSheet)
 async def get_sheet(
-    owner: OwnerUser,
+    operator: AttendanceOperator,
     db: DbSession,
     date_: date = Query(alias="date"),
     meal_type: MealType = Query(),
 ) -> AttendanceSheet:
-    await ensure_closed(db, owner.organization_id)
-    return await svc.sheet(db, owner.organization_id, date_, meal_type)
+    await ensure_closed(db, operator.organization_id)
+    return await svc.sheet(db, operator.organization_id, date_, meal_type)
 
 
 @router.put("/attendance", response_model=AttendanceSheet)
-async def put_marks(data: BulkMark, owner: OwnerUser, db: DbSession) -> AttendanceSheet:
+async def put_marks(data: BulkMark, operator: AttendanceOperator, db: DbSession) -> AttendanceSheet:
     await svc.bulk_mark(
         db,
-        owner.organization_id,
+        operator.organization_id,
         data.date,
         data.meal_type,
         [(i.member_id, i.status) for i in data.items],
-        owner.id,
+        operator.id,
     )
     await db.commit()
-    return await svc.sheet(db, owner.organization_id, data.date, data.meal_type)
+    return await svc.sheet(db, operator.organization_id, data.date, data.meal_type)
 
 
 @router.post("/attendance/mark-all", response_model=AttendanceSheet)
 async def mark_all(
-    owner: OwnerUser,
+    operator: AttendanceOperator,
     db: DbSession,
     date_: date = Query(alias="date"),
     meal_type: MealType = Query(),
     status_: AttendanceStatus = Query(alias="status"),
 ) -> AttendanceSheet:
-    await svc.mark_all(db, owner.organization_id, date_, meal_type, status_, owner.id)
+    await svc.mark_all(db, operator.organization_id, date_, meal_type, status_, operator.id)
     await db.commit()
-    return await svc.sheet(db, owner.organization_id, date_, meal_type)
+    return await svc.sheet(db, operator.organization_id, date_, meal_type)
 
 
 @router.get("/attendance/history", response_model=HistoryOut)
