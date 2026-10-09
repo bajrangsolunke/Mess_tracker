@@ -6,6 +6,7 @@ from app.models.enums import Language, MemberStatus
 from app.schemas.attendance import HistoryOut
 from app.schemas.billing import BillOut
 from app.schemas.common import Money
+from app.schemas.credits import CreditOut
 
 
 class PublicMember(BaseModel):
@@ -29,3 +30,4 @@ class PublicView(BaseModel):
     history: HistoryOut
     bills: list[BillOut]
     due: Money
+    credits: CreditOut | None = None

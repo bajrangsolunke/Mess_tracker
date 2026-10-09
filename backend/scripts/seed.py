@@ -151,7 +151,9 @@ async def seed(db: AsyncSession) -> None:
             db.add(member)
             await db.flush()
             await db.refresh(member)
-            await billing.create_period_bill(db, member, joined, member.valid_until)
+            await billing.create_period_bill(
+                db, member, joined, member.valid_until, meal_credits=plans[pidx].meal_credits
+            )
         members.append(member)
 
     # attendance for the past days of this month (everyone present, a few absences)

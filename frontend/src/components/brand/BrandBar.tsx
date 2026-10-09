@@ -1,4 +1,7 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import SearchIcon from "@mui/icons-material/SearchRounded";
+import { useTranslation } from "react-i18next";
+import { GlobalSearch } from "../../features/search/GlobalSearch";
 import { AppBar, Badge, Box, IconButton, Toolbar, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +23,9 @@ export function BrandBar({
   actions?: ReactNode;
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user } = useSession();
+  const [searching, setSearching] = useState(false);
   const { data } = useNotifications(!!user && user.role !== "staff");
   const unread = data?.unread ?? 0;
   return (
@@ -92,6 +97,11 @@ export function BrandBar({
           </Box>
         )}
         {actions}
+        {user && user.role !== "customer" ? (
+          <IconButton color="inherit" aria-label={t("search.open")} onClick={() => setSearching(true)}>
+            <SearchIcon />
+          </IconButton>
+        ) : null}
         {user && user.role !== "staff" ? (
           <IconButton color="inherit" aria-label={`notifications${unread ? ` (${unread})` : ""}`} onClick={() => navigate(user.role === "owner" ? "/owner/notifications" : "/app/notifications")}>
             <Badge badgeContent={unread} color="secondary" max={9} sx={{ "& .MuiBadge-badge": { fontWeight: 700 } }}>
@@ -100,6 +110,7 @@ export function BrandBar({
           </IconButton>
         ) : null}
       </Toolbar>
+      {searching ? <GlobalSearch onClose={() => setSearching(false)} /> : null}
     </AppBar>
   );
 }

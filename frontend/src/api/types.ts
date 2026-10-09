@@ -9,6 +9,17 @@ export interface Plan {
   monthly_fee: string;
   is_active: boolean;
   kind?: PlanKind | null;
+  meal_credits?: number | null;
+}
+
+/** Tiffin pack in use: 30 (1 time) or 60 (2 times) per period; leftovers lapse after use_by. */
+export interface Credits {
+  total: number;
+  used: number;
+  left: number;
+  start: string;
+  end: string;
+  use_by: string;
 }
 
 export type PlanKind = "one_lunch" | "one_dinner" | "two";
@@ -40,6 +51,7 @@ export interface Member {
   next_plan_from: string | null;
   share_token: string | null;
   due: string;
+  credits?: Credits | null;
 }
 
 export interface Page<T> {
@@ -90,6 +102,28 @@ export interface AttendanceRow {
   auto: boolean;
   marked_at: string | null;
   marked_by_name?: string | null;
+  tiffins_left?: number | null;
+  extra?: boolean;
+}
+
+export type MarkBlock = "NO_TIFFINS_LEFT" | "MEMBERSHIP_EXPIRED" | "HOLIDAY" | "INACTIVE" | "NOT_STARTED" | "MEAL_NOT_IN_PLAN";
+
+export interface SearchMeal {
+  status: AttendanceStatus | null;
+  marked_at: string | null;
+  marked_by_name: string | null;
+  auto: boolean;
+  allowed: boolean;
+  reason: MarkBlock | null;
+}
+
+export interface SearchRow {
+  member: MemberBrief;
+  active: boolean;
+  valid_until: string | null;
+  credits: Credits | null;
+  lunch: SearchMeal;
+  dinner: SearchMeal;
 }
 
 export interface AttendanceCounts {
@@ -397,6 +431,8 @@ export interface DueRow {
   days_left: number;
   renewal_plan: Plan | null;
   renewal_requested_at: string | null;
+  credits?: Credits | null;
+  used_up?: boolean;
 }
 
 export interface Pricing {
@@ -538,4 +574,5 @@ export interface PublicView {
   history: HistoryOut;
   bills: Bill[];
   due: string;
+  credits?: Credits | null;
 }

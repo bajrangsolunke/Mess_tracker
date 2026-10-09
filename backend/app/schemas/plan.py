@@ -8,6 +8,7 @@ class PlanCreate(BaseModel):
     includes_lunch: bool = True
     includes_dinner: bool = True
     monthly_fee: MoneyIn
+    meal_credits: int | None = Field(default=None, ge=1, le=200)
 
     @model_validator(mode="after")
     def _at_least_one_meal(self) -> "PlanCreate":
@@ -22,6 +23,7 @@ class PlanUpdate(BaseModel):
     includes_dinner: bool | None = None
     monthly_fee: MoneyIn | None = None
     is_active: bool | None = None
+    meal_credits: int | None = Field(default=None, ge=1, le=200)
 
 
 class PlanOut(BaseModel):
@@ -33,3 +35,4 @@ class PlanOut(BaseModel):
     monthly_fee: Money
     is_active: bool
     kind: str | None = None
+    meal_credits: int | None = None

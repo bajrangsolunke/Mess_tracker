@@ -3,6 +3,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRightRounded";
 import LanguageIcon from "@mui/icons-material/LanguageRounded";
 import LogoutIcon from "@mui/icons-material/LogoutRounded";
 import BadgeIcon from "@mui/icons-material/BadgeRounded";
+import { InstallAppCard } from "../../components/InstallAppCard";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "../auth/authStore";
@@ -49,6 +50,8 @@ export function ProfilePage({ titleKey, children }: { titleKey: "nav.more" | "na
       </Box>
 
       {children}
+
+      {user?.role !== "customer" ? <InstallAppCard /> : null}
 
       <Box>
         <SectionTitle>{t("profile.settings")}</SectionTitle>

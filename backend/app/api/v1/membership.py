@@ -3,10 +3,11 @@ from pydantic import BaseModel
 
 from app.core.deps import CustomerUser, DbSession, OwnerUser
 from app.core.errors import ApiError
+from app.core.time import today_ist
 from app.schemas.billing import BillOut, DueRow
 from app.schemas.member import MemberOut, RenewalRequest, RenewIn
 from app.schemas.plan import PlanOut
-from app.services import billing, membership
+from app.services import billing, credits, membership
 from app.services.members import member_for_user, pay_at_desk
 
 router = APIRouter(tags=["membership"])
@@ -28,7 +29,9 @@ async def renew(member_id: int, data: RenewIn, owner: OwnerUser, db: DbSession) 
         db, owner.organization_id, bill.id, data.paid_amount, data.payment_method, owner.id
     )
     bill = await billing.get_bill(db, owner.organization_id, bill.id)
-    out = RenewOut(member=MemberOut.model_validate(m), bill=billing.to_out(*bill))
+    member_out = MemberOut.model_validate(m)
+    member_out.credits = (await credits.credits_on(db, [m.id], today_ist())).get(m.id)
+    out = RenewOut(member=member_out, bill=billing.to_out(*bill))
     await db.commit()
     return out
 

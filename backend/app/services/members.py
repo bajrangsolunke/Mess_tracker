@@ -247,7 +247,9 @@ async def create_member(
     await db.refresh(member)
     from app.services.billing import create_period_bill
 
-    bill = await create_period_bill(db, member, data.joining_date, member.valid_until)
+    bill = await create_period_bill(
+        db, member, data.joining_date, member.valid_until, meal_credits=plan.meal_credits
+    )
     await pay_at_desk(db, org_id, bill.id, data.paid_amount, data.payment_method, user_id)
     return member, temp
 

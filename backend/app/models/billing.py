@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import Date, Enum, ForeignKey, Index, Numeric, String, UniqueConstraint
+from sqlalchemy import Date, Enum, ForeignKey, Index, Integer, Numeric, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
@@ -11,7 +11,22 @@ from app.models.enums import BillStatus, PaymentMethod
 class Bill(TimestampMixin, Base):
     __tablename__ = "bills"
     __table_args__ = (
-        UniqueConstraint("member_id", "month", name="uq_bills_member_month"),
+        # calendar-month bills (legacy): one per month; period bills: one per start date
+        # (a member who uses up a tiffin pack early can renew twice in a month)
+        Index(
+            "uq_bills_member_month_legacy",
+            "member_id",
+            "month",
+            unique=True,
+            postgresql_where=text("period_start IS NULL"),
+        ),
+        Index(
+            "uq_bills_member_period",
+            "member_id",
+            "period_start",
+            unique=True,
+            postgresql_where=text("period_start IS NOT NULL"),
+        ),
         Index("ix_bills_org_month", "organization_id", "month"),
     )
 
@@ -24,6 +39,7 @@ class Bill(TimestampMixin, Base):
     month: Mapped[date] = mapped_column(Date, nullable=False)  # first day of month
     period_start: Mapped[date | None] = mapped_column(Date)
     period_end: Mapped[date | None] = mapped_column(Date)
+    meal_credits: Mapped[int | None] = mapped_column(Integer)  # tiffins in this period
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     status: Mapped[BillStatus] = mapped_column(
         Enum(BillStatus, name="bill_status"), default=BillStatus.unpaid, nullable=False

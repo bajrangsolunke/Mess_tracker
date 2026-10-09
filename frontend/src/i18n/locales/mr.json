@@ -45,7 +45,8 @@
     "edit": "बदला",
     "done": "झाले",
     "copy": "कॉपी",
-    "delete": "हटवा"
+    "delete": "हटवा",
+    "clear": "पुसा"
   },
   "dashboard": {
     "welcome": "नमस्कार, {{name}} 👋",
@@ -241,7 +242,9 @@
     "alreadyMarked": "आधीच नोंद झाली आहे. बदल फक्त मालक करू शकतात.",
     "changeTo": "{{status}} करा",
     "correctBody": "{{name}} · {{meal}} · {{date}} ला {{from}} नोंद आहे. {{to}} करायचे?",
-    "correctTitle": "ही नोंद बदलायची?"
+    "correctTitle": "ही नोंद बदलायची?",
+    "extraMeal": "जादा जेवण",
+    "otherMembers": "{{meal}} साठी इतर सदस्य"
   },
   "holidays": {
     "title": "सुट्ट्या",
@@ -630,5 +633,41 @@
     "sendWelcome": "WhatsApp वर पाठवा",
     "validTill": "{{date}} पर्यंत · {{count}} दिवस बाकी",
     "welcomeText": "नमस्कार {{name}}! {{mess}} मध्ये आपले स्वागत 🙏\nसदस्य ID: #{{no}}\nप्लॅन: {{plan}}\n{{till}} पर्यंत वैध\n{{due}}\nआपले जेवण आणि फी कधीही पाहा:\n{{link}}"
+  },
+  "install": {
+    "title": "ॲप इंस्टॉल करा",
+    "hint": "होम स्क्रीनवरून ॲपसारखे उघडेल, ब्राउझर बारशिवाय.",
+    "button": "स्वाद ॲप इंस्टॉल करा",
+    "android": "Chrome मध्ये ⋮ (वर उजवीकडे) दाबा → \"Add to Home screen\" किंवा \"Install app\" → Install.",
+    "ios": "Safari मध्ये Share (□↑) दाबा → \"Add to Home Screen\" → Add."
+  },
+  "pack": {
+    "title": "डबे",
+    "count": "{{count}} डबे",
+    "left": "{{left}} बाकी",
+    "leftOf": "{{left}}/{{total}} बाकी",
+    "eaten": "{{total}} पैकी {{used}} जेवले",
+    "useBy": "{{date}} पर्यंत वापरा",
+    "usedUp": "संपले",
+    "renewNow": "सर्व डबे संपले, पुढे चालू ठेवण्यासाठी नूतनीकरण करा",
+    "usedUpRenew": "सर्व {{total}} डबे संपले, नूतनीकरण करा"
+  },
+  "search": {
+    "open": "सदस्य शोधा",
+    "placeholder": "नाव, फोन किंवा ID",
+    "hint": "नाव, फोन किंवा सदस्य ID टाका आणि जे जेवण जेवले ते दाबा.",
+    "none": "सदस्य सापडला नाही",
+    "ate": "जेवले",
+    "block": {
+      "NO_TIFFINS_LEFT": "डबे संपले",
+      "MEMBERSHIP_EXPIRED": "सदस्यत्व संपले",
+      "HOLIDAY": "मेस बंद",
+      "INACTIVE": "बंद सदस्य",
+      "NOT_STARTED": "सुरू नाही",
+      "MEAL_NOT_IN_PLAN": "प्लॅनमध्ये नाही",
+      "ATTENDANCE_LOCKED": "आधीच नोंद",
+      "MONTH_CLOSED": "महिना बंद आहे",
+      "STAFF_TODAY_ONLY": "फक्त आज"
+    }
   }
 }

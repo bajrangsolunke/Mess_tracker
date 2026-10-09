@@ -15,6 +15,7 @@ from app.schemas.attendance import (
     KitchenMeal,
     KitchenToday,
     MonthState,
+    SearchRow,
     SummaryRow,
 )
 from app.services import attendance as svc
@@ -50,6 +51,19 @@ async def get_sheet(
 ) -> AttendanceSheet:
     await ensure_closed(db, operator.organization_id)
     return await svc.sheet(db, operator.organization_id, date_, meal_type)
+
+
+@router.get("/attendance/search", response_model=list[SearchRow])
+async def search_members(
+    operator: AttendanceOperator,
+    db: DbSession,
+    q: str = Query(min_length=1, max_length=60),
+    date_: date | None = Query(default=None, alias="date"),
+) -> list[SearchRow]:
+    """Find a member by name, phone or ID and see what can be marked (staff: today only)."""
+    d = date_ if date_ and operator.role is UserRole.owner else today_ist()
+    await ensure_closed(db, operator.organization_id)
+    return await svc.search(db, operator.organization_id, q, d)
 
 
 @router.get("/kitchen/today", response_model=KitchenToday)

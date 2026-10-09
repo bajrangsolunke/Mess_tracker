@@ -32,8 +32,8 @@ export function MealChoice({ plans, value, onChange }: { plans: Plan[]; value: C
     <Box>
       <Typography variant="subtitle2" sx={{ color: "text.secondary", mb: 1 }}>{t("pricing.howManyTimes")}</Typography>
       <Box sx={{ display: "flex", gap: 1.25 }}>
-        <Tile active={value?.times === 1} onClick={() => onChange({ times: 1, meal: value?.meal ?? "dinner" })} title={t("pricing.oneMeal")} sub={one ? `${rupees(one.monthly_fee)}/${t("members.perMonth")}` : undefined} />
-        <Tile active={value?.times === 2} onClick={() => onChange({ times: 2, meal: "lunch" })} title={t("pricing.twoMeals")} sub={two ? `${rupees(two.monthly_fee)}/${t("members.perMonth")}` : undefined} />
+        <Tile active={value?.times === 1} onClick={() => onChange({ times: 1, meal: value?.meal ?? "dinner" })} title={t("pricing.oneMeal")} sub={one ? `${rupees(one.monthly_fee)}/${t("members.perMonth")}${one.meal_credits ? ` · ${t("pack.count", { count: one.meal_credits })}` : ""}` : undefined} />
+        <Tile active={value?.times === 2} onClick={() => onChange({ times: 2, meal: "lunch" })} title={t("pricing.twoMeals")} sub={two ? `${rupees(two.monthly_fee)}/${t("members.perMonth")}${two.meal_credits ? ` · ${t("pack.count", { count: two.meal_credits })}` : ""}` : undefined} />
       </Box>
       {value?.times === 1 ? (
         <>

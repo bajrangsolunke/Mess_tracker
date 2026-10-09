@@ -45,7 +45,8 @@
     "edit": "बदलें",
     "done": "हो गया",
     "copy": "कॉपी",
-    "delete": "हटाएँ"
+    "delete": "हटाएँ",
+    "clear": "साफ़ करें"
   },
   "dashboard": {
     "welcome": "नमस्ते, {{name}} 👋",
@@ -241,7 +242,9 @@
     "alreadyMarked": "पहले ही मार्क हो चुका है। सुधार सिर्फ मालिक कर सकते हैं।",
     "changeTo": "{{status}} करें",
     "correctBody": "{{name}} · {{meal}} · {{date}} को {{from}} मार्क है। {{to}} करें?",
-    "correctTitle": "यह मार्क बदलें?"
+    "correctTitle": "यह मार्क बदलें?",
+    "extraMeal": "अतिरिक्त खाना",
+    "otherMembers": "{{meal}} के लिए अन्य सदस्य"
   },
   "holidays": {
     "title": "छुट्टियाँ",
@@ -630,5 +633,41 @@
     "sendWelcome": "WhatsApp पर भेजें",
     "validTill": "{{date}} तक · {{count}} दिन बाकी",
     "welcomeText": "नमस्ते {{name}}! {{mess}} में आपका स्वागत है 🙏\nसदस्य ID: #{{no}}\nप्लान: {{plan}}\n{{till}} तक मान्य\n{{due}}\nअपना खाना और फीस कभी भी देखें:\n{{link}}"
+  },
+  "install": {
+    "title": "ऐप इंस्टॉल करें",
+    "hint": "होम स्क्रीन से ऐप की तरह खुलेगा, ब्राउज़र बार के बिना।",
+    "button": "स्वाद ऐप इंस्टॉल करें",
+    "android": "Chrome में ⋮ (ऊपर दाएं) दबाएं → \"Add to Home screen\" या \"Install app\" → Install।",
+    "ios": "Safari में Share (□↑) दबाएं → \"Add to Home Screen\" → Add।"
+  },
+  "pack": {
+    "title": "टिफिन",
+    "count": "{{count}} टिफिन",
+    "left": "{{left}} बाकी",
+    "leftOf": "{{left}}/{{total}} बाकी",
+    "eaten": "{{total}} में से {{used}} खाए",
+    "useBy": "{{date}} तक इस्तेमाल करें",
+    "usedUp": "खत्म",
+    "renewNow": "सब टिफिन खत्म, आगे के लिए रिन्यू करें",
+    "usedUpRenew": "सभी {{total}} टिफिन खत्म, रिन्यू करें"
+  },
+  "search": {
+    "open": "सदस्य खोजें",
+    "placeholder": "नाम, फोन या ID",
+    "hint": "नाम, फोन या सदस्य ID डालें और जो खाना खाया वह दबाएं।",
+    "none": "कोई सदस्य नहीं मिला",
+    "ate": "खाया",
+    "block": {
+      "NO_TIFFINS_LEFT": "टिफिन खत्म",
+      "MEMBERSHIP_EXPIRED": "मेंबरशिप खत्म",
+      "HOLIDAY": "मेस बंद",
+      "INACTIVE": "बंद सदस्य",
+      "NOT_STARTED": "शुरू नहीं हुआ",
+      "MEAL_NOT_IN_PLAN": "प्लान में नहीं",
+      "ATTENDANCE_LOCKED": "पहले ही मार्क",
+      "MONTH_CLOSED": "महीना बंद है",
+      "STAFF_TODAY_ONLY": "सिर्फ आज"
+    }
   }
 }

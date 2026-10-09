@@ -45,7 +45,8 @@
     "edit": "Edit",
     "done": "Done",
     "copy": "Copy",
-    "delete": "Delete"
+    "delete": "Delete",
+    "clear": "Clear"
   },
   "dashboard": {
     "welcome": "Hello, {{name}} 👋",
@@ -241,7 +242,9 @@
     "alreadyMarked": "Already marked. Only the owner can correct a mark.",
     "changeTo": "Make {{status}}",
     "correctBody": "{{name}} · {{meal}} · {{date}} is marked {{from}}. Change it to {{to}}?",
-    "correctTitle": "Correct this mark?"
+    "correctTitle": "Correct this mark?",
+    "extraMeal": "Extra meal",
+    "otherMembers": "Other members for {{meal}}"
   },
   "holidays": {
     "title": "Holidays",
@@ -630,5 +633,41 @@
     "sendWelcome": "Send on WhatsApp",
     "validTill": "Valid till {{date}} · {{count}} days left",
     "welcomeText": "Namaste {{name}}! Welcome to {{mess}} 🙏\nMember ID: #{{no}}\nPlan: {{plan}}\nValid till: {{till}}\n{{due}}\nSee your meals and fees any time:\n{{link}}"
+  },
+  "install": {
+    "title": "Install the app",
+    "hint": "Opens from your home screen like an app, without the browser bar.",
+    "button": "Install स्वाद app",
+    "android": "In Chrome tap ⋮ (top right) → \"Add to Home screen\" or \"Install app\" → Install.",
+    "ios": "In Safari tap Share (□↑) → \"Add to Home Screen\" → Add."
+  },
+  "pack": {
+    "title": "Tiffins",
+    "count": "{{count}} tiffins",
+    "left": "{{left}} left",
+    "leftOf": "{{left}}/{{total}} left",
+    "eaten": "{{used}} of {{total}} eaten",
+    "useBy": "use by {{date}}",
+    "usedUp": "Used up",
+    "renewNow": "All tiffins eaten, renew to continue",
+    "usedUpRenew": "All {{total}} tiffins eaten, renew"
+  },
+  "search": {
+    "open": "Search members",
+    "placeholder": "Name, phone or ID",
+    "hint": "Type a name, phone or member ID and tap the meal they ate.",
+    "none": "No member found",
+    "ate": "Ate",
+    "block": {
+      "NO_TIFFINS_LEFT": "Tiffins over",
+      "MEMBERSHIP_EXPIRED": "Membership over",
+      "HOLIDAY": "Mess closed",
+      "INACTIVE": "Inactive",
+      "NOT_STARTED": "Not started",
+      "MEAL_NOT_IN_PLAN": "Not in plan",
+      "ATTENDANCE_LOCKED": "Already marked",
+      "MONTH_CLOSED": "Month is closed",
+      "STAFF_TODAY_ONLY": "Today only"
+    }
   }
 }

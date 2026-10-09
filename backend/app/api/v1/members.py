@@ -1,21 +1,26 @@
 from fastapi import APIRouter, Query, status
 
 from app.core.deps import DbSession, OwnerUser
+from app.core.time import today_ist
 from app.models import MemberStatus, MemberType
 from app.schemas.common import Page
 from app.schemas.member import MemberCreate, MemberCreated, MemberOut, MemberUpdate, TempPassword
 from app.services import auth as auth_svc
+from app.services import credits
 from app.services import members as svc
 
 router = APIRouter(prefix="/members", tags=["members"])
 
 
 async def _out(db: DbSession, members: list) -> list[MemberOut]:
-    due = await svc.dues(db, members[0].organization_id, [m.id for m in members]) if members else {}
+    ids = [m.id for m in members]
+    due = await svc.dues(db, members[0].organization_id, ids) if members else {}
+    packs = await credits.credits_on(db, ids, today_ist())
     outs = []
     for m in members:
         o = MemberOut.model_validate(m)
         o.due = due.get(m.id, o.due)
+        o.credits = packs.get(m.id)
         outs.append(o)
     return outs
 

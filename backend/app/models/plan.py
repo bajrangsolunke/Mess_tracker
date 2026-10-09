@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import Boolean, ForeignKey, Numeric, String, UniqueConstraint
+from sqlalchemy import Boolean, ForeignKey, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -20,3 +20,5 @@ class MessPlan(TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     # Standard plans from the pricing screen: one_lunch, one_dinner, two. NULL = custom.
     kind: Mapped[str | None] = mapped_column(String(20))
+    # tiffins in one membership period (1 time: 30, 2 times: 60). NULL = unlimited meals.
+    meal_credits: Mapped[int | None] = mapped_column(Integer)

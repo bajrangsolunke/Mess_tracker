@@ -11,6 +11,7 @@ import { ChefSays } from "../../components/brand/ChefSays";
 import { brand } from "../../app/theme";
 import { formatDateLong } from "../../lib/date";
 import { planName } from "../../lib/plans";
+import { TiffinsLeft } from "../search/TiffinsLeft";
 import { RenewSheet } from "./RenewSheet";
 import { daysLeftLabel } from "../../lib/membership";
 
@@ -35,7 +36,12 @@ export function RenewalsPage() {
                 <Avatar name={r.member.name} size={40} />
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography variant="subtitle1" noWrap>{r.member.name} <Typography component="span" variant="caption">#{r.member.member_no}</Typography></Typography>
-                  <Typography variant="body2" sx={{ color, fontWeight: 600 }}>{daysLeftLabel(r.days_left, t)} · {formatDateLong(r.valid_until, i18n.language)}</Typography>
+                  {r.used_up ? (
+                    <Typography variant="body2" sx={{ color: "#DC2626", fontWeight: 700 }}>{t("pack.usedUpRenew", { total: r.credits?.total ?? "" })}</Typography>
+                  ) : (
+                    <Typography variant="body2" sx={{ color, fontWeight: 600 }}>{daysLeftLabel(r.days_left, t)} · {formatDateLong(r.valid_until, i18n.language)}</Typography>
+                  )}
+                  {r.credits && !r.used_up ? <TiffinsLeft left={r.credits.left} total={r.credits.total} /> : null}
                   {r.renewal_plan ? (
                     <Typography variant="caption" sx={{ color: brand.greenDark, fontWeight: 600 }}>{t("membership.requested", { plan: planName(r.renewal_plan, t) })}</Typography>
                   ) : null}

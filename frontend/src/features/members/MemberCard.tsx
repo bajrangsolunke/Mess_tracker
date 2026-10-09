@@ -8,6 +8,7 @@ import { StatusChip } from "../../components/brand/StatusChip";
 import { rupees } from "../../lib/money";
 import { planLabel } from "./planLabel";
 import { MembershipBadge } from "./MembershipBadge";
+import { TiffinsLeft } from "../search/TiffinsLeft";
 
 export function MemberCard({ member, onClick }: { member: Member; onClick: () => void }) {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ export function MemberCard({ member, onClick }: { member: Member; onClick: () =>
         </Typography>
         <Box sx={{ mt: 0.25, display: "flex", gap: 0.75 }}>
           <MembershipBadge validUntil={member.valid_until} />
+          {member.credits ? <TiffinsLeft left={member.credits.left} total={member.credits.total} /> : null}
           {member.renewal_requested_at ? <Box component="span" sx={{ fontSize: "0.72rem", fontWeight: 700, px: 0.9, py: 0.2, borderRadius: 999, bgcolor: `${brand.green}1F`, color: brand.greenDark }}>{t("membership.renewalAsked")}</Box> : null}
         </Box>
       </Box>

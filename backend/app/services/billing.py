@@ -238,9 +238,15 @@ async def send_payment_reminders(db: AsyncSession, org_id: int, month: date) -> 
 
 
 async def create_period_bill(
-    db: AsyncSession, member: Member, start: date, end: date, amount: Decimal | None = None
+    db: AsyncSession,
+    member: Member,
+    start: date,
+    end: date,
+    amount: Decimal | None = None,
+    meal_credits: int | None = None,
 ) -> Bill:
-    """Bill for one membership period. Raises 409 PERIOD_EXISTS if that month is already billed."""
+    """Bill for one membership period (with its tiffin pack, if the plan has one).
+    Raises 409 PERIOD_EXISTS if a period already starts on that day."""
     from sqlalchemy.exc import IntegrityError
 
     from app.core.time import month_start
@@ -252,6 +258,7 @@ async def create_period_bill(
         period_start=start,
         period_end=end,
         amount=member.monthly_fee if amount is None else amount,
+        meal_credits=meal_credits,
     )
     try:
         async with db.begin_nested():
@@ -259,7 +266,7 @@ async def create_period_bill(
             await db.flush()
     except IntegrityError as e:
         raise ApiError(
-            409, "PERIOD_EXISTS", "A bill already exists for a period starting this month"
+            409, "PERIOD_EXISTS", "A membership period already starts on this day"
         ) from e
     await db.refresh(bill, ["payments"])
     return bill

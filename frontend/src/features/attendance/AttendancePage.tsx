@@ -9,7 +9,9 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { AttendanceRow, MealType, MemberType } from "../../api/types";
 import { Chip } from "@mui/material";
-import { useAttendanceSheet, useMarkAll, useMarkAttendance } from "../../api/useAttendance";
+import { useAttendanceSheet, useMarkAttendance, useMemberSearch } from "../../api/useAttendance";
+import { SearchResults } from "../search/SearchResults";
+import { TiffinsLeft } from "../search/TiffinsLeft";
 import { SearchBar } from "../../components/SearchBar";
 import { Avatar } from "../../components/brand/Avatar";
 import { PageHeader } from "../../components/brand/PageHeader";
@@ -64,12 +66,16 @@ function Row({ row, locked, onMark, onCorrect }: { row: AttendanceRow; locked: b
     >
       <Avatar name={row.member.name} size={40} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="subtitle1" noWrap sx={{ lineHeight: 1.3 }}>
-          {row.member.name}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, minWidth: 0 }}>
+          <Typography variant="subtitle1" noWrap sx={{ lineHeight: 1.3, minWidth: 0 }}>
+            {row.member.name}
+          </Typography>
+          {row.tiffins_left != null ? <TiffinsLeft left={row.tiffins_left} /> : null}
+        </Box>
         <Typography variant="caption" sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap", lineHeight: 1.4 }}>
           <Box component="span" sx={{ fontWeight: 700, color: brand.red }}>#{row.member.member_no}</Box>
           {row.member.member_type === "tiffin" ? ` · ${t("members.type.tiffin")}${row.member.company ? ` · ${row.member.company}` : ""}` : ""}
+          {row.extra ? <Box component="span" sx={{ fontWeight: 700, color: brand.goldDark }}>· {t("attendance.extraMeal")}</Box> : null}
           <MarkInfo row={row} />
           {row.on_leave ? (
             <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.25, color: brand.goldDark, fontWeight: 600 }}>
@@ -149,7 +155,7 @@ export function AttendancePage() {
 
   const { data, isLoading, isError } = useAttendanceSheet(date, meal);
   const mark = useMarkAttendance(date, meal);
-  const markAll = useMarkAll(date, meal);
+  const others = useMemberSearch(search, isOwner ? date : undefined);
 
   const rows = useMemo(() => {
     const items = data?.items ?? [];
@@ -160,6 +166,15 @@ export function AttendancePage() {
   const tiffinCount = (data?.items ?? []).filter((r) => r.member.member_type === "tiffin").length;
 
   const locked = data?.locked ?? false;
+  const listed = new Set((data?.items ?? []).map((r) => r.member.id));
+  const extraHits = search.trim() && !locked ? (others.data ?? []).filter((r) => !listed.has(r.member.id)) : [];
+  // members not on this meal's list (a 1-time member's other meal, buffer days) found by search
+  const othersBlock = extraHits.length ? (
+    <Box>
+      <Typography variant="subtitle2" sx={{ mb: 1 }}>{t("attendance.otherMembers", { meal: t(`meal.${meal}`) })}</Typography>
+      <SearchResults rows={extraHits} date={date} meals={[meal]} />
+    </Box>
+  ) : null;
 
   return (
     <Stack spacing={2}>
@@ -174,6 +189,12 @@ export function AttendancePage() {
         <Tab value="lunch" label={t("meal.lunch")} />
         <Tab value="dinner" label={t("meal.dinner")} />
       </Tabs>
+
+      {!data?.holiday ? (
+        <Box sx={{ position: "sticky", top: 64, zIndex: 3, bgcolor: "background.default", py: 0.5, mx: -0.5, px: 0.5 }}>
+          <SearchBar value={search} onChange={setSearch} placeholder={t("members.searchPlaceholder")} />
+        </Box>
+      ) : null}
 
       {locked ? (
         <Alert severity="warning" icon={<LockIcon />} action={isOwner ? <Button size="small" onClick={() => navigate("/owner/months")}>{t("attendance.manageMonths")}</Button> : undefined}>
@@ -206,7 +227,10 @@ export function AttendancePage() {
           ) : null}
         </Box>
       ) : data.items.length === 0 ? (
-        <Typography sx={{ color: "text.secondary", textAlign: "center", py: 5 }}>{t("attendance.nobodyExpected")}</Typography>
+        <>
+          <Typography sx={{ color: "text.secondary", textAlign: "center", py: 5 }}>{t("attendance.nobodyExpected")}</Typography>
+          {othersBlock}
+        </>
       ) : (
         <>
           <Box sx={{ display: "flex", gap: 1 }}>
@@ -222,18 +246,6 @@ export function AttendancePage() {
             </Alert>
           ) : null}
 
-          {!locked && data.counts.unmarked > 0 ? (
-            <Box sx={{ display: "flex", gap: 1.5 }}>
-              <Button variant="contained" color="success" startIcon={<CheckIcon />} disabled={markAll.isPending} onClick={() => markAll.mutate("present")} sx={{ flex: 1, backgroundImage: "none", bgcolor: brand.green, whiteSpace: "nowrap", fontSize: "0.95rem", "&:hover": { bgcolor: brand.greenDark } }}>
-                {t("attendance.restPresent")}
-              </Button>
-              <Button variant="outlined" color="error" startIcon={<CloseIcon />} disabled={markAll.isPending} onClick={() => markAll.mutate("absent")} sx={{ flex: 1, whiteSpace: "nowrap", fontSize: "0.95rem" }}>
-                {t("attendance.restAbsent")}
-              </Button>
-            </Box>
-          ) : null}
-
-          <SearchBar value={search} onChange={setSearch} placeholder={t("members.searchPlaceholder")} />
           {tiffinCount > 0 ? (
             <Box sx={{ display: "flex", gap: 1 }}>
               {([["", `${t("members.all")} (${data.items.length})`], ["dine_in", `${t("members.type.dine_in")} (${data.items.length - tiffinCount})`], ["tiffin", `${t("members.type.tiffin")} (${tiffinCount})`]] as const).map(([k, label]) => (
@@ -253,7 +265,8 @@ export function AttendancePage() {
               />
             ))}
           </Stack>
-          {mark.error instanceof ApiError && mark.error.code === "ATTENDANCE_LOCKED" ? <Alert severity="info">{t("attendance.alreadyMarked")}</Alert> : null}
+          {mark.error instanceof ApiError ? <Alert severity="info">{mark.error.code === "ATTENDANCE_LOCKED" ? t("attendance.alreadyMarked") : t(`search.block.${mark.error.code}`, { defaultValue: mark.error.message })}</Alert> : null}
+          {othersBlock}
         </>
       )}
       {correcting ? (

@@ -6,7 +6,7 @@ from app.core.deps import DbSession
 from app.core.errors import ApiError
 from app.core.time import parse_month, today_ist
 from app.schemas.public import PublicMember, PublicView
-from app.services import attendance, billing
+from app.services import attendance, billing, credits
 from app.services import auth as auth_svc
 from app.services.members import dues, member_by_token
 
@@ -52,4 +52,5 @@ async def member_view(
         history=await attendance.history(db, m.organization_id, m, _month(month)),
         bills=await billing.my_bills(db, m, limit=6),
         due=due if due is not None else 0,
+        credits=(await credits.credits_on(db, [m.id], today)).get(m.id),
     )

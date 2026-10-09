@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { api } from "./client";
-import type { AttendanceSheet, AttendanceStatus, HistoryOut, Holiday, HolidayMeal, MealType, MonthState, SummaryRow } from "./types";
+import type { AttendanceSheet, AttendanceStatus, HistoryOut, Holiday, HolidayMeal, MealType, MonthState, SearchRow, SummaryRow } from "./types";
 
 export const attendanceKey = ["attendance"] as const;
 
@@ -12,6 +12,8 @@ export function refreshAttendanceViews(qc: QueryClient) {
   void qc.invalidateQueries({ queryKey: attendanceKey, predicate: (q) => q.queryKey[1] !== "sheet" });
   void qc.invalidateQueries({ queryKey: ["reports"] });
   void qc.invalidateQueries({ queryKey: ["me"] });
+  void qc.invalidateQueries({ queryKey: ["members"] }); // tiffins left
+  void qc.invalidateQueries({ queryKey: ["kitchen"] });
 }
 
 export function useAttendanceSheet(date: string, meal: MealType) {
@@ -131,6 +133,31 @@ export function useMarkCell(meal: MealType) {
       api<AttendanceSheet>("/attendance", { method: "PUT", body: JSON.stringify({ date, meal_type: meal, items: [{ member_id, status }], override }) }),
     onSuccess: (sheet) => {
       qc.setQueryData([...attendanceKey, "sheet", sheet.date, sheet.meal_type], sheet);
+      refreshAttendanceViews(qc);
+    },
+  });
+}
+
+/** Find members by name, phone or ID with today's meals (owner may pass another date). */
+export function useMemberSearch(q: string, date?: string) {
+  const term = q.trim();
+  return useQuery({
+    queryKey: [...attendanceKey, "search", term, date ?? "today"],
+    queryFn: () => api<SearchRow[]>(`/attendance/search?q=${encodeURIComponent(term)}${date ? `&date=${date}` : ""}`),
+    enabled: term.length > 0,
+    placeholderData: (p) => p,
+  });
+}
+
+/** Mark one member from search results (any meal); refreshes every open sheet. */
+export function useQuickMark() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ date, meal, member_id, status }: { date: string; meal: MealType; member_id: number; status: AttendanceStatus }) =>
+      api<AttendanceSheet>("/attendance", { method: "PUT", body: JSON.stringify({ date, meal_type: meal, items: [{ member_id, status }] }) }),
+    onSuccess: (sheet) => {
+      qc.setQueryData([...attendanceKey, "sheet", sheet.date, sheet.meal_type], sheet);
+      void qc.invalidateQueries({ queryKey: attendanceKey });
       refreshAttendanceViews(qc);
     },
   });

@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.core.phone import normalize_phone
 from app.models.enums import MemberStatus, MemberType, PaymentMethod
 from app.schemas.common import Money, MoneyIn
+from app.schemas.credits import CreditOut
 from app.schemas.plan import PlanOut
 
 
@@ -73,6 +74,7 @@ class MemberOut(BaseModel):
     next_plan_from: date | None = None
     share_token: str | None = None
     due: Money = Decimal("0")  # unpaid amount across all bills
+    credits: CreditOut | None = None  # tiffin pack in use today
 
 
 class MemberCreated(BaseModel):

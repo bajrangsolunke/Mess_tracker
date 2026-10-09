@@ -14,6 +14,7 @@ import LinkIcon from "@mui/icons-material/LinkRounded";
 import { alpha } from "@mui/material";
 import { useSession } from "../auth/authStore";
 import { shareLinkText, whatsappUrl } from "../../lib/share";
+import { TiffinPackCard } from "./TiffinPackCard";
 import { PageHeader } from "../../components/brand/PageHeader";
 import { Avatar } from "../../components/brand/Avatar";
 import { StatusChip } from "../../components/brand/StatusChip";
@@ -115,6 +116,8 @@ export function MemberDetailPage() {
           {m.renewal_plan ? <Typography variant="body2" sx={{ mt: 1, color: brand.greenDark, fontWeight: 600 }}>{t("membership.requested", { plan: planName(m.renewal_plan, t) })}</Typography> : null}
         </Box>
       ) : null}
+
+      {m.credits ? <TiffinPackCard credits={m.credits} /> : null}
 
       {due > 0 ? (
         <Box role="button" tabIndex={0} onClick={() => navigate("/owner/payments")} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, borderRadius: "16px", bgcolor: alpha(brand.gold, 0.12), border: `1px solid ${alpha(brand.gold, 0.4)}`, cursor: "pointer" }}>

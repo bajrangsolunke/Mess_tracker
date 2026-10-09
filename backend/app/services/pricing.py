@@ -13,6 +13,8 @@ KINDS = {
     "one_dinner": (False, True, "one_meal_price"),
     "two": (True, True, "two_meal_price"),
 }
+# tiffins per membership period; a 1-time member may also eat the other meal
+CREDITS = {"one_lunch": 30, "one_dinner": 30, "two": 60}
 NAMES = {
     Language.mr: {"one_lunch": "1 वेळ (दुपार)", "one_dinner": "1 वेळ (रात्री)", "two": "2 वेळा"},
     Language.hi: {"one_lunch": "1 समय (दोपहर)", "one_dinner": "1 समय (रात)", "two": "2 समय"},
@@ -57,12 +59,14 @@ async def set_pricing(db: AsyncSession, org: Organization, data: PricingPut) -> 
                 includes_lunch=lunch,
                 includes_dinner=dinner,
                 monthly_fee=price,
+                meal_credits=CREDITS[kind],
             )
             db.add(plan)
             std[kind] = plan
         else:
             plan.monthly_fee = price
             plan.is_active = True
+            plan.meal_credits = CREDITS[kind]
     await db.flush()
     updated = 0
     if data.apply_to_existing:

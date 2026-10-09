@@ -7,7 +7,7 @@ import { useRenew } from "../../api/useMembership";
 import { ApiError } from "../../api/client";
 import { brand } from "../../app/theme";
 import { rupees } from "../../lib/money";
-import { formatDateLong } from "../../lib/date";
+import { formatDateLong, todayIst } from "../../lib/date";
 import { MealChoice } from "./MealChoice";
 import { PaymentPicker } from "../members/PaymentPicker";
 import { PAY_DEFAULT, paidAmount, type PayValue } from "../../lib/payment";
@@ -20,7 +20,8 @@ export function RenewSheet({ member, onClose, onRenewed }: { member: Member; onC
   const renew = useRenew();
   const requested = member.renewal_plan;
   const [choice, setChoice] = useState<Choice | null>(() => mealChoiceFromPlan(requested ?? member.plan));
-  const [start, setStart] = useState(nextStart(member.valid_until));
+  // a used-up tiffin pack is renewed from today
+  const [start, setStart] = useState(member.credits && member.credits.left <= 0 ? todayIst() : nextStart(member.valid_until));
   const [pay, setPay] = useState<PayValue>(PAY_DEFAULT);
   const standard = (plans.data ?? []).filter((p) => p.kind && p.is_active);
   const target: Plan | undefined = useMemo(() => (choice ? planForChoice(standard, choice) : undefined) ?? (requested ?? member.plan), [choice, standard, requested, member.plan]);

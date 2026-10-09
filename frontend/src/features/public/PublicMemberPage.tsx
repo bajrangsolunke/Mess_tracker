@@ -14,6 +14,7 @@ import { rupees } from "../../lib/money";
 import { formatDateLong, formatTime, monthKey } from "../../lib/date";
 import { AttendanceCalendar } from "../attendance/AttendanceCalendar";
 import { MonthSwitcher } from "../attendance/MyAttendancePage";
+import { TiffinPackCard } from "../members/TiffinPackCard";
 
 /** What a member opens from their WhatsApp link: meals, membership and dues. No login, read-only. */
 export function PublicMemberPage() {
@@ -60,6 +61,8 @@ export function PublicMemberPage() {
                 </Typography>
               ) : null}
             </Box>
+
+            {data.credits ? <TiffinPackCard credits={data.credits} /> : null}
 
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, borderRadius: "16px", bgcolor: due > 0 ? alpha(brand.gold, 0.12) : alpha(brand.green, 0.1), border: `1px solid ${due > 0 ? alpha(brand.gold, 0.4) : alpha(brand.green, 0.35)}` }}>
               <Typography sx={{ fontWeight: 700 }}>{due > 0 ? t("payments.due") : t("track.allPaid")}</Typography>

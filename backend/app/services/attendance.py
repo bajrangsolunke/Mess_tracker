@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from datetime import UTC, date, datetime, timedelta
 
-from sqlalchemy import and_, case, func, or_, select
+from sqlalchemy import String, and_, case, cast, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,8 +32,11 @@ from app.schemas.attendance import (
     HistoryOut,
     HolidayOut,
     MemberBrief,
+    SearchMeal,
+    SearchRow,
     SummaryRow,
 )
+from app.services import credits
 
 # --- month closure --------------------------------------------------------------
 
@@ -143,7 +146,26 @@ async def expected_members(db: AsyncSession, org_id: int, d: date, meal: MealTyp
         )
         .order_by(Member.name)
     )
-    return list((await db.execute(q)).scalars().unique())
+    members = list((await db.execute(q)).scalars().unique())
+    # members whose tiffin pack is used up are not expected (unless already marked)
+    periods = await credits.member_periods(db, [m.id for m in members])
+    if not periods:
+        return members
+    marked = {
+        r[0]
+        for r in await db.execute(
+            select(Attendance.member_id).where(
+                Attendance.organization_id == org_id,
+                Attendance.date == d,
+                Attendance.meal_type == meal,
+            )
+        )
+    }
+    return [
+        m
+        for m in members
+        if m.id in marked or m.id not in periods or credits.left_on(periods[m.id], d) > 0
+    ]
 
 
 async def _leaves_for(db: AsyncSession, org_id: int, d: date, meal: MealType) -> dict[int, Leave]:
@@ -198,6 +220,16 @@ async def sheet(db: AsyncSession, org_id: int, d: date, meal: MealType) -> Atten
             )
         ).scalars()
     }
+    expected_ids = {m.id for m in members}
+    extra_ids = [mid for mid in rows_att if mid not in expected_ids]
+    if extra_ids:
+        # marked although not expected: a 1-time member's other meal, buffer days, ...
+        members = members + list(
+            (await db.execute(select(Member).where(Member.id.in_(extra_ids)))).scalars().unique()
+        )
+    left = {
+        mid: c.left for mid, c in (await credits.credits_on(db, [m.id for m in members], d)).items()
+    }
     marks = {mid: a.status for mid, a in rows_att.items()}
     marker_ids = {a.marked_by for a in rows_att.values() if a.marked_by and not a.auto}
     markers = (
@@ -231,6 +263,8 @@ async def sheet(db: AsyncSession, org_id: int, d: date, meal: MealType) -> Atten
                 auto=bool(m.id in rows_att and rows_att[m.id].auto),
                 marked_at=rows_att[m.id].marked_at if m.id in rows_att else None,
                 marked_by_name=markers.get(rows_att[m.id].marked_by) if m.id in rows_att else None,
+                tiffins_left=left.get(m.id),
+                extra=m.id not in expected_ids,
             )
         )
     return AttendanceSheet(
@@ -292,6 +326,14 @@ async def bulk_mark(
                 "ATTENDANCE_LOCKED",
                 "This attendance is already marked; only the owner can correct it",
             )
+    present_ids = [mid for mid, st in items if st is AttendanceStatus.present]
+    if present_ids:
+        names = dict(
+            (
+                await db.execute(select(Member.id, Member.name).where(Member.id.in_(present_ids)))
+            ).all()
+        )
+        await credits.check_present_marks(db, d, meal, present_ids, names)
     stmt = insert(Attendance).values(
         [
             {
@@ -588,3 +630,91 @@ async def ensure_closed(db: AsyncSession, org_id: int) -> None:
     if settings.auto_close_meals:
         await auto_close(db, org_id)
         await db.commit()
+
+
+async def search(db: AsyncSession, org_id: int, q: str, d: date) -> list[SearchRow]:
+    """Members matching a name, phone or member number, with what can be marked on ``d``."""
+    q = q.strip()
+    if not q:
+        return []
+    like = f"%{q}%"
+    exact = int(q) if q.isdigit() and len(q) <= 9 else -1
+    members = (
+        (
+            await db.execute(
+                select(Member)
+                .where(
+                    Member.organization_id == org_id,
+                    or_(
+                        Member.name.ilike(like),
+                        Member.phone.like(like),
+                        cast(Member.member_no, String).like(like),
+                    ),
+                )
+                .order_by(
+                    case((Member.member_no == exact, 0), else_=1),
+                    case((Member.status == MemberStatus.active, 0), else_=1),
+                    Member.name,
+                )
+                .limit(20)
+            )
+        )
+        .scalars()
+        .unique()
+        .all()
+    )
+    if not members:
+        return []
+    ids = [m.id for m in members]
+    periods = await credits.member_periods(db, ids)
+    marks = {
+        (a.member_id, a.meal_type): a
+        for a in (
+            await db.execute(
+                select(Attendance).where(Attendance.member_id.in_(ids), Attendance.date == d)
+            )
+        ).scalars()
+    }
+    marker_ids = {a.marked_by for a in marks.values() if a.marked_by and not a.auto}
+    markers = (
+        dict((await db.execute(select(User.id, User.name).where(User.id.in_(marker_ids)))).all())
+        if marker_ids
+        else {}
+    )
+    holidays = {meal: await holiday_for(db, org_id, d, meal) for meal in MealType}
+
+    def meal_state(m: Member, meal: MealType) -> SearchMeal:
+        a = marks.get((m.id, meal))
+        reason = None
+        if m.status is MemberStatus.inactive and (m.inactive_from is None or m.inactive_from <= d):
+            reason = "INACTIVE"
+        elif m.joining_date > d:
+            reason = "NOT_STARTED"
+        elif holidays[meal] is not None:
+            reason = "HOLIDAY"
+        elif m.id in periods:
+            reason = credits.can_eat(periods[m.id], d)
+        elif not (m.plan.includes_lunch if meal is MealType.lunch else m.plan.includes_dinner):
+            reason = "MEAL_NOT_IN_PLAN"
+        elif m.valid_until is not None and m.valid_until < d:
+            reason = "MEMBERSHIP_EXPIRED"
+        return SearchMeal(
+            status=a.status if a else None,
+            marked_at=a.marked_at if a else None,
+            marked_by_name=markers.get(a.marked_by) if a else None,
+            auto=bool(a and a.auto),
+            allowed=a is None and reason is None,
+            reason=reason,
+        )
+
+    return [
+        SearchRow(
+            member=MemberBrief.model_validate(m),
+            active=m.status is MemberStatus.active,
+            valid_until=m.valid_until,
+            credits=credits.credit_out(periods[m.id], d) if m.id in periods else None,
+            lunch=meal_state(m, MealType.lunch),
+            dinner=meal_state(m, MealType.dinner),
+        )
+        for m in members
+    ]

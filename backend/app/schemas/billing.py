@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.models.enums import BillStatus, PaymentMethod
 from app.schemas.attendance import MemberBrief
 from app.schemas.common import Money, MoneyIn
+from app.schemas.credits import CreditOut
 from app.schemas.plan import PlanOut
 
 
@@ -81,3 +82,5 @@ class DueRow(BaseModel):
     days_left: int
     renewal_plan: "PlanOut | None" = None
     renewal_requested_at: "datetime | None" = None
+    credits: "CreditOut | None" = None
+    used_up: bool = False  # all tiffins of the pack are eaten
