@@ -23,6 +23,7 @@
     "react-hook-form": "^7.89.0",
     "react-i18next": "^17.0.16",
     "react-router-dom": "^7.18.4",
+    "workbox-window": "^7.4.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {

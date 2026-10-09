@@ -7,7 +7,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: "autoUpdate",
+      // new versions wait until the user taps "Update" (see UpdatePrompt)
+      registerType: "prompt",
+      injectRegister: false,
       includeAssets: ["icons/*.png"],
       manifest: {
         name: "स्वाद भोजनालय & नाश्ता हाऊस",

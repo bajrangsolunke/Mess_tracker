@@ -680,5 +680,10 @@
     "test": "Send a test notification",
     "testSent": "Test sent. Check your phone.",
     "error": "Could not turn on notifications. Please try again."
+  },
+  "update": {
+    "title": "New update available",
+    "hint": "Tap Update to get the latest version.",
+    "button": "Update"
   }
 }
