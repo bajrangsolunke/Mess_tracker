@@ -33,12 +33,10 @@ export function BrandBar({
       position="sticky"
       elevation={0}
       sx={{
-        bgcolor: brand.paper,
-        color: brand.red,
-        borderBottom: `3px solid ${brand.red}`,
+        bgcolor: brand.red,
+        color: "primary.contrastText",
         borderBottomLeftRadius: "22px",
         borderBottomRightRadius: "22px",
-        boxShadow: "0 6px 18px -12px rgba(91, 15, 15, 0.35)",
         pt: "env(safe-area-inset-top)",
       }}
     >
@@ -55,12 +53,23 @@ export function BrandBar({
           </IconButton>
         ) : null}
         {title ? (
-          <Typography variant="h6" component="h1" sx={{ flex: 1, color: brand.ink }}>
+          <Typography variant="h6" component="h1" sx={{ flex: 1, color: "inherit" }}>
             {title}
           </Typography>
         ) : (
           <Box sx={{ flex: 1, display: "flex", alignItems: "center", minWidth: 0 }}>
-            <Logo variant="full" height={64} sx={{ maxWidth: "62vw", objectFit: "contain", objectPosition: "left center" }} />
+            {/* thin white outline keeps the red lettering readable on the red bar */}
+            <Logo
+              variant="transparent"
+              height={64}
+              sx={{
+                maxWidth: "62vw",
+                objectFit: "contain",
+                objectPosition: "left center",
+                filter:
+                  "drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff) drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff) drop-shadow(0 2px 4px rgba(0,0,0,.25))",
+              }}
+            />
           </Box>
         )}
         {actions}
