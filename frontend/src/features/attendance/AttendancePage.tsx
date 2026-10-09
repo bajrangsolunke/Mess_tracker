@@ -191,7 +191,7 @@ export function AttendancePage() {
       </Tabs>
 
       {!data?.holiday ? (
-        <Box sx={{ position: "sticky", top: 64, zIndex: 3, bgcolor: "background.default", py: 0.5, mx: -0.5, px: 0.5 }}>
+        <Box sx={{ position: "sticky", top: "calc(env(safe-area-inset-top) + 77px)", zIndex: 3, bgcolor: "background.default", py: 0.5, mx: -0.5, px: 0.5 }}>
           <SearchBar value={search} onChange={setSearch} placeholder={t("members.searchPlaceholder")} />
         </Box>
       ) : null}

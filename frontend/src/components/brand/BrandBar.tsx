@@ -5,7 +5,7 @@ import { GlobalSearch } from "../../features/search/GlobalSearch";
 import { AppBar, Badge, Box, IconButton, Toolbar, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useNavigate } from "react-router-dom";
-import { brand, FONT_DEVA } from "../../app/theme";
+import { brand } from "../../app/theme";
 import { Logo } from "./Logo";
 import { BellSpoonIcon } from "./icons";
 import { useNotifications } from "../../api/useLeaves";
@@ -33,14 +33,16 @@ export function BrandBar({
       position="sticky"
       elevation={0}
       sx={{
-        bgcolor: brand.red,
-        color: "primary.contrastText",
+        bgcolor: brand.paper,
+        color: brand.red,
+        borderBottom: `3px solid ${brand.red}`,
         borderBottomLeftRadius: "22px",
         borderBottomRightRadius: "22px",
+        boxShadow: "0 6px 18px -12px rgba(91, 15, 15, 0.35)",
         pt: "env(safe-area-inset-top)",
       }}
     >
-      <Toolbar sx={{ minHeight: 64, px: 2, gap: 1 }}>
+      <Toolbar sx={{ minHeight: 74, px: 1.5, gap: 0.5 }}>
         {back ? (
           <IconButton
             edge="start"
@@ -53,47 +55,12 @@ export function BrandBar({
           </IconButton>
         ) : null}
         {title ? (
-          <Typography variant="h6" component="h1" sx={{ flex: 1, color: "inherit" }}>
+          <Typography variant="h6" component="h1" sx={{ flex: 1, color: brand.ink }}>
             {title}
           </Typography>
         ) : (
-          <Box sx={{ flex: 1, display: "flex", alignItems: "center", gap: 1.25 }}>
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                bgcolor: brand.cream,
-                display: "grid",
-                placeItems: "end center",
-                overflow: "hidden",
-                flexShrink: 0,
-              }}
-            >
-              <Logo variant="chef" height={36} />
-            </Box>
-            <Box sx={{ lineHeight: 1 }}>
-              <Typography
-                component="span"
-                sx={{
-                  display: "block",
-                  fontFamily: FONT_DEVA,
-                  fontWeight: 800,
-                  fontSize: "1.45rem",
-                  lineHeight: 1,
-                  color: brand.gold,
-                  letterSpacing: 0.3,
-                }}
-              >
-                स्वाद
-              </Typography>
-              <Typography
-                component="span"
-                sx={{ display: "block", fontFamily: FONT_DEVA, fontSize: "0.78rem", fontWeight: 600, opacity: 0.92, letterSpacing: 0.3, mt: 0.25 }}
-              >
-                भोजनालय &amp; नाश्ता हाऊस
-              </Typography>
-            </Box>
+          <Box sx={{ flex: 1, display: "flex", alignItems: "center", minWidth: 0 }}>
+            <Logo variant="full" height={64} sx={{ maxWidth: "62vw", objectFit: "contain", objectPosition: "left center" }} />
           </Box>
         )}
         {actions}
