@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
-import type { FoodType, MealType, PaymentMethod, TiffinClient, TiffinItem, TiffinSheet, TiffinStatement, TiffinSummary } from "./types";
+import type { FoodType, MealType, PaymentMethod, TiffinClient, TiffinDay, TiffinItem, TiffinSheet, TiffinStatement, TiffinSummary } from "./types";
 
 export const tiffinKey = ["tiffin"] as const;
 
@@ -11,6 +11,10 @@ export interface TiffinClientInput {
   address?: string | null;
   notes?: string | null;
   is_active?: boolean;
+  veg_price?: string | null;
+  nonveg_price?: string | null;
+  lunch?: boolean;
+  dinner?: boolean;
 }
 
 export interface TiffinItemInput {
@@ -92,7 +96,7 @@ export function useTiffinStatement(id: number, month: string) {
 export function useRecordTiffinPayment(clientId: number) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { month: string; amount: string; method: PaymentMethod; paid_on: string; note?: string }) =>
+    mutationFn: (data: { amount: string; method: PaymentMethod; paid_on: string; note?: string }) =>
       api<TiffinStatement>(`/tiffin-clients/${clientId}/payments`, { method: "POST", body: JSON.stringify(data) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: tiffinKey }),
   });
@@ -103,5 +107,31 @@ export function useDeleteTiffinPayment() {
   return useMutation({
     mutationFn: (paymentId: number) => api<TiffinStatement>(`/tiffin-payments/${paymentId}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: tiffinKey }),
+  });
+}
+
+export interface DayEntryInput {
+  client_id: number;
+  meal_type: MealType;
+  veg: number;
+  nonveg: number;
+}
+
+/** Simple daily entry: veg / non-veg counts per company and meal. */
+export function useTiffinDay(date: string) {
+  return useQuery({ queryKey: [...tiffinKey, "day", date], queryFn: () => api<TiffinDay>(`/tiffin-day?date=${date}`), placeholderData: (p) => p });
+}
+
+export function useSaveTiffinDay(date: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (entries: DayEntryInput[]) => api<TiffinDay>("/tiffin-day", { method: "PUT", body: JSON.stringify({ date, entries }) }),
+    onSuccess: (day) => {
+      qc.setQueryData([...tiffinKey, "day", date], day);
+      void qc.invalidateQueries({ queryKey: [...tiffinKey, "summary"] });
+      void qc.invalidateQueries({ queryKey: [...tiffinKey, "statement"] });
+      void qc.invalidateQueries({ queryKey: ["dashboard"] });
+      void qc.invalidateQueries({ queryKey: ["kitchen"] });
+    },
   });
 }

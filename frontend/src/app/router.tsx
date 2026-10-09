@@ -28,7 +28,7 @@ import { MenuPage } from "../features/menu/MenuPage";
 import { AnnouncementsPage } from "../features/announcements/AnnouncementsPage";
 import { ReportsPage } from "../features/reports/ReportsPage";
 import { ChangePasswordPage } from "../features/profile/ChangePasswordPage";
-import { TiffinOrdersPage } from "../features/tiffin/TiffinOrdersPage";
+import { TiffinDayPage } from "../features/tiffin/TiffinDayPage";
 import { PricingPage } from "../features/pricing/PricingPage";
 import { RenewalsPage } from "../features/membership/RenewalsPage";
 import { RegisterPage } from "../features/register/RegisterPage";
@@ -36,10 +36,14 @@ import { TiffinClientsPage } from "../features/tiffin/TiffinClientsPage";
 import { TiffinClientDetailPage } from "../features/tiffin/TiffinClientDetailPage";
 import { StaffPage } from "../features/operations/StaffPage";
 import { LedgerPage } from "../features/operations/LedgerPage";
-import { StaffShell, StaffHome } from "../features/shell/StaffShell";
+import { StaffShell } from "../features/shell/StaffShell";
+import { StaffHomePage } from "../features/staff/StaffHomePage";
+import { StaffMePage } from "../features/staff/StaffMePage";
+import { PublicMemberPage } from "../features/public/PublicMemberPage";
 
 export const router = createBrowserRouter([
   { path: "/", element: <SplashPage /> },
+  { path: "/m/:token", element: <PublicMemberPage /> },
   { path: "/select-language", element: <LanguageSelectPage /> },
   { path: "/welcome", element: <OnboardingPage /> },
   { path: "/login", element: <LoginPage /> },
@@ -67,7 +71,7 @@ export const router = createBrowserRouter([
       { path: "announcements", element: <AnnouncementsPage /> },
       { path: "notifications", element: <NotificationsPage /> },
       { path: "reports", element: <ReportsPage /> },
-      { path: "tiffins", element: <TiffinOrdersPage /> },
+      { path: "tiffins", element: <TiffinDayPage /> },
       { path: "pricing", element: <PricingPage /> },
       { path: "renewals", element: <RenewalsPage /> },
       { path: "register", element: <RegisterPage /> },
@@ -89,8 +93,10 @@ export const router = createBrowserRouter([
       </RequireRole>
     ),
     children: [
-      { index: true, element: <StaffHome /> },
+      { index: true, element: <StaffHomePage /> },
       { path: "attendance", element: <AttendancePage /> },
+      { path: "tiffins", element: <TiffinDayPage /> },
+      { path: "me", element: <StaffMePage /> },
       { path: "change-password", element: <ChangePasswordPage /> },
     ],
   },

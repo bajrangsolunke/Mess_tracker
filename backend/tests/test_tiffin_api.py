@@ -254,6 +254,7 @@ async def test_statement_payments_and_summary(client):
         "amount": "8750.00",
         "paid": "8000.00",
         "due": "750.00",
+        "balance": "750.00",
     }
     r = await client.delete(f"/api/v1/tiffin-payments/{pid}", headers=h)
     assert r.status_code == 200 and r.json()["paid"] == "0.00"

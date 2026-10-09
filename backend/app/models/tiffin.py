@@ -50,6 +50,11 @@ class TiffinClient(TimestampMixin, Base):
     address: Mapped[str | None] = mapped_column(String(300))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     notes: Mapped[str | None] = mapped_column(Text)
+    # simple daily entry: rate per veg / non-veg tiffin and which meals are delivered
+    veg_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    nonveg_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    lunch: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    dinner: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
 
 class TiffinOrder(TimestampMixin, Base):
@@ -72,6 +77,13 @@ class TiffinOrder(TimestampMixin, Base):
     date: Mapped[date] = mapped_column(Date, nullable=False)
     meal_type: Mapped[MealType] = mapped_column(Enum(MealType, name="meal_type"), nullable=False)
     note: Mapped[str | None] = mapped_column(String(200))
+    # simple counts (rates snapshotted at entry); older orders use item lines instead
+    veg_qty: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    nonveg_qty: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    veg_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0"), nullable=False)
+    nonveg_price: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=Decimal("0"), nullable=False
+    )
 
     lines: Mapped[list["TiffinOrderLine"]] = relationship(
         back_populates="order", cascade="all, delete-orphan", lazy="selectin"

@@ -7,7 +7,7 @@ from app.schemas.billing import BillOut, DueRow
 from app.schemas.member import MemberOut, RenewalRequest, RenewIn
 from app.schemas.plan import PlanOut
 from app.services import billing, membership
-from app.services.members import member_for_user
+from app.services.members import member_for_user, pay_at_desk
 
 router = APIRouter(tags=["membership"])
 
@@ -22,7 +22,13 @@ async def renew(member_id: int, data: RenewIn, owner: OwnerUser, db: DbSession) 
     m, bill = await membership.renew(
         db, owner.organization_id, member_id, data.plan_id, data.start_date
     )
-    out = RenewOut(member=MemberOut.model_validate(m), bill=billing.to_out(bill, m))
+    if data.paid_amount > bill.amount:
+        raise ApiError(422, "OVERPAYMENT", f"Only {bill.amount:.2f} is due for this period")
+    await pay_at_desk(
+        db, owner.organization_id, bill.id, data.paid_amount, data.payment_method, owner.id
+    )
+    bill = await billing.get_bill(db, owner.organization_id, bill.id)
+    out = RenewOut(member=MemberOut.model_validate(m), bill=billing.to_out(*bill))
     await db.commit()
     return out
 

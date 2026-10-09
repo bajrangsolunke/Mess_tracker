@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Alert, Box, Button, Divider, Drawer, IconButton, Skeleton, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { Alert, Box, Button, Divider, Drawer, IconButton, Skeleton, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography, alpha } from "@mui/material";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import { whatsappUrl } from "../../lib/share";
 import EditIcon from "@mui/icons-material/EditRounded";
 import DeleteIcon from "@mui/icons-material/DeleteOutlineRounded";
 import PhoneIcon from "@mui/icons-material/PhoneRounded";
@@ -8,8 +10,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import type { PaymentMethod } from "../../api/types";
 import { useDeleteTiffinPayment, useRecordTiffinPayment, useTiffinStatement } from "../../api/useTiffin";
 import { PageHeader } from "../../components/brand/PageHeader";
-import { StatCard } from "../../components/brand/StatCard";
-import { VegMark } from "../../components/brand/VegMark";
+import { NONVEG_COLOR, VEG_COLOR, VegMark } from "../../components/brand/VegMark";
 import { brand } from "../../app/theme";
 import { rupees } from "../../lib/money";
 import { formatDateLong, monthKey, todayIst } from "../../lib/date";
@@ -17,11 +18,11 @@ import { MonthSwitcher } from "../attendance/MyAttendancePage";
 import { TiffinClientForm } from "./TiffinClientForm";
 import dayjs from "dayjs";
 
-function PaymentSheet({ open, onClose, clientId, month, due }: { open: boolean; onClose: () => void; clientId: number; month: string; due: number }) {
+function PaymentSheet({ open, onClose, clientId, due }: { open: boolean; onClose: () => void; clientId: number; due: number }) {
   const { t } = useTranslation();
   const record = useRecordTiffinPayment(clientId);
   const [amount, setAmount] = useState(due > 0 ? String(due) : "");
-  const [method, setMethod] = useState<PaymentMethod>("bank");
+  const [method, setMethod] = useState<PaymentMethod>("cash");
   const [paidOn, setPaidOn] = useState(todayIst());
   const [note, setNote] = useState("");
   const valid = /^\d{1,8}(\.\d{1,2})?$/.test(amount) && Number(amount) > 0;
@@ -30,9 +31,10 @@ function PaymentSheet({ open, onClose, clientId, month, due }: { open: boolean; 
       <Stack spacing={2}>
         <Box sx={{ width: 40, height: 4, borderRadius: 2, bgcolor: brand.line, mx: "auto" }} />
         <Typography variant="h6">{t("payments.record")}</Typography>
+        {due > 0 ? <Typography variant="body2" sx={{ color: brand.goldDark, fontWeight: 700 }}>{t("tiffin.balanceNow", { amount: rupees(due) })}</Typography> : null}
         <TextField label={t("payments.amount")} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus />
         <ToggleButtonGroup exclusive fullWidth value={method} onChange={(_, v: PaymentMethod | null) => v && setMethod(v)}>
-          {(["bank", "upi", "cash"] as PaymentMethod[]).map((m) => (
+          {(["cash", "upi", "bank"] as PaymentMethod[]).map((m) => (
             <ToggleButton key={m} value={m} sx={{ minHeight: 48, fontWeight: 600 }}>{t(`payments.method.${m}`)}</ToggleButton>
           ))}
         </ToggleButtonGroup>
@@ -41,11 +43,22 @@ function PaymentSheet({ open, onClose, clientId, month, due }: { open: boolean; 
           <TextField label={t("payments.note")} value={note} onChange={(e) => setNote(e.target.value)} placeholder="UTR / cheque no." />
         </Box>
         {record.error ? <Alert severity="error">{t("common.error")}</Alert> : null}
-        <Button variant="contained" disabled={!valid || record.isPending} onClick={() => record.mutate({ month, amount, method, paid_on: paidOn, note: note || undefined }, { onSuccess: onClose })}>
+        <Button variant="contained" disabled={!valid || record.isPending} onClick={() => record.mutate({ amount, method, paid_on: paidOn, note: note || undefined }, { onSuccess: onClose })}>
           {t("payments.record")} · {rupees(amount || 0)}
         </Button>
       </Stack>
     </Drawer>
+  );
+}
+
+function MealCell({ veg, nonveg }: { veg: number; nonveg: number }) {
+  if (!veg && !nonveg) return <Typography variant="body2" sx={{ textAlign: "center", color: "text.disabled" }}>—</Typography>;
+  return (
+    <Typography variant="body2" sx={{ textAlign: "center", fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>
+      <Box component="span" sx={{ color: VEG_COLOR }}>{veg}</Box>
+      <Box component="span" sx={{ color: "text.disabled" }}> + </Box>
+      <Box component="span" sx={{ color: NONVEG_COLOR }}>{nonveg}</Box>
+    </Typography>
   );
 }
 
@@ -70,7 +83,18 @@ export function TiffinClientDetailPage() {
     );
   }
   const c = data.client;
-  const due = Number(data.due);
+  const balance = Number(data.balance);
+  const statementText = t("tiffin.statementText", {
+    name: c.name,
+    month: dayjs(`${month}-01`).locale(locale).format("MMMM YYYY"),
+    count: data.totals.total,
+    veg: data.totals.veg,
+    nonveg: data.totals.nonveg,
+    amount: rupees(data.amount),
+    opening: rupees(data.opening_due),
+    paid: rupees(data.paid),
+    balance: rupees(balance),
+  });
 
   return (
     <Stack spacing={2.5}>
@@ -96,13 +120,30 @@ export function TiffinClientDetailPage() {
 
       <MonthSwitcher month={month} onChange={setMonth} />
 
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1.5 }}>
-        <StatCard label={t("tiffin.tiffins")} value={data.totals.total} tone="red" hint={`${t("tiffin.veg")} ${data.totals.veg} · ${t("tiffin.nonvegEgg")} ${data.totals.nonveg}`} />
-        <StatCard label={t("payments.billed")} value={rupees(data.amount)} tone="neutral" hint={`${t("payments.paid")} ${rupees(data.paid)}`} />
-        <StatCard label={due < 0 ? t("tiffin.advance") : t("payments.due")} value={rupees(Math.abs(due))} tone={due > 0 ? "gold" : "green"} />
+      <Box sx={{ p: 2, borderRadius: "16px", bgcolor: balance > 0 ? alpha(brand.gold, 0.1) : alpha(brand.green, 0.08), border: `1px solid ${balance > 0 ? alpha(brand.gold, 0.4) : alpha(brand.green, 0.35)}` }}>
+        {[
+          [t("tiffin.openingBalance"), rupees(data.opening_due)],
+          [t("tiffin.monthTiffins", { count: data.totals.total, veg: data.totals.veg, nonveg: data.totals.nonveg }), `+ ${rupees(data.amount)}`],
+          [t("tiffin.monthPaid"), `− ${rupees(data.paid)}`],
+        ].map(([label, value]) => (
+          <Box key={label} sx={{ display: "flex", justifyContent: "space-between", gap: 1, py: 0.4 }}>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>{label}</Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>{value}</Typography>
+          </Box>
+        ))}
+        <Divider sx={{ my: 1 }} />
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <Typography sx={{ fontWeight: 700 }}>{balance < 0 ? t("tiffin.advance") : t("tiffin.balance")}</Typography>
+          <Typography sx={{ fontWeight: 800, fontSize: "1.5rem", color: balance > 0 ? brand.goldDark : brand.greenDark }}>{rupees(Math.abs(balance))}</Typography>
+        </Box>
       </Box>
 
-      <Button variant="contained" onClick={() => setPaying(true)}>{t("payments.record")}</Button>
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <Button variant="contained" onClick={() => setPaying(true)} sx={{ flex: 1.3 }}>{t("payments.record")}</Button>
+        <Button variant="outlined" startIcon={<WhatsAppIcon />} href={whatsappUrl(c.phone, statementText)} target="_blank" rel="noopener" sx={{ flex: 1, color: "#1DA851", borderColor: alpha("#25D366", 0.6) }}>
+          {t("tiffin.sendStatement")}
+        </Button>
+      </Box>
 
       {data.by_item.length > 0 ? (
         <Box>
@@ -123,17 +164,17 @@ export function TiffinClientDetailPage() {
       <Box>
         <Typography variant="h6" component="h2" sx={{ mb: 1 }}>{t("tiffin.dailyOrders")}</Typography>
         <Box sx={{ borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}`, overflow: "hidden" }}>
-          <Box sx={{ display: "grid", gridTemplateColumns: "1.3fr .8fr .8fr 1fr", px: 1.5, py: 1, bgcolor: brand.cream }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", px: 1.5, py: 1, bgcolor: brand.cream }}>
             <Typography variant="caption" sx={{ fontWeight: 700 }}>{t("holidays.date")}</Typography>
             <Typography variant="caption" sx={{ fontWeight: 700, textAlign: "center" }}>{t("meal.lunchShort")}</Typography>
             <Typography variant="caption" sx={{ fontWeight: 700, textAlign: "center" }}>{t("meal.dinnerShort")}</Typography>
             <Typography variant="caption" sx={{ fontWeight: 700, textAlign: "right" }}>₹</Typography>
           </Box>
           {data.days.map((d) => (
-            <Box key={d.date} sx={{ display: "grid", gridTemplateColumns: "1.3fr .8fr .8fr 1fr", px: 1.5, py: 1, borderTop: `1px solid ${brand.line}`, alignItems: "center" }}>
+            <Box key={d.date} sx={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", px: 1.5, py: 1, borderTop: `1px solid ${brand.line}`, alignItems: "center" }}>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>{dayjs(d.date).locale(locale).format("D MMM, ddd")}</Typography>
-              <Typography variant="body2" sx={{ textAlign: "center", fontVariantNumeric: "tabular-nums" }}>{d.lunch || "—"}</Typography>
-              <Typography variant="body2" sx={{ textAlign: "center", fontVariantNumeric: "tabular-nums" }}>{d.dinner || "—"}</Typography>
+              <MealCell veg={d.lunch_veg} nonveg={d.lunch_nonveg} />
+              <MealCell veg={d.dinner_veg} nonveg={d.dinner_nonveg} />
               <Typography variant="body2" sx={{ textAlign: "right", fontWeight: 600 }}>{rupees(d.amount)}</Typography>
             </Box>
           ))}
@@ -161,7 +202,7 @@ export function TiffinClientDetailPage() {
       </Box>
 
       {editing ? <TiffinClientForm open client={c} onClose={() => setEditing(false)} /> : null}
-      {paying ? <PaymentSheet open clientId={c.id} month={month} due={due} onClose={() => setPaying(false)} /> : null}
+      {paying ? <PaymentSheet open clientId={c.id} due={balance} onClose={() => setPaying(false)} /> : null}
     </Stack>
   );
 }

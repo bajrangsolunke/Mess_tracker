@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -50,6 +51,10 @@ class TiffinClientCreate(BaseModel):
     phone: str | None = None
     address: str | None = Field(default=None, max_length=300)
     notes: str | None = Field(default=None, max_length=2000)
+    veg_price: MoneyIn | None = Field(default=None, ge=0)
+    nonveg_price: MoneyIn | None = Field(default=None, ge=0)
+    lunch: bool = True
+    dinner: bool = False
 
     _phone = field_validator("phone")(_opt_phone)
 
@@ -61,6 +66,10 @@ class TiffinClientUpdate(BaseModel):
     address: str | None = Field(default=None, max_length=300)
     notes: str | None = Field(default=None, max_length=2000)
     is_active: bool | None = None
+    veg_price: MoneyIn | None = Field(default=None, ge=0)
+    nonveg_price: MoneyIn | None = Field(default=None, ge=0)
+    lunch: bool | None = None
+    dinner: bool | None = None
 
     _phone = field_validator("phone")(_opt_phone)
 
@@ -74,6 +83,56 @@ class TiffinClientOut(BaseModel):
     address: str | None
     is_active: bool
     notes: str | None
+    veg_price: Money | None = None
+    nonveg_price: Money | None = None
+    lunch: bool = True
+    dinner: bool = True
+
+
+# --- simple daily entry (veg / non-veg counts per company and meal) -----------------
+
+
+class DayEntry(BaseModel):
+    client_id: int
+    meal_type: MealType
+    veg: int = Field(ge=0, le=5000)
+    nonveg: int = Field(ge=0, le=5000)
+
+
+class DayPut(BaseModel):
+    date: date
+    entries: list[DayEntry] = Field(max_length=500)
+
+
+class DayRow(BaseModel):
+    client_id: int
+    client_name: str
+    meal_type: MealType
+    veg: int
+    nonveg: int
+    saved: bool
+    last_date: date | None
+    last_veg: int
+    last_nonveg: int
+    veg_price: Money | None  # hidden from staff
+    nonveg_price: Money | None
+    amount: Money | None
+
+
+class DayTotals(BaseModel):
+    veg: int
+    nonveg: int
+    total: int
+    lunch: int
+    dinner: int
+    amount: Money | None
+
+
+class TiffinDay(BaseModel):
+    date: date
+    locked: bool
+    rows: list[DayRow]
+    totals: DayTotals
 
 
 # --- daily orders -------------------------------------------------------------------
@@ -134,6 +193,10 @@ class StatementDay(BaseModel):
     dinner: int
     total: int
     amount: Money
+    lunch_veg: int = 0
+    lunch_nonveg: int = 0
+    dinner_veg: int = 0
+    dinner_nonveg: int = 0
 
 
 class ItemTotal(BaseModel):
@@ -151,7 +214,7 @@ class CountTotals(BaseModel):
 
 
 class TiffinPaymentCreate(BaseModel):
-    month: str = Field(pattern=r"^\d{4}-\d{2}$")
+    month: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}$")  # legacy; paid_on decides
     amount: MoneyIn = Field(gt=0)
     method: PaymentMethod
     paid_on: date
@@ -175,8 +238,10 @@ class Statement(BaseModel):
     totals: CountTotals
     amount: Money
     paid: Money
-    due: Money  # negative = advance
+    due: Money  # this month only; negative = advance
     payments: list[TiffinPaymentOut]
+    opening_due: Money = Decimal("0")  # carried from earlier months
+    balance: Money = Decimal("0")  # opening + this month's tiffins - this month's payments
 
 
 class SummaryRow(BaseModel):
@@ -187,6 +252,7 @@ class SummaryRow(BaseModel):
     amount: Money
     paid: Money
     due: Money
+    balance: Money = Decimal("0")  # everything delivered minus everything paid, to date
 
 
 class SummaryTotals(BaseModel):
@@ -196,6 +262,7 @@ class SummaryTotals(BaseModel):
     amount: Money
     paid: Money
     due: Money
+    balance: Money = Decimal("0")
 
 
 class TiffinSummary(BaseModel):

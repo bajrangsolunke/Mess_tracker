@@ -8,7 +8,9 @@ async def test_seed_is_idempotent(db):
     await seed(db)
     await seed(db)
     assert (await db.execute(select(func.count()).select_from(Organization))).scalar_one() == 1
-    assert (await db.execute(select(func.count()).select_from(User))).scalar_one() == 8
+    assert (
+        await db.execute(select(func.count()).select_from(User))
+    ).scalar_one() == 9  # owner + staff + 7 members
     assert (await db.execute(select(func.count()).select_from(MessPlan))).scalar_one() == 3
     assert (await db.execute(select(func.count()).select_from(Member))).scalar_one() == 7
     assert (await db.execute(select(func.count()).select_from(Bill))).scalar_one() == 7

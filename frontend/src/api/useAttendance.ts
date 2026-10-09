@@ -26,10 +26,10 @@ export function useMarkAttendance(date: string, meal: MealType) {
   const qc = useQueryClient();
   const key = [...attendanceKey, "sheet", date, meal];
   return useMutation({
-    mutationFn: (items: { member_id: number; status: AttendanceStatus }[]) =>
-      api<AttendanceSheet>("/attendance", { method: "PUT", body: JSON.stringify({ date, meal_type: meal, items }) }),
+    mutationFn: ({ items, override = false }: { items: { member_id: number; status: AttendanceStatus }[]; override?: boolean }) =>
+      api<AttendanceSheet>("/attendance", { method: "PUT", body: JSON.stringify({ date, meal_type: meal, items, override }) }),
     // Optimistic: flip the row immediately, roll back on error.
-    onMutate: async (items) => {
+    onMutate: async ({ items }) => {
       await qc.cancelQueries({ queryKey: key });
       const prev = qc.getQueryData<AttendanceSheet>(key);
       if (prev) {
@@ -127,8 +127,8 @@ export function useSetMonthClosed() {
 export function useMarkCell(meal: MealType) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ date, member_id, status }: { date: string; member_id: number; status: AttendanceStatus }) =>
-      api<AttendanceSheet>("/attendance", { method: "PUT", body: JSON.stringify({ date, meal_type: meal, items: [{ member_id, status }] }) }),
+    mutationFn: ({ date, member_id, status, override = false }: { date: string; member_id: number; status: AttendanceStatus; override?: boolean }) =>
+      api<AttendanceSheet>("/attendance", { method: "PUT", body: JSON.stringify({ date, meal_type: meal, items: [{ member_id, status }], override }) }),
     onSuccess: (sheet) => {
       qc.setQueryData([...attendanceKey, "sheet", sheet.date, sheet.meal_type], sheet);
       refreshAttendanceViews(qc);

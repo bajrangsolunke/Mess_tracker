@@ -22,6 +22,7 @@ from app.models import (
     MessPlan,
     MonthClosure,
     Organization,
+    User,
 )
 from app.schemas.attendance import (
     AttendanceCounts,
@@ -198,6 +199,12 @@ async def sheet(db: AsyncSession, org_id: int, d: date, meal: MealType) -> Atten
         ).scalars()
     }
     marks = {mid: a.status for mid, a in rows_att.items()}
+    marker_ids = {a.marked_by for a in rows_att.values() if a.marked_by and not a.auto}
+    markers = (
+        dict((await db.execute(select(User.id, User.name).where(User.id.in_(marker_ids)))).all())
+        if marker_ids
+        else {}
+    )
     items: list[AttendanceRow] = []
     present = absent = unmarked = on_leave = 0
     for m in members:
@@ -223,6 +230,7 @@ async def sheet(db: AsyncSession, org_id: int, d: date, meal: MealType) -> Atten
                 ),
                 auto=bool(m.id in rows_att and rows_att[m.id].auto),
                 marked_at=rows_att[m.id].marked_at if m.id in rows_att else None,
+                marked_by_name=markers.get(rows_att[m.id].marked_by) if m.id in rows_att else None,
             )
         )
     return AttendanceSheet(
@@ -250,7 +258,9 @@ async def bulk_mark(
     meal: MealType,
     items: list[tuple[int, AttendanceStatus]],
     user_id: int,
+    override: bool = False,
 ) -> None:
+    """Record marks. A set mark is final unless ``override`` (owner correction) is given."""
     await assert_month_open(db, org_id, d)
     if not items:
         return
@@ -264,22 +274,26 @@ async def bulk_mark(
     missing = ids - known
     if missing:
         raise ApiError(404, "MEMBER_NOT_FOUND", f"Unknown member ids: {sorted(missing)}")
-    existing = {
-        r[0]: r[1]
-        for r in await db.execute(
-            select(Attendance.member_id, Attendance.status).where(
-                Attendance.organization_id == org_id,
-                Attendance.date == d,
-                Attendance.meal_type == meal,
-                Attendance.member_id.in_(ids),
+    if not override:
+        already = {
+            r[0]
+            for r in await db.execute(
+                select(Attendance.member_id).where(
+                    Attendance.organization_id == org_id,
+                    Attendance.date == d,
+                    Attendance.meal_type == meal,
+                    Attendance.member_id.in_(ids),
+                )
             )
-        )
-    }
-    targets = []
-    for mid, st in items:
-        if mid in existing:
-            raise ApiError(409, "ATTENDANCE_LOCKED", "This attendance mark is already set and cannot be changed")
-        targets.append(
+        }
+        if already:
+            raise ApiError(
+                409,
+                "ATTENDANCE_LOCKED",
+                "This attendance is already marked; only the owner can correct it",
+            )
+    stmt = insert(Attendance).values(
+        [
             {
                 "organization_id": org_id,
                 "member_id": mid,
@@ -290,11 +304,19 @@ async def bulk_mark(
                 "marked_at": now_ist(),
                 "auto": False,
             }
-        )
-    if not targets:
-        return
-    stmt = insert(Attendance).values(targets)
-    stmt = stmt.on_conflict_do_nothing(index_elements=["organization_id", "member_id", "date", "meal_type"])
+            for mid, st in items
+        ]
+    )
+    stmt = stmt.on_conflict_do_update(
+        constraint="uq_attendance_member_date_meal",
+        set_={
+            "status": stmt.excluded.status,
+            "marked_by": stmt.excluded.marked_by,
+            "marked_at": stmt.excluded.marked_at,
+            "auto": False,
+            "updated_at": func.now(),
+        },
+    )
     await db.execute(stmt)
     await db.flush()
 

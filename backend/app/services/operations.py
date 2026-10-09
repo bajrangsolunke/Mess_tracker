@@ -2,17 +2,20 @@ import secrets
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import ApiError
 from app.core.security import hash_password
+from app.core.time import month_end, month_start
 from app.models import (
     LedgerEntry,
     LedgerKind,
     Organization,
+    Payment,
     StaffProfile,
+    TiffinPayment,
     User,
     UserRole,
 )
@@ -22,7 +25,9 @@ from app.schemas.operations import (
     LedgerReport,
     LedgerTotals,
     StaffCreate,
+    StaffMonth,
     StaffOut,
+    StaffSelf,
     StaffUpdate,
 )
 
@@ -49,22 +54,118 @@ def _staff_out(profile: StaffProfile, user: User) -> StaffOut:
     )
 
 
-async def list_staff(db: AsyncSession, org_id: int) -> list[StaffOut]:
-    rows = await db.execute(
-        select(StaffProfile, User)
-        .join(User, User.id == StaffProfile.user_id)
-        .where(StaffProfile.organization_id == org_id, User.role == UserRole.staff)
-        .order_by(User.is_active.desc(), User.name)
+async def staff_months(
+    db: AsyncSession, org_id: int, salaries: dict[int, Decimal], month: date
+) -> dict[int, StaffMonth]:
+    """Advances, repayments and salary paid this month per staff user id."""
+    sums: dict[int, dict[LedgerKind, Decimal]] = {
+        uid: dict.fromkeys(STAFF_LEDGER_KINDS, Decimal("0.00")) for uid in salaries
+    }
+    if salaries:
+        rows = await db.execute(
+            select(LedgerEntry.staff_user_id, LedgerEntry.kind, func.sum(LedgerEntry.amount))
+            .where(
+                LedgerEntry.organization_id == org_id,
+                LedgerEntry.staff_user_id.in_(list(salaries)),
+                LedgerEntry.kind.in_(list(STAFF_LEDGER_KINDS)),
+                LedgerEntry.occurred_on >= month_start(month),
+                LedgerEntry.occurred_on <= month_end(month),
+            )
+            .group_by(LedgerEntry.staff_user_id, LedgerEntry.kind)
+        )
+        for uid, kind, total in rows:
+            sums[uid][kind] = total
+    out = {}
+    for uid, salary in salaries.items():
+        s = sums[uid]
+        adv, rep, paid = (
+            s[LedgerKind.staff_advance],
+            s[LedgerKind.advance_repayment],
+            s[LedgerKind.salary_payment],
+        )
+        out[uid] = StaffMonth(
+            month=month_start(month),
+            salary=salary,
+            advances=adv,
+            repaid=rep,
+            paid=paid,
+            payable=salary - adv + rep - paid,
+        )
+    return out
+
+
+async def list_staff(db: AsyncSession, org_id: int, month: date | None = None) -> list[StaffOut]:
+    rows = (
+        await db.execute(
+            select(StaffProfile, User)
+            .join(User, User.id == StaffProfile.user_id)
+            .where(StaffProfile.organization_id == org_id, User.role == UserRole.staff)
+            .order_by(User.is_active.desc(), User.name)
+        )
+    ).all()
+    out = [_staff_out(profile, user) for profile, user in rows]
+    if month is not None:
+        months = await staff_months(db, org_id, {o.user_id: o.monthly_salary for o in out}, month)
+        for o in out:
+            o.month = months[o.user_id]
+    return out
+
+
+async def staff_self(db: AsyncSession, user: User, month: date) -> StaffSelf:
+    profile = (
+        await db.execute(select(StaffProfile).where(StaffProfile.user_id == user.id))
+    ).scalar_one_or_none()
+    if profile is None:
+        raise ApiError(404, "STAFF_NOT_FOUND", "Staff profile not found")
+    months = await staff_months(db, user.organization_id, {user.id: profile.monthly_salary}, month)
+    entries = (
+        await db.execute(
+            select(LedgerEntry)
+            .where(
+                LedgerEntry.organization_id == user.organization_id,
+                LedgerEntry.staff_user_id == user.id,
+                LedgerEntry.kind.in_(list(STAFF_LEDGER_KINDS)),
+            )
+            .order_by(LedgerEntry.occurred_on.desc(), LedgerEntry.id.desc())
+            .limit(30)
+        )
+    ).scalars()
+    return StaffSelf(
+        name=user.name,
+        phone=user.phone,
+        monthly_salary=profile.monthly_salary,
+        month=months[user.id],
+        entries=[_entry_out(e, user.name) for e in entries],
     )
-    return [_staff_out(profile, user) for profile, user in rows]
+
+
+def _entry_out(entry: LedgerEntry, staff_name: str | None) -> LedgerEntryOut:
+    return LedgerEntryOut(
+        id=entry.id,
+        kind=entry.kind,
+        amount=entry.amount,
+        occurred_on=entry.occurred_on,
+        description=entry.description,
+        note=entry.note,
+        staff_user_id=entry.staff_user_id,
+        staff_name=staff_name,
+        recorded_by=entry.recorded_by,
+        created_at=entry.created_at,
+    )
+
+
+async def delete_ledger_entry(db: AsyncSession, org_id: int, entry_id: int) -> None:
+    entry = await db.get(LedgerEntry, entry_id)
+    if entry is None or entry.organization_id != org_id:
+        raise ApiError(404, "LEDGER_ENTRY_NOT_FOUND", "Entry not found")
+    await db.delete(entry)
+    await db.flush()
 
 
 async def create_staff(
     db: AsyncSession, org_id: int, owner_language, data: StaffCreate
 ) -> tuple[StaffOut, str]:
-    if (
-        await db.execute(select(User.id).where(User.phone == data.phone))
-    ).first():
+    if (await db.execute(select(User.id).where(User.phone == data.phone))).first():
         raise ApiError(409, "DUPLICATE_PHONE", "A login with this phone already exists")
 
     temp_password = _temp_password()
@@ -128,9 +229,7 @@ async def update_staff(
     return _staff_out(profile, user)
 
 
-async def _staff_user(
-    db: AsyncSession, org_id: int, user_id: int
-) -> User:
+async def _staff_user(db: AsyncSession, org_id: int, user_id: int) -> User:
     user = (
         await db.execute(
             select(User)
@@ -169,23 +268,10 @@ async def create_ledger_entry(
     db.add(entry)
     await db.flush()
     await db.refresh(entry)
-    return LedgerEntryOut(
-        id=entry.id,
-        kind=entry.kind,
-        amount=entry.amount,
-        occurred_on=entry.occurred_on,
-        description=entry.description,
-        note=entry.note,
-        staff_user_id=entry.staff_user_id,
-        staff_name=staff.name if staff else None,
-        recorded_by=entry.recorded_by,
-        created_at=entry.created_at,
-    )
+    return _entry_out(entry, staff.name if staff else None)
 
 
-async def ledger_report(
-    db: AsyncSession, org_id: int, start: date, end: date
-) -> LedgerReport:
+async def ledger_report(db: AsyncSession, org_id: int, start: date, end: date) -> LedgerReport:
     if start > end:
         raise ApiError(422, "VALIDATION_ERROR", "from must be on or before to")
     rows = await db.execute(
@@ -202,21 +288,27 @@ async def ledger_report(
     totals = {kind: Decimal("0.00") for kind in LedgerKind}
     for entry, staff_name in rows:
         totals[entry.kind] += entry.amount
-        entries.append(
-            LedgerEntryOut(
-                id=entry.id,
-                kind=entry.kind,
-                amount=entry.amount,
-                occurred_on=entry.occurred_on,
-                description=entry.description,
-                note=entry.note,
-                staff_user_id=entry.staff_user_id,
-                staff_name=staff_name,
-                recorded_by=entry.recorded_by,
-                created_at=entry.created_at,
+        entries.append(_entry_out(entry, staff_name))
+    members = (
+        await db.execute(
+            select(func.coalesce(func.sum(Payment.amount), 0)).where(
+                Payment.organization_id == org_id,
+                Payment.paid_on >= start,
+                Payment.paid_on <= end,
             )
         )
-    cash_in = totals[LedgerKind.income] + totals[LedgerKind.advance_repayment]
+    ).scalar_one()
+    companies = (
+        await db.execute(
+            select(func.coalesce(func.sum(TiffinPayment.amount), 0)).where(
+                TiffinPayment.organization_id == org_id,
+                TiffinPayment.paid_on >= start,
+                TiffinPayment.paid_on <= end,
+            )
+        )
+    ).scalar_one()
+    members, companies = Decimal(members), Decimal(companies)
+    cash_in = totals[LedgerKind.income] + totals[LedgerKind.advance_repayment] + members + companies
     cash_out = (
         totals[LedgerKind.expense]
         + totals[LedgerKind.staff_advance]
@@ -232,6 +324,8 @@ async def ledger_report(
             staff_advance=totals[LedgerKind.staff_advance],
             salary_payment=totals[LedgerKind.salary_payment],
             advance_repayment=totals[LedgerKind.advance_repayment],
+            member_collections=members,
+            company_collections=companies,
             cash_in=cash_in,
             cash_out=cash_out,
             net=cash_in - cash_out,

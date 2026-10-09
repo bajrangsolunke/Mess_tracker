@@ -1,17 +1,16 @@
-import { Navigate } from "react-router-dom";
-import { PlateCheckIcon, MoreIcon } from "../../components/brand/icons";
+import LocalShippingIcon from "@mui/icons-material/LocalShippingRounded";
+import { HomeIcon, PlateCheckIcon, ProfileIcon } from "../../components/brand/icons";
 import type { NavItem } from "../../components/BottomNav";
 import { AppShell } from "./AppShell";
 
 const STAFF_NAV: NavItem[] = [
+  { labelKey: "nav.today", to: "/staff", icon: <HomeIcon /> },
   { labelKey: "nav.attendance", to: "/staff/attendance", icon: <PlateCheckIcon /> },
-  { labelKey: "nav.more", to: "/staff/change-password", icon: <MoreIcon /> },
+  { labelKey: "tiffin.short", to: "/staff/tiffins", icon: <LocalShippingIcon /> },
+  { labelKey: "nav.me", to: "/staff/me", icon: <ProfileIcon />, also: ["/staff/change-password"] },
 ];
 
+/** Staff see only what they need: today's counts, marking meals, company tiffins, their salary. */
 export function StaffShell() {
   return <AppShell items={STAFF_NAV} />;
-}
-
-export function StaffHome() {
-  return <Navigate to="/staff/attendance" replace />;
 }

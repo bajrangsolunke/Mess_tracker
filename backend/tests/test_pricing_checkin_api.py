@@ -104,7 +104,7 @@ async def setup_member(client, plan_kind="two"):
     return h, ch, m["member"]
 
 
-async def test_member_checks_in_for_meal(client, today_oct7):
+async def test_member_today_is_view_only(client, today_oct7):
     h, ch, m = await setup_member(client)
     r = await client.get("/api/v1/me/attendance/today", headers=ch)
     assert r.status_code == 200, r.text
@@ -120,58 +120,32 @@ async def test_member_checks_in_for_meal(client, today_oct7):
         "closed": False,
         "auto": False,
     }
+    # members cannot mark their own meals any more
     r = await client.post("/api/v1/me/attendance", json={"meal_type": "lunch"}, headers=ch)
-    assert r.status_code == 200, r.text
-    assert r.json()["lunch"]["status"] == "present" and r.json()["lunch"]["self_marked"] is True
-    # owner sees it, flagged as self-marked
-    r = await client.get("/api/v1/attendance?date=2026-10-07&meal_type=lunch", headers=h)
-    row = r.json()["items"][0]
-    assert row["status"] == "present" and row["self_marked"] is True
-    assert r.json()["counts"]["present"] == 1
-
-
-async def test_member_can_undo_own_checkin_but_not_owner_mark(client, today_oct7):
-    h, ch, m = await setup_member(client)
-    await client.post("/api/v1/me/attendance", json={"meal_type": "lunch"}, headers=ch)
-    r = await client.delete("/api/v1/me/attendance?meal_type=lunch", headers=ch)
-    assert r.status_code == 200 and r.json()["lunch"]["status"] is None
-    # owner marks dinner absent; member cannot remove it
+    assert r.status_code in (404, 405)
+    # the owner's mark shows up for the member
     await client.put(
         "/api/v1/attendance",
         json={
             "date": "2026-10-07",
-            "meal_type": "dinner",
-            "items": [{"member_id": m["id"], "status": "absent"}],
+            "meal_type": "lunch",
+            "items": [{"member_id": m["id"], "status": "present"}],
         },
         headers=h,
     )
-    r = await client.delete("/api/v1/me/attendance?meal_type=dinner", headers=ch)
-    assert r.status_code == 409 and r.json()["code"] == "OWNER_MARKED"
-    # but checking in over an owner's absent is also refused
-    r = await client.post("/api/v1/me/attendance", json={"meal_type": "dinner"}, headers=ch)
-    assert r.status_code == 409 and r.json()["code"] == "OWNER_MARKED"
+    r = await client.get("/api/v1/me/attendance/today", headers=ch)
+    assert r.json()["lunch"]["status"] == "present" and r.json()["lunch"]["self_marked"] is False
 
 
-async def test_checkin_rejects_meal_not_in_plan(client, today_oct7):
+async def test_today_view_plan_and_holiday(client, today_oct7):
     h, ch, m = await setup_member(client, plan_kind="one_dinner")
     r = await client.get("/api/v1/me/attendance/today", headers=ch)
     assert r.json()["lunch"]["expected"] is False and r.json()["dinner"]["expected"] is True
-    r = await client.post("/api/v1/me/attendance", json={"meal_type": "lunch"}, headers=ch)
-    assert r.status_code == 422 and r.json()["code"] == "MEAL_NOT_IN_PLAN"
-
-
-async def test_checkin_blocked_on_holiday_and_closed_month(client, today_oct7):
-    h, ch, m = await setup_member(client)
     await client.post(
-        "/api/v1/holidays", json={"date": "2026-10-07", "meal_type": "lunch"}, headers=h
+        "/api/v1/holidays", json={"date": "2026-10-07", "meal_type": "dinner"}, headers=h
     )
-    r = await client.post("/api/v1/me/attendance", json={"meal_type": "lunch"}, headers=ch)
-    assert r.status_code == 409 and r.json()["code"] == "HOLIDAY"
     r = await client.get("/api/v1/me/attendance/today", headers=ch)
-    assert r.json()["lunch"]["holiday"] is True
-    await client.post("/api/v1/months/2026-10/close", headers=h)
-    r = await client.post("/api/v1/me/attendance", json={"meal_type": "dinner"}, headers=ch)
-    assert r.status_code == 409 and r.json()["code"] == "MONTH_CLOSED"
+    assert r.json()["dinner"]["holiday"] is True
 
 
 # --- notebook-style register ------------------------------------------------------------

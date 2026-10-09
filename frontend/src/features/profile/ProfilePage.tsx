@@ -2,12 +2,13 @@ import { Box, Button, Divider, List, ListItemButton, ListItemIcon, ListItemText,
 import ChevronRightIcon from "@mui/icons-material/ChevronRightRounded";
 import LanguageIcon from "@mui/icons-material/LanguageRounded";
 import LogoutIcon from "@mui/icons-material/LogoutRounded";
+import BadgeIcon from "@mui/icons-material/BadgeRounded";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "../auth/authStore";
 import { useLogout } from "../../api/useAuth";
 import { brand } from "../../app/theme";
-import { NotebookIcon, ProfileIcon, ThaliIcon } from "../../components/brand/icons";
+import { NotebookIcon, ProfileIcon, ThaliIcon, WalletRupeeIcon } from "../../components/brand/icons";
 import BeachAccessIcon from "@mui/icons-material/BeachAccessRounded";
 import LockIcon from "@mui/icons-material/LockRounded";
 import EventBusyIcon from "@mui/icons-material/EventBusyRounded";
@@ -19,7 +20,7 @@ import { SectionTitle } from "../../components/brand/SectionTitle";
 const LANG_NAME: Record<string, string> = { en: "English", hi: "हिन्दी", mr: "मराठी" };
 
 /** Account page used as "More" (owner) and "Profile" (customer): identity, language, logout. */
-export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile" }) {
+export function ProfilePage({ titleKey, children }: { titleKey: "nav.more" | "nav.profile" | "nav.me"; children?: React.ReactNode }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user, organization, member } = useSession();
@@ -47,11 +48,29 @@ export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile"
         </Box>
       </Box>
 
+      {children}
+
       <Box>
         <SectionTitle>{t("profile.settings")}</SectionTitle>
         <List disablePadding sx={{ bgcolor: brand.paper, border: `1px solid ${brand.line}`, borderRadius: "16px", overflow: "hidden" }}>
           {user?.role === "owner" ? (
             <>
+              <ListItemButton onClick={() => navigate("/owner/ledger")} sx={{ minHeight: 60 }}>
+                <ListItemIcon sx={{ color: brand.green, minWidth: 44 }}>
+                  <WalletRupeeIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("ledger.title")} secondary={t("ledger.hintShort")} />
+                <ChevronRightIcon sx={{ color: "text.secondary" }} />
+              </ListItemButton>
+              <Divider component="li" />
+              <ListItemButton onClick={() => navigate("/owner/staff")} sx={{ minHeight: 60 }}>
+                <ListItemIcon sx={{ color: brand.red, minWidth: 44 }}>
+                  <BadgeIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("staff.title")} secondary={t("staff.hintShort")} />
+                <ChevronRightIcon sx={{ color: "text.secondary" }} />
+              </ListItemButton>
+              <Divider component="li" />
               <ListItemButton onClick={() => navigate("/owner/pricing")} sx={{ minHeight: 60 }}>
                 <ListItemIcon sx={{ color: brand.red, minWidth: 44 }}>
                   <ThaliIcon />
@@ -142,7 +161,7 @@ export function ProfilePage({ titleKey }: { titleKey: "nav.more" | "nav.profile"
             <ChevronRightIcon sx={{ color: "text.secondary" }} />
           </ListItemButton>
           <Divider component="li" />
-          <ListItemButton onClick={() => navigate(user?.role === "owner" ? "/owner/change-password" : "/app/change-password")} sx={{ minHeight: 60 }}>
+          <ListItemButton onClick={() => navigate(user?.role === "owner" ? "/owner/change-password" : user?.role === "staff" ? "/staff/change-password" : "/app/change-password")} sx={{ minHeight: 60 }}>
             <ListItemIcon sx={{ color: brand.inkSoft, minWidth: 44 }}>
               <ProfileIcon />
             </ListItemIcon>

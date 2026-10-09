@@ -7,6 +7,7 @@ const PALETTE = ["#B91C1C", "#B45309", "#15803D", "#7C2D12", "#9D174D", "#1D4ED8
 export function Avatar({ name, size = 44 }: { name: string; size?: number }) {
   const initials = name
     .split(/\s+/)
+    .map((p) => p.replace(/[^\p{L}\p{N}]/gu, ""))
     .filter(Boolean)
     .slice(0, 2)
     .map((p) => p[0])

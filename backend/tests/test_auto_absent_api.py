@@ -117,6 +117,7 @@ async def test_marks_record_time_and_who(client, auto_close):
             "date": "2026-10-07",
             "meal_type": "lunch",
             "items": [{"member_id": b["member"]["id"], "status": "present"}],
+            "override": True,
         },
         headers=h,
     )
@@ -128,13 +129,21 @@ async def test_member_history_shows_time_and_auto(client, auto_close):
     h, a, b = await setup(client)
     ch, _ = await login(client, "9000000011", a["temp_password"])
     auto_close(2026, 10, 7, 13, 5)
-    await client.post("/api/v1/me/attendance", json={"meal_type": "lunch"}, headers=ch)
+    await client.put(
+        "/api/v1/attendance",
+        json={
+            "date": "2026-10-07",
+            "meal_type": "lunch",
+            "items": [{"member_id": a["member"]["id"], "status": "present"}],
+        },
+        headers=h,
+    )
     auto_close(2026, 10, 8, 9)
     r = await client.get("/api/v1/attendance/history?month=2026-10", headers=ch)
     items = {(x["date"], x["meal_type"]): x for x in r.json()["items"]}
     assert (
         items[("2026-10-07", "lunch")]["status"] == "present"
-        and items[("2026-10-07", "lunch")]["self_marked"] is True
+        and items[("2026-10-07", "lunch")]["self_marked"] is False
     )
     assert items[("2026-10-07", "lunch")]["marked_at"] is not None
     assert (
@@ -144,7 +153,7 @@ async def test_member_history_shows_time_and_auto(client, auto_close):
     assert r.json()["absent_count"] == 3  # 6 lunch, 6 dinner, 7 dinner
 
 
-async def test_checkin_refused_after_meal_time(client, auto_close):
+async def test_today_view_shows_auto_absent_after_meal_time(client, auto_close):
     h, a, b = await setup(client)
     ch, _ = await login(client, "9000000011", a["temp_password"])
     auto_close(2026, 10, 7, 15, 45)
@@ -154,10 +163,7 @@ async def test_checkin_refused_after_meal_time(client, auto_close):
         and r.json()["lunch"]["status"] == "absent"
         and r.json()["lunch"]["auto"] is True
     )
-    r = await client.post("/api/v1/me/attendance", json={"meal_type": "lunch"}, headers=ch)
-    assert r.status_code == 409 and r.json()["code"] == "MEAL_CLOSED"
-    r = await client.post("/api/v1/me/attendance", json={"meal_type": "dinner"}, headers=ch)
-    assert r.status_code == 200 and r.json()["dinner"]["status"] == "present"
+    assert r.json()["dinner"]["closed"] is False and r.json()["dinner"]["status"] is None
 
 
 async def test_mark_all_only_touches_unmarked(client, auto_close):

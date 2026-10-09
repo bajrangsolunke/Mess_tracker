@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import ApiError
@@ -21,6 +21,9 @@ from app.schemas.tiffin import (
     BulkItem,
     BulkToday,
     CountTotals,
+    DayEntry,
+    DayRow,
+    DayTotals,
     ItemTotal,
     OrderIn,
     OrderRow,
@@ -33,6 +36,7 @@ from app.schemas.tiffin import (
     TiffinClientCreate,
     TiffinClientOut,
     TiffinClientUpdate,
+    TiffinDay,
     TiffinItemCreate,
     TiffinItemOut,
     TiffinItemUpdate,
@@ -50,11 +54,16 @@ def _is_veg(line: TiffinOrderLine) -> bool:
 
 
 def _order_amount(o: TiffinOrder) -> Decimal:
-    return sum((ln.quantity * ln.unit_price for ln in o.lines), ZERO)
+    simple = o.veg_qty * o.veg_price + o.nonveg_qty * o.nonveg_price
+    return sum((ln.quantity * ln.unit_price for ln in o.lines), simple)
 
 
 def _order_qty(o: TiffinOrder) -> int:
-    return sum(ln.quantity for ln in o.lines)
+    return o.veg_qty + o.nonveg_qty + sum(ln.quantity for ln in o.lines)
+
+
+def _order_veg(o: TiffinOrder) -> int:
+    return o.veg_qty + sum(ln.quantity for ln in o.lines if _is_veg(ln))
 
 
 # --- price list ----------------------------------------------------------------------
@@ -261,7 +270,9 @@ async def copy_day(db: AsyncSession, org_id: int, src: date, dst: date) -> int:
 
 async def _payments(db: AsyncSession, org_id: int, month: date, client_id: int | None = None):
     q = select(TiffinPayment).where(
-        TiffinPayment.organization_id == org_id, TiffinPayment.month == month_start(month)
+        TiffinPayment.organization_id == org_id,
+        TiffinPayment.paid_on >= month_start(month),
+        TiffinPayment.paid_on <= month_end(month),
     )
     if client_id is not None:
         q = q.where(TiffinPayment.client_id == client_id)
@@ -269,7 +280,7 @@ async def _payments(db: AsyncSession, org_id: int, month: date, client_id: int |
 
 
 def _counts(orders: Sequence[TiffinOrder]) -> CountTotals:
-    veg = sum(ln.quantity for o in orders for ln in o.lines if _is_veg(ln))
+    veg = sum(_order_veg(o) for o in orders)
     total = sum(_order_qty(o) for o in orders)
     return CountTotals(total=total, veg=veg, nonveg=total - veg)
 
@@ -280,8 +291,12 @@ async def statement(db: AsyncSession, org_id: int, client_id: int, month: date) 
     days: dict[date, dict] = {}
     items: dict[int, dict] = {}
     for o in orders:
-        d = days.setdefault(o.date, {"lunch": 0, "dinner": 0, "amount": ZERO})
+        d = days.setdefault(
+            o.date,
+            {"lunch": 0, "dinner": 0, "amount": ZERO, "lunch_veg": 0, "dinner_veg": 0},
+        )
         d[o.meal_type.value] += _order_qty(o)
+        d[f"{o.meal_type.value}_veg"] += _order_veg(o)
         d["amount"] += _order_amount(o)
         for ln in o.lines:
             it = items.setdefault(
@@ -293,6 +308,9 @@ async def statement(db: AsyncSession, org_id: int, client_id: int, month: date) 
     payments = await _payments(db, org_id, month, c.id)
     amount = sum((_order_amount(o) for o in orders), ZERO)
     paid = sum((p.amount for p in payments), ZERO)
+    opening = (await balances(db, org_id, before=month_start(month), client_id=c.id)).get(
+        c.id, ZERO
+    )
     by_item = sorted(items.values(), key=lambda v: (v["item"].sort_order, v["item"].id))
     return Statement(
         client=TiffinClientOut.model_validate(c),
@@ -304,6 +322,10 @@ async def statement(db: AsyncSession, org_id: int, client_id: int, month: date) 
                 dinner=v["dinner"],
                 total=v["lunch"] + v["dinner"],
                 amount=v["amount"],
+                lunch_veg=v["lunch_veg"],
+                lunch_nonveg=v["lunch"] - v["lunch_veg"],
+                dinner_veg=v["dinner_veg"],
+                dinner_nonveg=v["dinner"] - v["dinner_veg"],
             )
             for k, v in sorted(days.items())
         ],
@@ -322,6 +344,8 @@ async def statement(db: AsyncSession, org_id: int, client_id: int, month: date) 
         paid=paid,
         due=amount - paid,
         payments=[TiffinPaymentOut.model_validate(p) for p in payments],
+        opening_due=opening,
+        balance=opening + amount - paid,
     )
 
 
@@ -329,16 +353,17 @@ async def record_payment(
     db: AsyncSession,
     org_id: int,
     client_id: int,
-    month: date,
     data: TiffinPaymentCreate,
     user_id: int,
 ) -> Statement:
+    """A company can pay any amount on any day; it reduces its running balance."""
     c = await get_client(db, org_id, client_id)
+    month = month_start(data.paid_on)
     db.add(
         TiffinPayment(
             organization_id=org_id,
             client_id=c.id,
-            month=month_start(month),
+            month=month,
             amount=data.amount,
             method=data.method,
             paid_on=data.paid_on,
@@ -354,7 +379,7 @@ async def delete_payment(db: AsyncSession, org_id: int, payment_id: int) -> Stat
     p = await db.get(TiffinPayment, payment_id)
     if p is None or p.organization_id != org_id:
         raise ApiError(404, "PAYMENT_NOT_FOUND", "Payment not found")
-    client_id, month = p.client_id, p.month
+    client_id, month = p.client_id, p.paid_on
     await db.delete(p)
     await db.flush()
     return await statement(db, org_id, client_id, month)
@@ -369,10 +394,11 @@ async def summary(db: AsyncSession, org_id: int, month: date) -> TiffinSummary:
     paid_by: dict[int, Decimal] = defaultdict(lambda: ZERO)
     for p in payments:
         paid_by[p.client_id] += p.amount
+    bal = await balances(db, org_id)
     rows: list[SummaryRow] = []
     for c in await list_clients(db, org_id):
         os_ = by_client.get(c.id, [])
-        if not os_ and not c.is_active and not paid_by.get(c.id):
+        if not os_ and not c.is_active and not paid_by.get(c.id) and not bal.get(c.id):
             continue
         counts = _counts(os_)
         amount = sum((_order_amount(o) for o in os_), ZERO)
@@ -386,6 +412,7 @@ async def summary(db: AsyncSession, org_id: int, month: date) -> TiffinSummary:
                 amount=amount,
                 paid=paid,
                 due=amount - paid,
+                balance=bal.get(c.id, ZERO),
             )
         )
     t_amount = sum((r.amount for r in rows), ZERO)
@@ -399,6 +426,7 @@ async def summary(db: AsyncSession, org_id: int, month: date) -> TiffinSummary:
             amount=t_amount,
             paid=t_paid,
             due=t_amount - t_paid,
+            balance=sum((r.balance for r in rows), ZERO),
         ),
         items=rows,
     )
@@ -422,3 +450,165 @@ async def bulk_today(db: AsyncSession, org_id: int, d: date) -> BulkToday:
         dinner=counts.total - lunch,
         items=[BulkItem(name=it.name, food_type=it.food_type, quantity=q) for it, q in items],
     )
+
+
+# --- running balance -----------------------------------------------------------------
+
+
+async def balances(
+    db: AsyncSession, org_id: int, before: date | None = None, client_id: int | None = None
+) -> dict[int, Decimal]:
+    """Delivered minus paid per company, for everything dated before ``before`` (all if None)."""
+    q = select(TiffinOrder).where(TiffinOrder.organization_id == org_id)
+    pq = (
+        select(TiffinPayment.client_id, func.sum(TiffinPayment.amount))
+        .where(TiffinPayment.organization_id == org_id)
+        .group_by(TiffinPayment.client_id)
+    )
+    if before is not None:
+        q = q.where(TiffinOrder.date < before)
+        pq = pq.where(TiffinPayment.paid_on < before)
+    if client_id is not None:
+        q = q.where(TiffinOrder.client_id == client_id)
+        pq = pq.where(TiffinPayment.client_id == client_id)
+    out: dict[int, Decimal] = defaultdict(lambda: ZERO)
+    for o in (await db.execute(q)).scalars():
+        out[o.client_id] += _order_amount(o)
+    for cid, paid in await db.execute(pq):
+        out[cid] -= paid
+    return dict(out)
+
+
+# --- simple daily entry -----------------------------------------------------------------
+
+
+async def default_rates(db: AsyncSession, org_id: int) -> tuple[Decimal, Decimal]:
+    """Fallback veg / non-veg rates from the price list when a company has none set."""
+    items = [it for it in await list_items(db, org_id) if it.is_active]
+
+    def first(*types: FoodType) -> Decimal:
+        for t in types:
+            for it in items:
+                if it.food_type is t:
+                    return it.price
+        return ZERO
+
+    return first(FoodType.veg), first(FoodType.nonveg, FoodType.egg)
+
+
+def _rates(c: TiffinClient, defaults: tuple[Decimal, Decimal]) -> tuple[Decimal, Decimal]:
+    veg = c.veg_price if c.veg_price is not None else defaults[0]
+    nonveg = c.nonveg_price if c.nonveg_price is not None else defaults[1]
+    return veg, nonveg
+
+
+async def _last_orders(
+    db: AsyncSession, org_id: int, d: date
+) -> dict[tuple[int, MealType], TiffinOrder]:
+    latest = (
+        select(
+            TiffinOrder.client_id,
+            TiffinOrder.meal_type,
+            func.max(TiffinOrder.date).label("d"),
+        )
+        .where(TiffinOrder.organization_id == org_id, TiffinOrder.date < d)
+        .group_by(TiffinOrder.client_id, TiffinOrder.meal_type)
+        .subquery()
+    )
+    q = select(TiffinOrder).join(
+        latest,
+        and_(
+            TiffinOrder.client_id == latest.c.client_id,
+            TiffinOrder.meal_type == latest.c.meal_type,
+            TiffinOrder.date == latest.c.d,
+        ),
+    )
+    return {(o.client_id, o.meal_type): o for o in (await db.execute(q)).scalars()}
+
+
+async def day_sheet(db: AsyncSession, org_id: int, d: date, show_money: bool = True) -> TiffinDay:
+    orders = {(o.client_id, o.meal_type): o for o in await _orders(db, org_id, d, d)}
+    last = await _last_orders(db, org_id, d)
+    defaults = await default_rates(db, org_id)
+    rows: list[DayRow] = []
+    veg = nonveg = lunch = dinner = 0
+    amount = ZERO
+    for c in await list_clients(db, org_id):
+        for meal in (MealType.lunch, MealType.dinner):
+            o = orders.get((c.id, meal))
+            delivers = c.lunch if meal is MealType.lunch else c.dinner
+            if o is None and not (c.is_active and delivers):
+                continue
+            prev = last.get((c.id, meal))
+            vp, np_ = _rates(c, defaults)
+            ov = _order_veg(o) if o else 0
+            onv = _order_qty(o) - ov if o else 0
+            oa = _order_amount(o) if o else ZERO
+            veg += ov
+            nonveg += onv
+            amount += oa
+            if meal is MealType.lunch:
+                lunch += ov + onv
+            else:
+                dinner += ov + onv
+            rows.append(
+                DayRow(
+                    client_id=c.id,
+                    client_name=c.name,
+                    meal_type=meal,
+                    veg=ov,
+                    nonveg=onv,
+                    saved=o is not None,
+                    last_date=prev.date if prev else None,
+                    last_veg=_order_veg(prev) if prev else 0,
+                    last_nonveg=_order_qty(prev) - _order_veg(prev) if prev else 0,
+                    veg_price=vp if show_money else None,
+                    nonveg_price=np_ if show_money else None,
+                    amount=oa if show_money else None,
+                )
+            )
+    return TiffinDay(
+        date=d,
+        locked=await is_month_closed(db, org_id, d),
+        rows=rows,
+        totals=DayTotals(
+            veg=veg,
+            nonveg=nonveg,
+            total=veg + nonveg,
+            lunch=lunch,
+            dinner=dinner,
+            amount=amount if show_money else None,
+        ),
+    )
+
+
+async def put_day(db: AsyncSession, org_id: int, d: date, entries: list[DayEntry]) -> None:
+    """Save veg / non-veg counts; rates are the company's at the time of entry."""
+    await assert_month_open(db, org_id, d)
+    defaults = await default_rates(db, org_id)
+    for e in entries:
+        c = await get_client(db, org_id, e.client_id)
+        o = (
+            await db.execute(
+                select(TiffinOrder).where(
+                    TiffinOrder.client_id == c.id,
+                    TiffinOrder.date == d,
+                    TiffinOrder.meal_type == e.meal_type,
+                )
+            )
+        ).scalar_one_or_none()
+        if o is not None and _order_veg(o) == e.veg and _order_qty(o) - _order_veg(o) == e.nonveg:
+            continue  # unchanged: keep the rates it was saved with
+        if e.veg == 0 and e.nonveg == 0:
+            if o is not None:
+                await db.delete(o)
+            continue
+        if o is None:
+            o = TiffinOrder(
+                organization_id=org_id, client_id=c.id, date=d, meal_type=e.meal_type, lines=[]
+            )
+            db.add(o)
+        o.lines.clear()  # simple counts replace any older per-item lines
+        o.veg_price, o.nonveg_price = _rates(c, defaults)
+        o.veg_qty, o.nonveg_qty = e.veg, e.nonveg
+    await db.flush()

@@ -9,7 +9,10 @@ import { usePlans } from "../../api/usePlans";
 import { useCreateMember, useMember, useUpdateMember } from "../../api/useMembers";
 import { ApiError } from "../../api/client";
 import { PageHeader } from "../../components/brand/PageHeader";
-import { TempPasswordDialog } from "./TempPasswordDialog";
+import { WelcomeDialog } from "./WelcomeDialog";
+import { PaymentPicker } from "./PaymentPicker";
+import { PAY_DEFAULT, paidAmount, type PayValue } from "../../lib/payment";
+import type { Member } from "../../api/types";
 import { MealChoice } from "../membership/MealChoice";
 import { mealChoiceFromPlan, membershipEnd, planForChoice, type Choice } from "../../lib/membership";
 import { normalizePhoneInput } from "../../lib/phone";
@@ -45,7 +48,8 @@ export function MemberFormPage() {
   const existing = useMember(memberId);
   const create = useCreateMember();
   const update = useUpdateMember();
-  const [created, setCreated] = useState<{ name: string; phone: string; password: string } | null>(null);
+  const [created, setCreated] = useState<Member | null>(null);
+  const [pay, setPay] = useState<PayValue>(PAY_DEFAULT);
   const [picked, setPicked] = useState<Choice | null | "custom">(null);
   const [more, setMore] = useState(false);
 
@@ -92,14 +96,17 @@ export function MemberFormPage() {
     if (editing) {
       update.mutate({ id: memberId, ...common }, { onSuccess: () => navigate(`/owner/members/${memberId}`, { replace: true }) });
     } else {
-      create.mutate({ ...common, phone: v.phone, create_login: true }, {
-        onSuccess: (res) => (res.temp_password ? setCreated({ name: res.member.name, phone: res.member.phone, password: res.temp_password }) : navigate(`/owner/members/${res.member.id}`, { replace: true })),
+      const paid = paidAmount(pay, v.monthly_fee);
+      if (paid === null) return;
+      // members get a view-only WhatsApp link instead of a login
+      create.mutate({ ...common, phone: v.phone, create_login: false, paid_amount: paid, payment_method: pay.method }, {
+        onSuccess: (res) => setCreated(res.member),
       });
     }
   });
 
   const err = (create.error ?? update.error) as unknown;
-  const serverError = err instanceof ApiError ? (err.code === "DUPLICATE_PHONE" ? t("members.duplicatePhone") : err.message) : err ? t("common.error") : null;
+  const serverError = err instanceof ApiError ? (err.code === "DUPLICATE_PHONE" ? t("members.duplicatePhone") : err.code === "OVERPAYMENT" ? t("pay.overpayment") : err.message) : err ? t("common.error") : null;
   const pending = create.isPending || update.isPending;
   const helper = (key?: string) => (key ? t(key) : " ");
 
@@ -181,13 +188,15 @@ export function MemberFormPage() {
         </Stack>
       </Collapse>
 
+      {!editing ? <PaymentPicker fee={fee} value={pay} onChange={setPay} /> : null}
+
       {serverError ? <Alert severity="error">{serverError}</Alert> : null}
-      {!editing ? <Typography variant="caption" sx={{ px: 0.5 }}>{t("members.loginNote")}</Typography> : null}
-      <Button type="submit" variant="contained" disabled={pending || (plans.data?.length ?? 0) === 0} sx={{ mt: 1 }}>
+      {!editing ? <Typography variant="caption" sx={{ px: 0.5 }}>{t("track.registerNote")}</Typography> : null}
+      <Button type="submit" variant="contained" disabled={pending || (plans.data?.length ?? 0) === 0 || (!editing && paidAmount(pay, fee) === null)} sx={{ mt: 1 }}>
         {pending ? t("common.loading") : editing ? t("common.save") : t("members.add")}
       </Button>
 
-      {created ? <TempPasswordDialog open name={created.name} phone={created.phone} password={created.password} onClose={() => navigate("/owner/members", { replace: true })} /> : null}
+      {created ? <WelcomeDialog member={created} onClose={() => navigate(`/owner/members/${created.id}`, { replace: true })} /> : null}
     </Stack>
   );
 }

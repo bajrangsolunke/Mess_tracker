@@ -26,6 +26,7 @@ class AttendanceRow(BaseModel):
     self_marked: bool = False
     auto: bool = False
     marked_at: datetime | None = None
+    marked_by_name: str | None = None  # owner or staff who marked it
 
 
 class RegisterRow(BaseModel):
@@ -110,6 +111,7 @@ class BulkMark(BaseModel):
     date: date
     meal_type: MealType
     items: list[MarkItem] = Field(max_length=1000)
+    override: bool = False  # owner correcting an existing mark
 
 
 class HolidayCreate(BaseModel):
@@ -146,3 +148,19 @@ class SummaryRow(BaseModel):
 class MonthState(BaseModel):
     month: date
     closed: bool
+
+
+class KitchenMeal(BaseModel):
+    """What the kitchen needs for one meal: members expected and company tiffins."""
+
+    holiday: bool
+    closed: bool
+    counts: AttendanceCounts
+    tiffin_veg: int
+    tiffin_nonveg: int
+
+
+class KitchenToday(BaseModel):
+    date: date
+    lunch: KitchenMeal
+    dinner: KitchenMeal

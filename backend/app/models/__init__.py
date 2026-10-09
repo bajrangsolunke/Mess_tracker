@@ -7,8 +7,8 @@ from app.models.enums import (
     FoodType,
     HolidayMeal,
     Language,
-    LedgerKind,
     LeaveStatus,
+    LedgerKind,
     MealType,
     MemberStatus,
     MemberType,
@@ -20,7 +20,7 @@ from app.models.leave import Leave
 from app.models.member import Member
 from app.models.menu import Announcement, Menu
 from app.models.notification import Notification
-from app.models.operations import LedgerEntry, MembershipPeriod, StaffProfile
+from app.models.operations import LedgerEntry, StaffProfile
 from app.models.organization import Organization
 from app.models.plan import MessPlan
 from app.models.refresh_token import RefreshToken
@@ -57,7 +57,6 @@ __all__ = [
     "Member",
     "MemberStatus",
     "MemberType",
-    "MembershipPeriod",
     "MessPlan",
     "NotificationType",
     "Organization",

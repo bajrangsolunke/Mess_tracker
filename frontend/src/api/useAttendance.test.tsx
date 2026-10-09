@@ -31,7 +31,7 @@ describe("attendance mutations refresh every screen that shows counts", () => {
   it("marking one member refreshes dashboard, attendance views and reports", async () => {
     const { spy, wrapper } = setup();
     const { result } = renderHook(() => useMarkAttendance("2026-10-07", "lunch"), { wrapper });
-    result.current.mutate([{ member_id: 1, status: "absent" }]);
+    result.current.mutate({ items: [{ member_id: 1, status: "absent" }] });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     await waitFor(() => {
       const keys = invalidatedKeys(spy);

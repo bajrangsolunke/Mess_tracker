@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
-import type { Bill, DueRow, Member, MealType, MyToday, Plan, Pricing, Register } from "./types";
-import { attendanceKey, refreshAttendanceViews } from "./useAttendance";
+import type { Bill, DueRow, Member, MyToday, PaymentMethod, Plan, Pricing, Register } from "./types";
+import { attendanceKey } from "./useAttendance";
 import { membersKey } from "./useMembers";
 import { plansKey } from "./usePlans";
 
@@ -29,7 +29,7 @@ export function useRenewalsDue() {
 export function useRenew() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ memberId, ...data }: { memberId: number; plan_id?: number; start_date?: string }) =>
+    mutationFn: ({ memberId, ...data }: { memberId: number; plan_id?: number; start_date?: string; paid_amount?: string; payment_method?: PaymentMethod }) =>
       api<{ member: Member; bill: Bill }>(`/members/${memberId}/renew`, { method: "POST", body: JSON.stringify(data) }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: membersKey });
@@ -55,19 +55,6 @@ export function useRequestRenewal() {
 
 export function useMyToday() {
   return useQuery({ queryKey: ["me", "today"], queryFn: () => api<MyToday>("/me/attendance/today"), refetchInterval: 60_000 });
-}
-
-export function useCheckIn() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ meal, undo }: { meal: MealType; undo?: boolean }) =>
-      undo ? api<MyToday>(`/me/attendance?meal_type=${meal}`, { method: "DELETE" }) : api<MyToday>("/me/attendance", { method: "POST", body: JSON.stringify({ meal_type: meal }) }),
-    onSuccess: (today) => {
-      qc.setQueryData(["me", "today"], today);
-      void qc.invalidateQueries({ queryKey: attendanceKey });
-      refreshAttendanceViews(qc);
-    },
-  });
 }
 
 export function useRegister(month: string) {

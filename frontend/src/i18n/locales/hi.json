@@ -9,7 +9,9 @@
     "payments": "भुगतान",
     "more": "अधिक",
     "menu": "मेनू",
-    "profile": "प्रोफ़ाइल"
+    "profile": "प्रोफ़ाइल",
+    "me": "मैं",
+    "today": "आज"
   },
   "auth": {
     "login": "लॉगिन",
@@ -145,7 +147,8 @@
   },
   "role": {
     "owner": "मालिक",
-    "customer": "सदस्य"
+    "customer": "सदस्य",
+    "staff": "स्टाफ"
   },
   "members": {
     "add": "सदस्य जोड़ें",
@@ -234,7 +237,11 @@
     "restPresent": "बाकी उपस्थित",
     "restAbsent": "बाकी अनुपस्थित",
     "mealOpen": "भोजन {{time}} पर खत्म होगा। तब तक दर्ज न हुए सदस्य अनुपस्थित होंगे।",
-    "mealClosed": "भोजन {{time}} पर खत्म हुआ। दर्ज न हुए सदस्य अनुपस्थित माने गए।"
+    "mealClosed": "भोजन {{time}} पर खत्म हुआ। दर्ज न हुए सदस्य अनुपस्थित माने गए।",
+    "alreadyMarked": "पहले ही मार्क हो चुका है। सुधार सिर्फ मालिक कर सकते हैं।",
+    "changeTo": "{{status}} करें",
+    "correctBody": "{{name}} · {{meal}} · {{date}} को {{from}} मार्क है। {{to}} करें?",
+    "correctTitle": "यह मार्क बदलें?"
   },
   "holidays": {
     "title": "छुट्टियाँ",
@@ -383,7 +390,20 @@
     "pricesFromList": "दरें टिफ़िन दर-सूची से आती हैं।",
     "byItem": "आइटम अनुसार",
     "noItemsTitle": "पहले टिफ़िन दरें तय करें",
-    "noItemsHint": "वेज थाली ₹90, अंडा थाली - चपाती ₹120 जैसे आइटम जोड़ें।"
+    "noItemsHint": "वेज थाली ₹90, अंडा थाली - चपाती ₹120 जैसे आइटम जोड़ें।",
+    "balance": "वसूली बाकी",
+    "balanceNow": "अब तक बाकी: {{amount}}",
+    "mealsTaken": "कौन सा खाना लेते हैं",
+    "monthPaid": "इस महीने मिला",
+    "monthTiffins": "इस महीने · {{count}} टिफिन ({{veg}} वेज + {{nonveg}} नॉन-वेज)",
+    "openingBalance": "पिछला बाकी",
+    "ratesHint": "रेट खाली छोड़ें तो प्राइस लिस्ट का रेट लगेगा।",
+    "sameAsLast": "{{day}} जैसा · {{veg}} + {{nonveg}}",
+    "saveCounts": "सेव करें · {{count}} टिफिन",
+    "sendStatement": "हिसाब भेजें",
+    "statementText": "नमस्ते {{name}},\n{{month}} का टिफिन हिसाब:\n{{count}} टिफिन ({{veg}} वेज + {{nonveg}} नॉन-वेज) = {{amount}}\nपिछला बाकी: {{opening}}\nमिला: {{paid}}\nकुल बाकी: {{balance}}\nधन्यवाद!",
+    "thisMonth": "इस महीने",
+    "toCollect": "वसूली बाकी"
   },
   "pricing": {
     "title": "दरें",
@@ -467,7 +487,9 @@
     },
     "missed": "छूट गया — अनुपस्थित",
     "timeOver": "भोजन का समय खत्म",
-    "until": "{{time}} तक"
+    "until": "{{time}} तक",
+    "notYet": "अभी मार्क नहीं हुआ",
+    "todayTitle": "आज का खाना"
   },
   "register": {
     "title": "रजिस्टर",
@@ -496,5 +518,117 @@
     "submit": "मेस बनाएँ",
     "haveLogin": "पहले से दर्ज? लॉगिन करें",
     "link": "नई मेस? यहाँ दर्ज करें"
+  },
+  "kitchen": {
+    "chefAllDone": "सब खाने मार्क हो गए। बढ़िया!",
+    "chefPending": "आज अभी {{count}} खाने मार्क करने बाकी हैं।",
+    "companyTiffins": "कंपनी टिफिन",
+    "cookFor": "कितनों का बनाना",
+    "markNow": "{{meal}} मार्क करें · {{count}} बाकी",
+    "members": "सदस्य",
+    "pending": "बाकी"
+  },
+  "ledger": {
+    "title": "रोज़ का खाता",
+    "hintShort": "रोज़ की आमद और खर्च",
+    "add": "एंट्री जोड़ें",
+    "addShort": "जोड़ें",
+    "autoNote": "सदस्यों की फीस और कंपनी के भुगतान अपने आप जुड़ते हैं।",
+    "cashIn": "आमद",
+    "cashOut": "खर्च",
+    "date": "तारीख",
+    "day": "दिन",
+    "month": "महीना",
+    "deleteConfirm": "यह एंट्री हटाएं?",
+    "description": "किसलिए?",
+    "empty": "अभी कोई एंट्री नहीं",
+    "netIn": "हाथ में बचे",
+    "netOut": "ज़्यादा खर्च",
+    "staff": "स्टाफ",
+    "memberFees": "सदस्य फीस",
+    "companyPayments": "कंपनी भुगतान",
+    "kind": {
+      "expense": "खर्च",
+      "income": "अन्य आमद",
+      "staff_advance": "स्टाफ एडवांस",
+      "salary_payment": "पगार दी",
+      "advance_repayment": "एडवांस वापस"
+    },
+    "chip": {
+      "vegetables": "सब्ज़ी",
+      "grocery": "किराना",
+      "gas": "गैस सिलेंडर",
+      "milk": "दूध",
+      "chicken": "चिकन / अंडे",
+      "rent": "किराया",
+      "electricity": "बिजली"
+    }
+  },
+  "pay": {
+    "title": "आज का भुगतान",
+    "paid": "पूरा दिया",
+    "partial": "थोड़ा दिया",
+    "unpaid": "नहीं दिया",
+    "receivedNow": "अभी मिली रकम",
+    "partialInvalid": "{{fee}} से कम डालें",
+    "leftDue": "{{amount}} बाकी",
+    "fullyPaid": "पूरा भुगतान हुआ",
+    "overpayment": "रकम फीस से ज़्यादा है"
+  },
+  "staff": {
+    "title": "स्टाफ",
+    "hintShort": "लॉगिन, पगार और एडवांस",
+    "add": "स्टाफ जोड़ें",
+    "edit": "स्टाफ बदलें",
+    "monthlySalary": "महीने की पगार",
+    "phoneHint": "इसी नंबर से लॉगिन करेंगे",
+    "canLogin": "लॉगिन कर सकते हैं",
+    "blocked": "बंद",
+    "salary": "पगार",
+    "advances": "लिया एडवांस",
+    "repaid": "लौटाया एडवांस",
+    "paid": "दी गई पगार",
+    "payable": "देना बाकी",
+    "owes": "मेस को देना है",
+    "payableNow": "इस महीने देना बाकी: {{amount}}",
+    "monthTitle": "पगार · {{month}}",
+    "mySalary": "मेरी पगार",
+    "giveAdvance": "एडवांस दें",
+    "paySalary": "पगार दें",
+    "recordRepaid": "एडवांस नकद लौटाया",
+    "emptySays": "रसोई के साथियों को जोड़ें ताकि वे खाना मार्क कर सकें।",
+    "emptyTitle": "अभी कोई स्टाफ नहीं",
+    "emptyHint": "स्टाफ आज का खाना मार्क और कंपनी टिफिन दर्ज कर सकता है। पैसे नहीं देख सकता।",
+    "action": {
+      "staff_advance": "{{name}} को एडवांस",
+      "salary_payment": "{{name}} को पगार",
+      "advance_repayment": "{{name}} ने एडवांस लौटाया",
+      "expense": "खर्च",
+      "income": "आमद"
+    }
+  },
+  "track": {
+    "added": "{{name}} अब सदस्य हैं! ID #{{no}}",
+    "allPaid": "सब भुगतान हो गया",
+    "cardTitle": "सदस्य की ट्रैकिंग लिंक",
+    "cardHint": "वे अपना खाना, मेंबरशिप और बाकी रकम देख सकते हैं। ऐप या पासवर्ड नहीं चाहिए।",
+    "copied": "लिंक कॉपी हुई",
+    "dueLine": "बाकी: {{amount}}",
+    "paidLine": "फीस मिल गई। धन्यवाद!",
+    "expired": "मेंबरशिप {{date}} को खत्म हुई। कृपया रिन्यू करें।",
+    "footer": "यह पेज सिर्फ आपके लिए है। लिंक किसी से शेयर न करें।",
+    "hello": "नमस्ते {{name}}!",
+    "invalid": "यह लिंक अब नहीं चलती। मेस से नई लिंक मांगें।",
+    "linkHint": "WhatsApp पर भेजें, ताकि वे कभी भी अपना खाना देख सकें।",
+    "linkLabel": "ट्रैकिंग लिंक",
+    "linkText": "नमस्ते {{name}}! {{mess}} में अपना खाना और फीस यहां देखें:\n{{link}}",
+    "newLink": "नई लिंक",
+    "payments": "फीस",
+    "registerNote": "सेव करने के बाद WhatsApp पर स्वागत मैसेज और ट्रैकिंग लिंक भेज सकते हैं।",
+    "rotateConfirm": "नई लिंक बनाएं? पुरानी लिंक बंद हो जाएगी।",
+    "send": "लिंक भेजें",
+    "sendWelcome": "WhatsApp पर भेजें",
+    "validTill": "{{date}} तक · {{count}} दिन बाकी",
+    "welcomeText": "नमस्ते {{name}}! {{mess}} में आपका स्वागत है 🙏\nसदस्य ID: #{{no}}\nप्लान: {{plan}}\n{{till}} तक मान्य\n{{due}}\nअपना खाना और फीस कभी भी देखें:\n{{link}}"
   }
 }

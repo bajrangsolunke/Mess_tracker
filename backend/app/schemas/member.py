@@ -4,7 +4,7 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.phone import normalize_phone
-from app.models.enums import MemberStatus, MemberType
+from app.models.enums import MemberStatus, MemberType, PaymentMethod
 from app.schemas.common import Money, MoneyIn
 from app.schemas.plan import PlanOut
 
@@ -23,6 +23,9 @@ class MemberCreate(BaseModel):
     emergency_contact: str | None = Field(default=None, max_length=120)
     notes: str | None = Field(default=None, max_length=2000)
     create_login: bool = True
+    # money received at registration: full fee, part of it, or nothing (0)
+    paid_amount: MoneyIn = Decimal("0")
+    payment_method: PaymentMethod = PaymentMethod.cash
 
     @field_validator("phone")
     @classmethod
@@ -68,6 +71,8 @@ class MemberOut(BaseModel):
     renewal_requested_at: datetime | None = None
     next_plan: PlanOut | None = None
     next_plan_from: date | None = None
+    share_token: str | None = None
+    due: Money = Decimal("0")  # unpaid amount across all bills
 
 
 class MemberCreated(BaseModel):
@@ -82,6 +87,8 @@ class TempPassword(BaseModel):
 class RenewIn(BaseModel):
     plan_id: int | None = None
     start_date: date | None = None
+    paid_amount: MoneyIn = Decimal("0")
+    payment_method: PaymentMethod = PaymentMethod.cash
 
 
 class RenewalRequest(BaseModel):

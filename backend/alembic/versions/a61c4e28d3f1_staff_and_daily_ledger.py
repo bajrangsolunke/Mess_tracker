@@ -9,6 +9,7 @@ Create Date: 2026-10-08
 from collections.abc import Sequence
 
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 from alembic import op
 
@@ -20,13 +21,14 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     op.execute("ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'staff'")
-    ledger_kind = sa.Enum(
+    ledger_kind = postgresql.ENUM(
         "expense",
         "income",
         "staff_advance",
         "salary_payment",
         "advance_repayment",
         name="ledger_kind",
+        create_type=False,
     )
     ledger_kind.create(op.get_bind(), checkfirst=True)
     op.create_table(

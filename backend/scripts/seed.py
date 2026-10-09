@@ -24,20 +24,29 @@ from app.models import (
     MemberType,
     MessPlan,
     Organization,
+    StaffProfile,
     TiffinClient,
     TiffinItem,
     User,
     UserRole,
 )
 from app.schemas.pricing import PricingPut
-from app.schemas.tiffin import LineIn, OrderIn
+from app.schemas.tiffin import DayEntry
 from app.services import attendance as att
 from app.services import billing, menus
 from app.services import tiffin as tiffin_svc
+from app.services.members import new_share_token
 from app.services.pricing import set_pricing
 
 DEMO_ORG = "स्वाद भोजनालय"
 OWNER = ("9000000001", "Ramesh Laturkar", "owner123")
+STAFF = ("9000000050", "Ganesh (kitchen)", "staff123", Decimal("9000"))
+# name, lunch, dinner, veg rate, non-veg rate
+COMPANIES = [
+    ("Infosys", True, False, "90", "130"),
+    ("TCS", True, False, "90", "120"),
+    ("Assa", False, True, "90", "130"),
+]
 ONE_MEAL_PRICE, TWO_MEAL_PRICE = "2000", "3600"
 # plan index → standard plan kind
 PLAN_KINDS = ["two", "one_dinner", "one_lunch"]
@@ -133,6 +142,7 @@ async def seed(db: AsyncSession) -> None:
                 member_type=mtype,
                 company=company,
                 delivery_address="Hinjewadi Phase 2" if company else None,
+                share_token=new_share_token(),
                 plan_id=plans[pidx].id,
                 monthly_fee=plans[pidx].monthly_fee,
                 joining_date=joined,
@@ -154,7 +164,7 @@ async def seed(db: AsyncSession) -> None:
                 for m in expected
             ]
             if marks:
-                await att.bulk_mark(db, org.id, d, meal, marks, owner.id)
+                await att.bulk_mark(db, org.id, d, meal, marks, owner.id, override=True)
 
     # a few of this month's bills paid
     page = await billing.list_bills(db, org.id, joined)
@@ -215,7 +225,7 @@ async def seed(db: AsyncSession) -> None:
             await db.flush()
         items[idx] = it
     companies = []
-    for cname in ("Infosys", "TCS"):
+    for cname, lunch, dinner, veg_rate, nonveg_rate in COMPANIES:
         c = (
             await db.execute(
                 select(TiffinClient).where(
@@ -228,38 +238,58 @@ async def seed(db: AsyncSession) -> None:
                 organization_id=org.id,
                 name=cname,
                 contact_name="Admin desk",
-                address="Hinjewadi Phase 2, Pune",
+                address="MIDC, Latur",
+                lunch=lunch,
+                dinner=dinner,
+                veg_price=Decimal(veg_rate),
+                nonveg_price=Decimal(nonveg_rate),
             )
             db.add(c)
             await db.flush()
         companies.append(c)
     for i in range((today - joined).days + 1):
         d = joined + timedelta(days=i)
-        sheet = await tiffin_svc.sheet(db, org.id, d, MealType.lunch)
-        if sheet.totals.total == 0:
-            await tiffin_svc.put_orders(
+        day = await tiffin_svc.day_sheet(db, org.id, d)
+        if day.totals.total == 0:
+            await tiffin_svc.put_day(
                 db,
                 org.id,
                 d,
-                MealType.lunch,
                 [
-                    OrderIn(
+                    DayEntry(
                         client_id=companies[0].id,
-                        lines=[
-                            LineIn(item_id=items[0].id, quantity=40 + (i * 3) % 11),
-                            LineIn(item_id=items[1].id, quantity=6 + i % 4),
-                            LineIn(item_id=items[2].id, quantity=2 + i % 3),
-                        ],
+                        meal_type=MealType.lunch,
+                        veg=40 + (i * 3) % 11,
+                        nonveg=8 + i % 5,
                     ),
-                    OrderIn(
+                    DayEntry(
                         client_id=companies[1].id,
-                        lines=[
-                            LineIn(item_id=items[0].id, quantity=25 + (i * 7) % 9),
-                            LineIn(item_id=items[1].id, quantity=i % 4),
-                        ],
+                        meal_type=MealType.lunch,
+                        veg=25 + (i * 7) % 9,
+                        nonveg=i % 4,
+                    ),
+                    DayEntry(
+                        client_id=companies[2].id,
+                        meal_type=MealType.dinner,
+                        veg=12 + i % 5,
+                        nonveg=6 + (i * 3) % 5,
                     ),
                 ],
             )
+
+    sphone, sname, spw, salary = STAFF
+    if not (await db.execute(select(User.id).where(User.phone == sphone))).first():
+        staff = User(
+            organization_id=org.id,
+            phone=sphone,
+            name=sname,
+            password_hash=hash_password(spw),
+            role=UserRole.staff,
+            language=Language.mr,
+        )
+        db.add(staff)
+        await db.flush()
+        db.add(StaffProfile(organization_id=org.id, user_id=staff.id, monthly_salary=salary))
     await db.flush()
 
 

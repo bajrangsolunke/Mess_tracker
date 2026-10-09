@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
 
 from app.core.deps import CustomerUser, DbSession, OwnerUser
 from app.core.errors import ApiError
 from app.core.time import parse_month, today_ist
-from app.models import MealType
-from app.schemas.attendance import CheckIn, MyToday, Register
+from app.schemas.attendance import MyToday, Register
 from app.schemas.pricing import PricingOut, PricingPut
 from app.services import attendance as att
 from app.services import checkin
@@ -51,19 +50,4 @@ async def my_today(user: CustomerUser, db: DbSession) -> MyToday:
     return await checkin.today_status(db, await _member(db, user), user)
 
 
-@router.post("/me/attendance", response_model=MyToday)
-async def check_in(data: CheckIn, user: CustomerUser, db: DbSession) -> MyToday:
-    m = await _member(db, user)
-    await checkin.check_in(db, m, user, data.meal_type)
-    await db.commit()
-    return await checkin.today_status(db, m, user)
-
-
-@router.delete("/me/attendance", response_model=MyToday)
-async def undo_check_in(
-    user: CustomerUser, db: DbSession, meal_type: MealType = Query()
-) -> MyToday:
-    m = await _member(db, user)
-    await checkin.undo_check_in(db, m, user, meal_type)
-    await db.commit()
-    return await checkin.today_status(db, m, user)
+# Members only view their meals; marking is done by the owner or staff.

@@ -1,4 +1,5 @@
 from datetime import date, datetime
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.phone import normalize_phone
@@ -22,6 +23,17 @@ class StaffUpdate(BaseModel):
     is_active: bool | None = None
 
 
+class StaffMonth(BaseModel):
+    """This month's money for one staff member: payable = salary - advances - paid + repaid."""
+
+    month: date
+    salary: Money
+    advances: Money
+    repaid: Money
+    paid: Money
+    payable: Money
+
+
 class StaffOut(BaseModel):
     id: int
     user_id: int
@@ -30,6 +42,7 @@ class StaffOut(BaseModel):
     monthly_salary: Money
     is_active: bool
     created_at: datetime
+    month: StaffMonth | None = None
 
 
 class StaffCreated(BaseModel):
@@ -67,6 +80,8 @@ class LedgerTotals(BaseModel):
     staff_advance: Money
     salary_payment: Money
     advance_repayment: Money
+    member_collections: Money  # mess member payments recorded on bills
+    company_collections: Money  # company tiffin payments
     cash_in: Money
     cash_out: Money
     net: Money
@@ -77,3 +92,11 @@ class LedgerReport(BaseModel):
     to_date: date
     entries: list[LedgerEntryOut]
     totals: LedgerTotals
+
+
+class StaffSelf(BaseModel):
+    name: str
+    phone: str
+    monthly_salary: Money
+    month: StaffMonth
+    entries: list[LedgerEntryOut]

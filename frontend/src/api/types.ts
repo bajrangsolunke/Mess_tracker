@@ -38,6 +38,8 @@ export interface Member {
   renewal_requested_at: string | null;
   next_plan: Plan | null;
   next_plan_from: string | null;
+  share_token: string | null;
+  due: string;
 }
 
 export interface Page<T> {
@@ -59,9 +61,11 @@ export interface MemberCreateInput {
   emergency_contact?: string | null;
   notes?: string | null;
   create_login?: boolean;
+  paid_amount?: string;
+  payment_method?: PaymentMethod;
 }
 
-export type MemberUpdateInput = Partial<Omit<MemberCreateInput, "phone" | "create_login">>;
+export type MemberUpdateInput = Partial<Omit<MemberCreateInput, "phone" | "create_login" | "paid_amount" | "payment_method">>;
 
 export type AttendanceStatus = "present" | "absent";
 export type HolidayMeal = "lunch" | "dinner" | "all";
@@ -85,6 +89,7 @@ export interface AttendanceRow {
   self_marked: boolean;
   auto: boolean;
   marked_at: string | null;
+  marked_by_name?: string | null;
 }
 
 export interface AttendanceCounts {
@@ -292,6 +297,32 @@ export interface TiffinClient {
   address: string | null;
   is_active: boolean;
   notes: string | null;
+  veg_price: string | null;
+  nonveg_price: string | null;
+  lunch: boolean;
+  dinner: boolean;
+}
+
+export interface TiffinDayRow {
+  client_id: number;
+  client_name: string;
+  meal_type: MealType;
+  veg: number;
+  nonveg: number;
+  saved: boolean;
+  last_date: string | null;
+  last_veg: number;
+  last_nonveg: number;
+  veg_price: string | null;
+  nonveg_price: string | null;
+  amount: string | null;
+}
+
+export interface TiffinDay {
+  date: string;
+  locked: boolean;
+  rows: TiffinDayRow[];
+  totals: { veg: number; nonveg: number; total: number; lunch: number; dinner: number; amount: string | null };
 }
 
 export interface TiffinOrderRow {
@@ -315,13 +346,15 @@ export interface TiffinSheet {
 export interface TiffinStatement {
   client: TiffinClient;
   month: string;
-  days: { date: string; lunch: number; dinner: number; total: number; amount: string }[];
+  days: { date: string; lunch: number; dinner: number; total: number; amount: string; lunch_veg: number; lunch_nonveg: number; dinner_veg: number; dinner_nonveg: number }[];
   by_item: { item_id: number; name: string; food_type: FoodType; quantity: number; amount: string }[];
   totals: { total: number; veg: number; nonveg: number };
   amount: string;
   paid: string;
   due: string;
   payments: Payment[];
+  opening_due: string;
+  balance: string;
 }
 
 export interface TiffinSummaryRow {
@@ -332,11 +365,12 @@ export interface TiffinSummaryRow {
   amount: string;
   paid: string;
   due: string;
+  balance: string;
 }
 
 export interface TiffinSummary {
   month: string;
-  totals: { total: number; veg: number; nonveg: number; amount: string; paid: string; due: string };
+  totals: { total: number; veg: number; nonveg: number; amount: string; paid: string; due: string; balance: string };
   items: TiffinSummaryRow[];
 }
 
@@ -407,23 +441,28 @@ export interface Register {
   }[];
 }
 
-export interface StaffListItem {
+export interface StaffMonth {
+  month: string;
+  salary: string;
+  advances: string;
+  repaid: string;
+  paid: string;
+  payable: string;
+}
+
+export interface Staff {
   id: number;
   user_id: number;
   name: string;
   phone: string;
   monthly_salary: string;
   is_active: boolean;
-  joined_date: string;
+  created_at: string;
+  month: StaffMonth | null;
 }
 
-export interface StaffCreatedInput {
-  name: string;
-  phone: string;
-  monthly_salary: string;
-}
-
-export interface StaffCreated extends StaffListItem {
+export interface StaffCreated {
+  staff: Staff;
   temp_password: string;
 }
 
@@ -433,16 +472,18 @@ export interface LedgerEntry {
   id: number;
   kind: LedgerKind;
   amount: string;
-  date: string;
+  occurred_on: string;
   description: string;
   note: string | null;
   staff_user_id: number | null;
-  recorded_by: number;
+  staff_name: string | null;
+  recorded_by: number | null;
+  created_at: string;
 }
 
 export interface LedgerReport {
-  from: string;
-  to: string;
+  from_date: string;
+  to_date: string;
   entries: LedgerEntry[];
   totals: {
     income: string;
@@ -450,6 +491,51 @@ export interface LedgerReport {
     staff_advance: string;
     salary_payment: string;
     advance_repayment: string;
+    member_collections: string;
+    company_collections: string;
+    cash_in: string;
+    cash_out: string;
     net: string;
   };
+}
+
+export interface StaffSelf {
+  name: string;
+  phone: string;
+  monthly_salary: string;
+  month: StaffMonth;
+  entries: LedgerEntry[];
+}
+
+export interface KitchenMeal {
+  holiday: boolean;
+  closed: boolean;
+  counts: AttendanceCounts;
+  tiffin_veg: number;
+  tiffin_nonveg: number;
+}
+
+export interface KitchenToday {
+  date: string;
+  lunch: KitchenMeal;
+  dinner: KitchenMeal;
+}
+
+export interface PublicView {
+  mess_name: string;
+  language: "en" | "hi" | "mr";
+  member: {
+    member_no: number;
+    name: string;
+    plan_name: string;
+    includes_lunch: boolean;
+    includes_dinner: boolean;
+    status: MemberStatus;
+    joining_date: string;
+    valid_until: string | null;
+  };
+  days_left: number | null;
+  history: HistoryOut;
+  bills: Bill[];
+  due: string;
 }

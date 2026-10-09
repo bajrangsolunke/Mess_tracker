@@ -5,13 +5,15 @@ from fastapi import APIRouter, Query, Response, status
 from app.core.deps import AttendanceOperator, CurrentUser, DbSession, OwnerUser
 from app.core.errors import ApiError
 from app.core.time import parse_month, today_ist
-from app.models import AttendanceStatus, Holiday, MealType, UserRole
+from app.models import AttendanceStatus, Holiday, MealType, User, UserRole
 from app.schemas.attendance import (
     AttendanceSheet,
     BulkMark,
     HistoryOut,
     HolidayCreate,
     HolidayOut,
+    KitchenMeal,
+    KitchenToday,
     MonthState,
     SummaryRow,
 )
@@ -29,6 +31,16 @@ def _month(value: str | None) -> date:
         raise ApiError(422, "VALIDATION_ERROR", "month must be YYYY-MM") from e
 
 
+def _check_operator_date(operator: User, d: date, override: bool = False) -> None:
+    """Staff mark today's meals only and never change a mark; corrections are the owner's."""
+    if operator.role is not UserRole.staff:
+        return
+    if override:
+        raise ApiError(403, "OWNER_ONLY_CORRECTION", "Only the owner can correct a marked meal")
+    if d != today_ist():
+        raise ApiError(403, "STAFF_TODAY_ONLY", "Staff can mark today's meals only")
+
+
 @router.get("/attendance", response_model=AttendanceSheet)
 async def get_sheet(
     operator: AttendanceOperator,
@@ -40,8 +52,31 @@ async def get_sheet(
     return await svc.sheet(db, operator.organization_id, date_, meal_type)
 
 
+@router.get("/kitchen/today", response_model=KitchenToday)
+async def kitchen_today(operator: AttendanceOperator, db: DbSession) -> KitchenToday:
+    from app.services.tiffin import day_sheet
+
+    org_id = operator.organization_id
+    d = today_ist()
+    await ensure_closed(db, org_id)
+    tiffins = await day_sheet(db, org_id, d, show_money=False)
+    out = {}
+    for meal in (MealType.lunch, MealType.dinner):
+        sh = await svc.sheet(db, org_id, d, meal)
+        rows = [r for r in tiffins.rows if r.meal_type is meal]
+        out[meal.value] = KitchenMeal(
+            holiday=sh.holiday is not None,
+            closed=sh.closed,
+            counts=sh.counts,
+            tiffin_veg=sum(r.veg for r in rows),
+            tiffin_nonveg=sum(r.nonveg for r in rows),
+        )
+    return KitchenToday(date=d, **out)
+
+
 @router.put("/attendance", response_model=AttendanceSheet)
 async def put_marks(data: BulkMark, operator: AttendanceOperator, db: DbSession) -> AttendanceSheet:
+    _check_operator_date(operator, data.date, data.override)
     await svc.bulk_mark(
         db,
         operator.organization_id,
@@ -49,6 +84,7 @@ async def put_marks(data: BulkMark, operator: AttendanceOperator, db: DbSession)
         data.meal_type,
         [(i.member_id, i.status) for i in data.items],
         operator.id,
+        override=data.override,
     )
     await db.commit()
     return await svc.sheet(db, operator.organization_id, data.date, data.meal_type)
@@ -62,6 +98,7 @@ async def mark_all(
     meal_type: MealType = Query(),
     status_: AttendanceStatus = Query(alias="status"),
 ) -> AttendanceSheet:
+    _check_operator_date(operator, date_)
     await svc.mark_all(db, operator.organization_id, date_, meal_type, status_, operator.id)
     await db.commit()
     return await svc.sheet(db, operator.organization_id, date_, meal_type)

@@ -89,15 +89,15 @@ async def test_owner_can_choose_start_date(client, monkeypatch):
     assert r.json()["member"]["valid_until"] == "2026-12-06"
 
 
-async def test_expired_member_not_expected_and_cannot_check_in(client, monkeypatch):
+async def test_expired_member_not_expected(client, monkeypatch):
     h, ch, m, plans = await setup(client, joining="2026-10-01")
     r = await client.get("/api/v1/attendance?date=2026-10-31&meal_type=lunch", headers=h)
     assert len(r.json()["items"]) == 1
     r = await client.get("/api/v1/attendance?date=2026-11-01&meal_type=lunch", headers=h)
     assert r.json()["items"] == []
     freeze(monkeypatch, 2026, 11, 2)
-    r = await client.post("/api/v1/me/attendance", json={"meal_type": "lunch"}, headers=ch)
-    assert r.status_code == 409 and r.json()["code"] == "MEMBERSHIP_EXPIRED"
+    r = await client.get("/api/v1/me/attendance/today", headers=ch)
+    assert r.json()["expired"] is True
 
 
 async def test_customer_requests_renewal_owner_sees_and_confirms(client, monkeypatch):

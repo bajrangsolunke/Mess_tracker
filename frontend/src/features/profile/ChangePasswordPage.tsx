@@ -33,7 +33,7 @@ export function ChangePasswordPage() {
 
   return (
     <Stack component="form" spacing={2} noValidate onSubmit={(e) => { e.preventDefault(); if (valid) change.mutate(); }}>
-      <PageHeader title={t("password.title")} back={forced ? undefined : session.user?.role === "owner" ? `${home}/more` : session.user?.role === "staff" ? home : `${home}/profile`} />
+      <PageHeader title={t("password.title")} back={forced ? undefined : session.user?.role === "owner" ? `${home}/more` : session.user?.role === "staff" ? `${home}/me` : `${home}/profile`} />
       <ChefSays pose="waving" size={60}>{forced ? t("chef.forcedPassword") : t("chef.changePassword")}</ChefSays>
       <TextField label={forced ? t("password.temp") : t("password.current")} type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} autoFocus />
       <TextField label={t("password.new")} type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} error={next.length > 0 && (next.length < 6 || tooLong)} helperText={next.length > 0 && next.length < 6 ? t("password.min") : tooLong ? t("password.tooLong") : " "} />

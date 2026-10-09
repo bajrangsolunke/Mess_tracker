@@ -18,6 +18,9 @@ import { formatDateLong, formatTime, todayIst } from "../../lib/date";
 import ScheduleIcon from "@mui/icons-material/ScheduleRounded";
 import { DateStrip } from "./DateStrip";
 import { useSession } from "../auth/authStore";
+import EditIcon from "@mui/icons-material/EditRounded";
+import { CorrectMarkDialog, type Correction } from "./CorrectMarkDialog";
+import { ApiError } from "../../api/client";
 
 function Counter({ label, value, color }: { label: string; value: number; color: string }) {
   return (
@@ -33,7 +36,7 @@ function Counter({ label, value, color }: { label: string; value: number; color:
 function MarkInfo({ row }: { row: AttendanceRow }) {
   const { t, i18n } = useTranslation();
   if (!row.status) return null;
-  const who = row.auto ? t("attendance.byAuto") : row.self_marked ? t("attendance.selfMarked") : t("attendance.byOwner");
+  const who = row.auto ? t("attendance.byAuto") : row.self_marked ? t("attendance.selfMarked") : row.marked_by_name ?? t("attendance.byOwner");
   const color = row.status === "present" ? brand.greenDark : "#B91C1C";
   return (
     <Box component="span" sx={{ color, fontWeight: 600 }}>
@@ -42,7 +45,7 @@ function MarkInfo({ row }: { row: AttendanceRow }) {
   );
 }
 
-function Row({ row, locked, onMark }: { row: AttendanceRow; locked: boolean; onMark: (s: "present" | "absent") => void }) {
+function Row({ row, locked, onMark, onCorrect }: { row: AttendanceRow; locked: boolean; onMark: (s: "present" | "absent") => void; onCorrect?: () => void }) {
   const { t } = useTranslation();
   const present = row.status === "present";
   const absent = row.status === "absent";
@@ -76,10 +79,15 @@ function Row({ row, locked, onMark }: { row: AttendanceRow; locked: boolean; onM
         </Typography>
       </Box>
       {fixed ? (
-        <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, borderRadius: "999px", px: 1.15, py: 0.6, bgcolor: present ? alpha(brand.green, 0.12) : absent ? alpha("#DC2626", 0.12) : alpha(brand.inkSoft, 0.08), color: present ? brand.greenDark : absent ? "#B91C1C" : "text.secondary", fontWeight: 700 }}>
-          <LockIcon sx={{ fontSize: 16 }} />
+        <ButtonBase
+          disabled={!onCorrect || locked || row.status === null}
+          onClick={onCorrect}
+          aria-label={onCorrect ? t("attendance.correctTitle") : undefined}
+          sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, borderRadius: "999px", px: 1.15, minHeight: 36, bgcolor: present ? alpha(brand.green, 0.12) : absent ? alpha("#DC2626", 0.12) : alpha(brand.inkSoft, 0.08), color: present ? brand.greenDark : absent ? "#B91C1C" : "text.secondary", fontWeight: 700, fontSize: "0.875rem" }}
+        >
+          {onCorrect && !locked ? <EditIcon sx={{ fontSize: 15 }} /> : <LockIcon sx={{ fontSize: 15 }} />}
           {present ? t("status.present") : absent ? t("status.absent") : t("attendance.unmarked")}
-        </Box>
+        </ButtonBase>
       ) : (
         <Box sx={{ display: "flex", gap: 0.75 }}>
           <ButtonBase
@@ -130,7 +138,9 @@ export function AttendancePage() {
   const { user } = useSession();
   const isOwner = user?.role === "owner";
   const [params, setParams] = useSearchParams();
-  const date = params.get("date") ?? todayIst();
+  // staff mark today's meals only
+  const date = isOwner ? params.get("date") ?? todayIst() : todayIst();
+  const [correcting, setCorrecting] = useState<Correction | null>(null);
   const meal = (params.get("meal") as MealType | null) ?? "lunch";
   const setDate = (d: string) => setParams({ date: d, meal }, { replace: true });
   const setMeal = (m: MealType) => setParams({ date, meal: m }, { replace: true });
@@ -158,7 +168,7 @@ export function AttendancePage() {
         subtitle={formatDateLong(date, i18n.language)}
         action={isOwner ? <Button variant="outlined" size="medium" startIcon={<MenuBookIcon />} onClick={() => navigate("/owner/register")} sx={{ minHeight: 44 }}>{t("register.title")}</Button> : undefined}
       />
-      <DateStrip value={date} onChange={setDate} />
+      {isOwner ? <DateStrip value={date} onChange={setDate} /> : null}
 
       <Tabs value={meal} onChange={(_, v: MealType) => setMeal(v)} variant="fullWidth" sx={{ minHeight: 44, "& .MuiTab-root": { minHeight: 44, fontWeight: 600 } }}>
         <Tab value="lunch" label={t("meal.lunch")} />
@@ -189,9 +199,11 @@ export function AttendancePage() {
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
             {data.holiday.reason || t("attendance.messClosed")}
           </Typography>
-          <Button variant="text" sx={{ mt: 2 }} onClick={() => navigate("/owner/holidays")}>
-            {t("attendance.manageHolidays")}
-          </Button>
+          {isOwner ? (
+            <Button variant="text" sx={{ mt: 2 }} onClick={() => navigate("/owner/holidays")}>
+              {t("attendance.manageHolidays")}
+            </Button>
+          ) : null}
         </Box>
       ) : data.items.length === 0 ? (
         <Typography sx={{ color: "text.secondary", textAlign: "center", py: 5 }}>{t("attendance.nobodyExpected")}</Typography>
@@ -232,11 +244,26 @@ export function AttendancePage() {
 
           <Stack spacing={1.25}>
             {rows.map((r) => (
-              <Row key={r.member.id} row={r} locked={locked} onMark={(s) => mark.mutate([{ member_id: r.member.id, status: s }])} />
+              <Row
+                key={r.member.id}
+                row={r}
+                locked={locked}
+                onMark={(s) => mark.mutate({ items: [{ member_id: r.member.id, status: s }] })}
+                onCorrect={isOwner && r.status ? () => setCorrecting({ memberId: r.member.id, name: r.member.name, date, meal, from: r.status! }) : undefined}
+              />
             ))}
           </Stack>
+          {mark.error instanceof ApiError && mark.error.code === "ATTENDANCE_LOCKED" ? <Alert severity="info">{t("attendance.alreadyMarked")}</Alert> : null}
         </>
       )}
+      {correcting ? (
+        <CorrectMarkDialog
+          value={correcting}
+          busy={mark.isPending}
+          onCancel={() => setCorrecting(null)}
+          onConfirm={(to) => mark.mutate({ items: [{ member_id: correcting.memberId, status: to }], override: true }, { onSettled: () => setCorrecting(null) })}
+        />
+      ) : null}
     </Stack>
   );
 }

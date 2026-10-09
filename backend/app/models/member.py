@@ -69,6 +69,8 @@ class Member(TimestampMixin, Base):
         ForeignKey("mess_plans.id", ondelete="SET NULL")
     )
     next_plan_from: Mapped[date | None] = mapped_column(Date)
+    # secret for the member's view-only tracking link (shared on WhatsApp instead of a login)
+    share_token: Mapped[str | None] = mapped_column(String(32), unique=True)
 
     plan: Mapped[MessPlan] = relationship(lazy="joined", foreign_keys=[plan_id])
     next_plan: Mapped[MessPlan | None] = relationship(lazy="joined", foreign_keys=[next_plan_id])

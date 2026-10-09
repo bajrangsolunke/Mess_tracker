@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { AttendanceStatus, MealType } from "../../api/types";
 import { useRegister } from "../../api/useMembership";
 import { useMarkCell } from "../../api/useAttendance";
+import { CorrectMarkDialog, type Correction } from "../attendance/CorrectMarkDialog";
 import { PageHeader } from "../../components/brand/PageHeader";
 import { SearchBar } from "../../components/SearchBar";
 import { brand } from "../../app/theme";
@@ -74,9 +75,14 @@ export function RegisterPage() {
     el.scrollLeft = Math.max(0, NAME_W + 40 + (day - 4) * CELL - (el.clientWidth - NAME_W - 40) / 2);
   }, [data, month, today]);
 
+  const [correcting, setCorrecting] = useState<Correction | null>(null);
   const tap = (memberId: number, iso: string, current?: AttendanceStatus) => {
-    const next: AttendanceStatus = current === "present" ? "absent" : "present";
-    mark.mutate({ date: iso, member_id: memberId, status: next });
+    if (current) {
+      const name = data?.rows.find((r) => r.member.id === memberId)?.member.name ?? "";
+      setCorrecting({ memberId, name, date: iso, meal, from: current });
+      return;
+    }
+    mark.mutate({ date: iso, member_id: memberId, status: "present" });
   };
 
   return (
@@ -132,6 +138,14 @@ export function RegisterPage() {
           <Typography key={l} variant="caption"><b style={{ color: c }}>{s}</b> {l}</Typography>
         ))}
       </Box>
+      {correcting ? (
+        <CorrectMarkDialog
+          value={correcting}
+          busy={mark.isPending}
+          onCancel={() => setCorrecting(null)}
+          onConfirm={(to) => mark.mutate({ date: correcting.date, member_id: correcting.memberId, status: to, override: true }, { onSettled: () => setCorrecting(null) })}
+        />
+      ) : null}
     </Stack>
   );
 }

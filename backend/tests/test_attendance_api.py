@@ -46,16 +46,16 @@ async def test_bulk_mark_and_counts(client):
     assert r.status_code == 200, r.text
     counts = r.json()["counts"]
     assert counts == {"expected": 3, "present": 1, "absent": 1, "unmarked": 1, "on_leave": 0}
-    # re-marking overwrites
-    r = await client.put(
-        "/api/v1/attendance",
-        json={
-            "date": "2026-10-07",
-            "meal_type": "dinner",
-            "items": [{"member_id": b["member"]["id"], "status": "present"}],
-        },
-        headers=h,
-    )
+    # a set mark is final: a plain re-mark is refused
+    body = {
+        "date": "2026-10-07",
+        "meal_type": "dinner",
+        "items": [{"member_id": b["member"]["id"], "status": "present"}],
+    }
+    r = await client.put("/api/v1/attendance", json=body, headers=h)
+    assert r.status_code == 409 and r.json()["code"] == "ATTENDANCE_LOCKED"
+    # the owner corrects it explicitly
+    r = await client.put("/api/v1/attendance", json={**body, "override": True}, headers=h)
     assert r.json()["counts"]["present"] == 2
 
 
@@ -68,7 +68,10 @@ async def test_mark_all_present_endpoint(client):
     assert r.json()["counts"]["present"] == 2
 
 
-async def test_inactive_member_not_expected(client):
+async def test_inactive_member_not_expected(client, monkeypatch):
+    from datetime import date
+
+    monkeypatch.setattr("app.services.members.today_ist", lambda: date(2026, 10, 7))
     h, a, b, c = await setup(client)
     await client.post(f"/api/v1/members/{c['member']['id']}/deactivate", headers=h)
     r = await client.get("/api/v1/attendance?date=2026-10-07&meal_type=lunch", headers=h)

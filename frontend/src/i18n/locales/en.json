@@ -9,7 +9,9 @@
     "payments": "Payments",
     "more": "More",
     "menu": "Menu",
-    "profile": "Profile"
+    "profile": "Profile",
+    "me": "Me",
+    "today": "Today"
   },
   "auth": {
     "login": "Login",
@@ -145,7 +147,8 @@
   },
   "role": {
     "owner": "Owner",
-    "customer": "Member"
+    "customer": "Member",
+    "staff": "Staff"
   },
   "members": {
     "add": "Add member",
@@ -234,7 +237,11 @@
     "restPresent": "Rest present",
     "restAbsent": "Rest absent",
     "mealOpen": "Meal ends at {{time}}. Anyone not marked by then becomes absent.",
-    "mealClosed": "Meal ended at {{time}}. Members not marked were recorded absent."
+    "mealClosed": "Meal ended at {{time}}. Members not marked were recorded absent.",
+    "alreadyMarked": "Already marked. Only the owner can correct a mark.",
+    "changeTo": "Make {{status}}",
+    "correctBody": "{{name}} · {{meal}} · {{date}} is marked {{from}}. Change it to {{to}}?",
+    "correctTitle": "Correct this mark?"
   },
   "holidays": {
     "title": "Holidays",
@@ -383,7 +390,20 @@
     "pricesFromList": "Prices come from the tiffin price list.",
     "byItem": "By item",
     "noItemsTitle": "Set your tiffin prices first",
-    "noItemsHint": "Add items like Veg thali ₹90, Anda thali - Chapati ₹120."
+    "noItemsHint": "Add items like Veg thali ₹90, Anda thali - Chapati ₹120.",
+    "balance": "To collect",
+    "balanceNow": "Pending till now: {{amount}}",
+    "mealsTaken": "Meals they take",
+    "monthPaid": "Paid this month",
+    "monthTiffins": "This month · {{count}} tiffins ({{veg}} veg + {{nonveg}} non-veg)",
+    "openingBalance": "Pending from earlier",
+    "ratesHint": "Leave a rate empty to use your price list.",
+    "sameAsLast": "Same as {{day}} · {{veg}} + {{nonveg}}",
+    "saveCounts": "Save · {{count}} tiffins",
+    "sendStatement": "Statement",
+    "statementText": "Namaste {{name}},\nTiffin statement for {{month}}:\n{{count}} tiffins ({{veg}} veg + {{nonveg}} non-veg) = {{amount}}\nPending from earlier: {{opening}}\nPaid: {{paid}}\nBalance to pay: {{balance}}\nThank you!",
+    "thisMonth": "This month",
+    "toCollect": "To collect"
   },
   "pricing": {
     "title": "Prices",
@@ -467,7 +487,9 @@
     },
     "missed": "Missed — absent",
     "timeOver": "Meal time over",
-    "until": "until {{time}}"
+    "until": "until {{time}}",
+    "notYet": "Not marked yet",
+    "todayTitle": "Today's meals"
   },
   "register": {
     "title": "Register",
@@ -496,5 +518,117 @@
     "submit": "Create mess",
     "haveLogin": "Already registered? Log in",
     "link": "New mess? Register here"
+  },
+  "kitchen": {
+    "chefAllDone": "All meals marked. Great work!",
+    "chefPending": "{{count}} meals still to mark today.",
+    "companyTiffins": "Company tiffins",
+    "cookFor": "Cook for",
+    "markNow": "Mark {{meal}} · {{count}} left",
+    "members": "Members",
+    "pending": "left"
+  },
+  "ledger": {
+    "title": "Daily khata",
+    "hintShort": "Money in and out, every day",
+    "add": "Add entry",
+    "addShort": "Add",
+    "autoNote": "Member fees and company payments are added automatically.",
+    "cashIn": "Money in",
+    "cashOut": "Money out",
+    "date": "Date",
+    "day": "Day",
+    "month": "Month",
+    "deleteConfirm": "Delete this entry?",
+    "description": "What for?",
+    "empty": "No entries yet",
+    "netIn": "Net in hand",
+    "netOut": "Net spent",
+    "staff": "Staff",
+    "memberFees": "Member fees",
+    "companyPayments": "Company payments",
+    "kind": {
+      "expense": "Expense",
+      "income": "Other income",
+      "staff_advance": "Staff advance",
+      "salary_payment": "Salary paid",
+      "advance_repayment": "Advance returned"
+    },
+    "chip": {
+      "vegetables": "Vegetables",
+      "grocery": "Grocery",
+      "gas": "Gas cylinder",
+      "milk": "Milk",
+      "chicken": "Chicken / eggs",
+      "rent": "Rent",
+      "electricity": "Electricity"
+    }
+  },
+  "pay": {
+    "title": "Payment today",
+    "paid": "Paid full",
+    "partial": "Part paid",
+    "unpaid": "Not paid",
+    "receivedNow": "Amount received now",
+    "partialInvalid": "Enter less than {{fee}}",
+    "leftDue": "{{amount}} still due",
+    "fullyPaid": "Fully paid",
+    "overpayment": "Amount is more than the fee"
+  },
+  "staff": {
+    "title": "Staff",
+    "hintShort": "Logins, salary and advances",
+    "add": "Add staff",
+    "edit": "Edit staff",
+    "monthlySalary": "Monthly salary",
+    "phoneHint": "They log in with this number",
+    "canLogin": "Can log in",
+    "blocked": "Blocked",
+    "salary": "Salary",
+    "advances": "Advances taken",
+    "repaid": "Advance returned",
+    "paid": "Salary paid",
+    "payable": "Still to pay",
+    "owes": "Owes the mess",
+    "payableNow": "Still to pay this month: {{amount}}",
+    "monthTitle": "Salary · {{month}}",
+    "mySalary": "My salary",
+    "giveAdvance": "Give advance",
+    "paySalary": "Pay salary",
+    "recordRepaid": "Advance returned in cash",
+    "emptySays": "Add your kitchen helpers so they can mark meals.",
+    "emptyTitle": "No staff yet",
+    "emptyHint": "Staff can mark today's meals and enter company tiffins. They cannot see money.",
+    "action": {
+      "staff_advance": "Advance to {{name}}",
+      "salary_payment": "Pay salary to {{name}}",
+      "advance_repayment": "{{name}} returned advance",
+      "expense": "Expense",
+      "income": "Income"
+    }
+  },
+  "track": {
+    "added": "{{name}} is a member now! ID #{{no}}",
+    "allPaid": "All paid",
+    "cardTitle": "Member's tracking link",
+    "cardHint": "They see their meals, membership and dues. No app or password needed.",
+    "copied": "Link copied",
+    "dueLine": "Pending: {{amount}}",
+    "paidLine": "Fees paid. Thank you!",
+    "expired": "Membership ended on {{date}}. Please renew.",
+    "footer": "This page is only for you. Please don't share the link.",
+    "hello": "Namaste {{name}}!",
+    "invalid": "This link is not valid any more. Please ask the mess for a new link.",
+    "linkHint": "Send it on WhatsApp so they can check their meals any time.",
+    "linkLabel": "Tracking link",
+    "linkText": "Namaste {{name}}! Check your meals and fees at {{mess}} here:\n{{link}}",
+    "newLink": "New link",
+    "payments": "Fees",
+    "registerNote": "After saving, you can send a welcome message with their tracking link on WhatsApp.",
+    "rotateConfirm": "Make a new link? The old link will stop working.",
+    "send": "Send link",
+    "sendWelcome": "Send on WhatsApp",
+    "validTill": "Valid till {{date}} · {{count}} days left",
+    "welcomeText": "Namaste {{name}}! Welcome to {{mess}} 🙏\nMember ID: #{{no}}\nPlan: {{plan}}\nValid till: {{till}}\n{{due}}\nSee your meals and fees any time:\n{{link}}"
   }
 }

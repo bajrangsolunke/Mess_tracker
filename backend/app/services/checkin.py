@@ -1,16 +1,11 @@
-"""Member self check-in: the digital replacement for signing the mess notebook."""
-
-from datetime import date, timedelta
+"""A member's view of today's meals (marking is done by the owner or staff)."""
 
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import ApiError
 from app.core.time import now_ist
 from app.models import (
     Attendance,
-    AttendanceStatus,
     Leave,
     LeaveStatus,
     MealType,
@@ -19,7 +14,7 @@ from app.models import (
     User,
 )
 from app.schemas.attendance import MealToday, MyToday
-from app.services.attendance import assert_month_open, holiday_for, meal_end
+from app.services.attendance import holiday_for, meal_end
 
 
 def _includes(member: Member, meal: MealType) -> bool:
@@ -72,77 +67,3 @@ async def today_status(db: AsyncSession, member: Member, user: User) -> MyToday:
         for v in out.values():
             v.expected = False
     return MyToday(date=d, valid_until=member.valid_until, expired=expired, **out)
-
-
-def _grace_window_end(member: Member, d: date) -> date | None:
-    if member.valid_until is None:
-        return None
-    return member.valid_until + timedelta(days=6)
-
-
-async def check_in(db: AsyncSession, member: Member, user: User, meal: MealType) -> None:
-    now = now_ist()
-    d = now.date()
-    if not _includes(member, meal) or member.joining_date > d:
-        raise ApiError(422, "MEAL_NOT_IN_PLAN", "This meal is not part of your plan")
-    grace_end = _grace_window_end(member, d)
-    if grace_end is not None and d > grace_end:
-        raise ApiError(409, "MEMBERSHIP_EXPIRED", "Your membership has ended; please renew")
-    if await holiday_for(db, member.organization_id, d, meal) is not None:
-        raise ApiError(409, "HOLIDAY", "Mess is closed for this meal today")
-    await assert_month_open(db, member.organization_id, d)
-    org = await db.get(Organization, member.organization_id)
-    if now >= meal_end(org, d, meal):
-        raise ApiError(409, "MEAL_CLOSED", "Meal time is over; ask the owner to change it")
-    existing = (
-        await db.execute(
-            select(Attendance).where(
-                Attendance.member_id == member.id,
-                Attendance.date == d,
-                Attendance.meal_type == meal,
-            )
-        )
-    ).scalar_one_or_none()
-    if existing is not None and existing.marked_by != user.id:
-        raise ApiError(409, "OWNER_MARKED", "The owner has already marked this meal")
-    stmt = insert(Attendance).values(
-        organization_id=member.organization_id,
-        member_id=member.id,
-        date=d,
-        meal_type=meal,
-        status=AttendanceStatus.present,
-        marked_by=user.id,
-        marked_at=now,
-        auto=False,
-    )
-    stmt = stmt.on_conflict_do_update(
-        constraint="uq_attendance_member_date_meal",
-        set_={
-            "status": AttendanceStatus.present,
-            "marked_by": user.id,
-            "marked_at": now,
-            "auto": False,
-        },
-    )
-    await db.execute(stmt)
-    await db.flush()
-
-
-async def undo_check_in(db: AsyncSession, member: Member, user: User, meal: MealType) -> None:
-    d = now_ist().date()
-    await assert_month_open(db, member.organization_id, d)
-    existing = (
-        await db.execute(
-            select(Attendance).where(
-                Attendance.member_id == member.id,
-                Attendance.date == d,
-                Attendance.meal_type == meal,
-            )
-        )
-    ).scalar_one_or_none()
-    if existing is None:
-        return
-    if existing.marked_by != user.id:
-        raise ApiError(409, "OWNER_MARKED", "The owner has marked this meal; ask them to change it")
-    await db.delete(existing)
-    await db.flush()

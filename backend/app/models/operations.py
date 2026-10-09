@@ -8,22 +8,6 @@ from app.db.base import Base, TimestampMixin
 from app.models.enums import LedgerKind
 
 
-class MembershipPeriod(TimestampMixin, Base):
-    __tablename__ = "membership_periods"
-
-    organization_id: Mapped[int] = mapped_column(
-        ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
-    )
-    member_id: Mapped[int] = mapped_column(
-        ForeignKey("members.id", ondelete="CASCADE"), nullable=False, index=True
-    )
-    plan_id: Mapped[int] = mapped_column(ForeignKey("mess_plans.id"), nullable=False)
-    period_start: Mapped[date] = mapped_column(Date, nullable=False)
-    period_end: Mapped[date] = mapped_column(Date, nullable=False)
-    lunch_allowance: Mapped[int] = mapped_column(nullable=False, default=0)
-    dinner_allowance: Mapped[int] = mapped_column(nullable=False, default=0)
-
-
 class StaffProfile(TimestampMixin, Base):
     __tablename__ = "staff_profiles"
 
@@ -42,16 +26,10 @@ class LedgerEntry(TimestampMixin, Base):
     organization_id: Mapped[int] = mapped_column(
         ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    kind: Mapped[LedgerKind] = mapped_column(
-        Enum(LedgerKind, name="ledger_kind"), nullable=False
-    )
+    kind: Mapped[LedgerKind] = mapped_column(Enum(LedgerKind, name="ledger_kind"), nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     occurred_on: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     description: Mapped[str] = mapped_column(String(160), nullable=False)
     note: Mapped[str | None] = mapped_column(Text)
-    staff_user_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL")
-    )
-    recorded_by: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id", ondelete="SET NULL")
-    )
+    staff_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    recorded_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))

@@ -20,9 +20,6 @@ class Attendance(TimestampMixin, Base):
     member_id: Mapped[int] = mapped_column(
         ForeignKey("members.id", ondelete="CASCADE"), nullable=False
     )
-    membership_period_id: Mapped[int | None] = mapped_column(
-        ForeignKey("membership_periods.id", ondelete="SET NULL")
-    )
     date: Mapped[date] = mapped_column(Date, nullable=False)
     meal_type: Mapped[MealType] = mapped_column(Enum(MealType, name="meal_type"), nullable=False)
     status: Mapped[AttendanceStatus] = mapped_column(

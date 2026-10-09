@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./client";
-import type { Member, MemberCreateInput, MemberStatus, MemberType, MemberUpdateInput, Page } from "./types";
+import type { Member, MemberCreateInput, MemberStatus, MemberType, MemberUpdateInput, Page, PublicView } from "./types";
 
 export const membersKey = ["members"] as const;
 
@@ -68,5 +68,24 @@ export function useSetMemberStatus() {
 export function useResetMemberPassword() {
   return useMutation({
     mutationFn: (id: number) => api<{ temp_password: string }>(`/members/${id}/reset-password`, { method: "POST" }),
+  });
+}
+
+/** New tracking link for the member; the old link stops working. */
+export function useRotateShareLink() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => api<Member>(`/members/${id}/share-link`, { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: membersKey }),
+  });
+}
+
+/** Read-only view behind a member's link; no login. */
+export function usePublicMember(token: string, month: string) {
+  return useQuery({
+    queryKey: ["public-member", token, month],
+    queryFn: () => api<PublicView>(`/public/members/${token}?month=${month}`),
+    retry: false,
+    placeholderData: (p) => p,
   });
 }

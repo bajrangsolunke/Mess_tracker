@@ -8,7 +8,12 @@ import PersonIcon from "@mui/icons-material/PersonRounded";
 import { PlateCheckIcon } from "../../components/brand/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useMember, useResetMemberPassword, useSetMemberStatus } from "../../api/useMembers";
+import { useMember, useResetMemberPassword, useRotateShareLink, useSetMemberStatus } from "../../api/useMembers";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import LinkIcon from "@mui/icons-material/LinkRounded";
+import { alpha } from "@mui/material";
+import { useSession } from "../auth/authStore";
+import { shareLinkText, whatsappUrl } from "../../lib/share";
 import { PageHeader } from "../../components/brand/PageHeader";
 import { Avatar } from "../../components/brand/Avatar";
 import { StatusChip } from "../../components/brand/StatusChip";
@@ -43,6 +48,8 @@ export function MemberDetailPage() {
   const { data: m, isLoading } = useMember(memberId);
   const setStatus = useSetMemberStatus();
   const resetPw = useResetMemberPassword();
+  const rotate = useRotateShareLink();
+  const { organization } = useSession();
   const [temp, setTemp] = useState<string | null>(null);
   const [renewing, setRenewing] = useState(false);
 
@@ -57,6 +64,7 @@ export function MemberDetailPage() {
   }
 
   const active = m.status === "active";
+  const due = Number(m.due);
 
   return (
     <Stack spacing={2.5}>
@@ -108,6 +116,28 @@ export function MemberDetailPage() {
         </Box>
       ) : null}
 
+      {due > 0 ? (
+        <Box role="button" tabIndex={0} onClick={() => navigate("/owner/payments")} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2, borderRadius: "16px", bgcolor: alpha(brand.gold, 0.12), border: `1px solid ${alpha(brand.gold, 0.4)}`, cursor: "pointer" }}>
+          <Typography sx={{ fontWeight: 700 }}>{t("payments.due")}</Typography>
+          <Typography sx={{ fontWeight: 800, fontSize: "1.25rem", color: brand.goldDark }}>{rupees(due)}</Typography>
+        </Box>
+      ) : null}
+
+      {m.share_token ? (
+        <Box sx={{ p: 2, borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}` }}>
+          <Typography variant="subtitle1">{t("track.cardTitle")}</Typography>
+          <Typography variant="body2" sx={{ color: "text.secondary", mb: 1.5 }}>{t("track.cardHint")}</Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button variant="contained" startIcon={<WhatsAppIcon />} href={whatsappUrl(m.phone, shareLinkText(m, organization?.name ?? "", t))} target="_blank" rel="noopener" sx={{ flex: 1, backgroundImage: "none", bgcolor: "#25D366", "&:hover": { bgcolor: "#1DA851" } }}>
+              {t("track.send")}
+            </Button>
+            <Button variant="outlined" startIcon={<LinkIcon />} disabled={rotate.isPending} onClick={() => window.confirm(t("track.rotateConfirm")) && rotate.mutate(m.id)}>
+              {t("track.newLink")}
+            </Button>
+          </Box>
+        </Box>
+      ) : null}
+
       <Box sx={{ px: 2, borderRadius: "16px", bgcolor: brand.paper, border: `1px solid ${brand.line}` }}>
         <Row label={t("members.memberNo")} value={`#${m.member_no}`} />
         <Divider />
@@ -153,14 +183,11 @@ export function MemberDetailPage() {
         <Button variant="contained" startIcon={<PlateCheckIcon />} onClick={() => navigate(`/owner/members/${m.id}/attendance`)}>
           {t("members.viewAttendance")}
         </Button>
-        <Button
-          variant="outlined"
-          startIcon={<KeyIcon />}
-          disabled={!m.user_id || resetPw.isPending}
-          onClick={() => resetPw.mutate(m.id, { onSuccess: (r) => setTemp(r.temp_password) })}
-        >
-          {t("members.resetPassword")}
-        </Button>
+        {m.user_id ? (
+          <Button variant="outlined" startIcon={<KeyIcon />} disabled={resetPw.isPending} onClick={() => resetPw.mutate(m.id, { onSuccess: (r) => setTemp(r.temp_password) })}>
+            {t("members.resetPassword")}
+          </Button>
+        ) : null}
         <Button
           variant="outlined"
           color={active ? "error" : "success"}

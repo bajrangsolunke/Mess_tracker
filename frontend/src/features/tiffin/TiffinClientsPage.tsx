@@ -33,7 +33,7 @@ export function TiffinClientsPage() {
           <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1.5 }}>
             <StatCard label={t("tiffin.tiffins")} value={data.totals.total} tone="red" hint={`${t("tiffin.veg")} ${data.totals.veg} · ${t("tiffin.nonvegEgg")} ${data.totals.nonveg}`} />
             <StatCard label={t("payments.billed")} value={rupees(data.totals.amount)} tone="neutral" />
-            <StatCard label={Number(data.totals.due) < 0 ? t("tiffin.advance") : t("payments.due")} value={rupees(Math.abs(Number(data.totals.due)))} tone={Number(data.totals.due) > 0 ? "gold" : "green"} />
+            <StatCard label={Number(data.totals.balance) < 0 ? t("tiffin.advance") : t("tiffin.toCollect")} value={rupees(Math.abs(Number(data.totals.balance)))} tone={Number(data.totals.balance) > 0 ? "gold" : "green"} />
           </Box>
           <Stack spacing={1.25}>
             {data.items.map((r) => (
@@ -48,9 +48,11 @@ export function TiffinClientsPage() {
                     <VegMark kind="nonveg" size={13} />
                     <Typography variant="caption">{r.nonveg}</Typography>
                   </Box>
-                  <Typography variant="caption" sx={{ color: Number(r.due) > 0 ? brand.goldDark : brand.greenDark, fontWeight: 600 }}>
-                    {rupees(r.amount)} · {Number(r.due) > 0 ? `${t("payments.due")} ${rupees(r.due)}` : Number(r.due) < 0 ? `${t("tiffin.advance")} ${rupees(Math.abs(Number(r.due)))}` : t("status.paid")}
-                  </Typography>
+                  <Typography variant="caption">{t("tiffin.thisMonth")} {rupees(r.amount)} · {t("payments.paid")} {rupees(r.paid)}</Typography>
+                </Box>
+                <Box sx={{ textAlign: "right", flexShrink: 0 }}>
+                  <Typography variant="caption" sx={{ display: "block" }}>{Number(r.balance) < 0 ? t("tiffin.advance") : t("tiffin.balance")}</Typography>
+                  <Typography sx={{ fontWeight: 800, color: Number(r.balance) > 0 ? brand.goldDark : brand.greenDark }}>{rupees(Math.abs(Number(r.balance)))}</Typography>
                 </Box>
                 <ChevronRightIcon sx={{ color: "text.secondary" }} />
               </ButtonBase>

@@ -2,18 +2,20 @@ from datetime import date
 
 from fastapi import APIRouter, Query, status
 
-from app.core.deps import DbSession, OwnerUser
+from app.core.deps import AttendanceOperator, DbSession, OwnerUser
 from app.core.errors import ApiError
 from app.core.time import parse_month, today_ist
-from app.models import MealType
+from app.models import MealType, UserRole
 from app.schemas.tiffin import (
     CopyResult,
+    DayPut,
     OrderSheet,
     OrdersPut,
     Statement,
     TiffinClientCreate,
     TiffinClientOut,
     TiffinClientUpdate,
+    TiffinDay,
     TiffinItemCreate,
     TiffinItemOut,
     TiffinItemUpdate,
@@ -103,9 +105,7 @@ async def client_statement(
 async def record_payment(
     client_id: int, data: TiffinPaymentCreate, owner: OwnerUser, db: DbSession
 ) -> Statement:
-    out = await svc.record_payment(
-        db, owner.organization_id, client_id, _month(data.month), data, owner.id
-    )
+    out = await svc.record_payment(db, owner.organization_id, client_id, data, owner.id)
     await db.commit()
     return out
 
@@ -141,3 +141,25 @@ async def copy_orders(
     n = await svc.copy_day(db, owner.organization_id, from_, to)
     await db.commit()
     return CopyResult(copied=n)
+
+
+# Simple daily entry: veg / non-veg counts per company. Staff may enter today's counts
+# but never see rates or amounts.
+
+
+@router.get("/tiffin-day", response_model=TiffinDay)
+async def get_day(
+    operator: AttendanceOperator, db: DbSession, date_: date = Query(alias="date")
+) -> TiffinDay:
+    owner = operator.role is UserRole.owner
+    return await svc.day_sheet(db, operator.organization_id, date_, show_money=owner)
+
+
+@router.put("/tiffin-day", response_model=TiffinDay)
+async def put_day(data: DayPut, operator: AttendanceOperator, db: DbSession) -> TiffinDay:
+    owner = operator.role is UserRole.owner
+    if not owner and data.date != today_ist():
+        raise ApiError(403, "STAFF_TODAY_ONLY", "Staff can enter today's tiffins only")
+    await svc.put_day(db, operator.organization_id, data.date, data.entries)
+    await db.commit()
+    return await svc.day_sheet(db, operator.organization_id, data.date, show_money=owner)
