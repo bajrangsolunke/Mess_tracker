@@ -245,7 +245,7 @@ async def send(
     if inbox is not None:
         for u in users:
             title, body = build(u.language)
-            await notify(db, org_id, u.id, inbox, title[:160], body or None)
+            await notify(db, org_id, u.id, inbox, title[:160], body or None, url=url)
     if not settings.push_enabled or not (users or member_ids):
         return
     conds = []

@@ -46,7 +46,8 @@
     "done": "Done",
     "copy": "Copy",
     "delete": "Delete",
-    "clear": "Clear"
+    "clear": "Clear",
+    "close": "Close"
   },
   "dashboard": {
     "welcome": "Hello, {{name}} 👋",
@@ -244,7 +245,13 @@
     "correctBody": "{{name}} · {{meal}} · {{date}} is marked {{from}}. Change it to {{to}}?",
     "correctTitle": "Correct this mark?",
     "extraMeal": "Extra meal",
-    "otherMembers": "Other members for {{meal}}"
+    "otherMembers": "Other members for {{meal}}",
+    "sortName": "A–Z",
+    "sortId": "By ID",
+    "found": "{{count}} found",
+    "showing": "{{count}} shown",
+    "allMarked": "Everyone is marked for this meal",
+    "seeAll": "See everyone"
   },
   "holidays": {
     "title": "Holidays",
@@ -684,6 +691,24 @@
   "update": {
     "title": "New update available",
     "hint": "Tap Update to get the latest version.",
-    "button": "Update"
+    "button": "Update",
+    "check": "Check for update",
+    "checking": "Checking…",
+    "latest": "You have the latest version ✓",
+    "ready": "New version ready, tap to update",
+    "offline": "No internet. Try again later.",
+    "version": "Version: {{date}}"
+  },
+  "voice": {
+    "speak": "Speak a name or ID",
+    "listening": "Listening… say the name",
+    "denied": "Allow the microphone in browser settings"
+  },
+  "idpad": {
+    "button": "ID",
+    "title": "Mark by ID · {{meal}}",
+    "placeholder": "Type member ID",
+    "none": "No member with this ID",
+    "clear": "Clear"
   }
 }

@@ -14,6 +14,7 @@ async def notify(
     title: str,
     body: str | None = None,
     ref: tuple[str, int] | None = None,
+    url: str | None = None,
 ) -> Notification:
     n = Notification(
         organization_id=org_id,
@@ -23,6 +24,7 @@ async def notify(
         body=body,
         ref_type=ref[0] if ref else None,
         ref_id=ref[1] if ref else None,
+        url=url,
     )
     db.add(n)
     await db.flush()

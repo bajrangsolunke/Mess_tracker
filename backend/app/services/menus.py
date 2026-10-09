@@ -69,7 +69,14 @@ async def create_announcement(
     ).scalars()
     for uid in user_ids:
         await notify(
-            db, org_id, uid, NotificationType.announcement, title, body, ref=("announcement", a.id)
+            db,
+            org_id,
+            uid,
+            NotificationType.announcement,
+            title,
+            body,
+            ref=("announcement", a.id),
+            url="/app/announcements",
         )
     return a
 

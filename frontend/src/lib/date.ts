@@ -3,9 +3,29 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import "dayjs/locale/mr";
 import "dayjs/locale/hi";
+import updateLocale from "dayjs/plugin/updateLocale";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(updateLocale);
+// dayjs ships Marathi without "… ago" phrases
+dayjs.updateLocale("mr", {
+  relativeTime: {
+    future: "%s मध्ये",
+    past: "%s पूर्वी",
+    s: "काही सेकंद",
+    m: "एक मिनिट",
+    mm: "%d मिनिटे",
+    h: "एक तास",
+    hh: "%d तास",
+    d: "एक दिवस",
+    dd: "%d दिवस",
+    M: "एक महिना",
+    MM: "%d महिने",
+    y: "एक वर्ष",
+    yy: "%d वर्षे",
+  },
+});
 
 export const IST = "Asia/Kolkata";
 

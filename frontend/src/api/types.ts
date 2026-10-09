@@ -208,6 +208,7 @@ export interface Notification {
   created_at: string;
   ref_type: string | null;
   ref_id: number | null;
+  url?: string | null;
 }
 
 export interface NotificationPage {

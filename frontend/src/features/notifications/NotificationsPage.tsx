@@ -9,6 +9,7 @@ import { BellSpoonIcon, PlateCheckIcon, ThaliIcon, WalletRupeeIcon } from "../..
 import { brand } from "../../app/theme";
 import dayjs from "dayjs";
 import LocalShippingIcon from "@mui/icons-material/LocalShippingRounded";
+import ChevronRightIcon from "@mui/icons-material/ChevronRightRounded";
 import AutorenewIcon from "@mui/icons-material/AutorenewRounded";
 import BadgeIcon from "@mui/icons-material/BadgeRounded";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -26,6 +27,17 @@ const ICON: Record<Notification["type"], { el: React.ReactNode; color: string }>
   membership: { el: <AutorenewIcon />, color: brand.goldDark },
   staff: { el: <BadgeIcon />, color: brand.inkSoft },
 };
+
+/** Screen a notification opens: its own link, else one derived from what it refers to. */
+function target(n: Notification, role: string | undefined): string | null {
+  if (n.url && n.url.startsWith("/")) return n.url;
+  const owner = role === "owner";
+  if (n.ref_type === "leave") return owner ? "/owner/leaves" : "/app/leave";
+  if (n.ref_type === "bill") return owner ? "/owner/payments" : "/app/payments";
+  if (n.ref_type === "member" && n.ref_id) return owner ? `/owner/members/${n.ref_id}` : null;
+  if (n.ref_type === "announcement") return owner ? "/owner/announcements" : "/app/announcements";
+  return null;
+}
 
 export function NotificationsPage() {
   const { t, i18n } = useTranslation();
@@ -50,8 +62,14 @@ export function NotificationsPage() {
               tabIndex={0}
               onClick={() => {
                 if (unread) mark.mutate(n.id);
-                if (n.ref_type === "leave") navigate(user?.role === "owner" ? "/owner/leaves" : "/app/leave");
-                if (n.ref_type === "bill") navigate(user?.role === "owner" ? "/owner/payments" : "/app/payments");
+                const to = target(n, user?.role);
+                if (to) navigate(to);
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                if (unread) mark.mutate(n.id);
+                const to = target(n, user?.role);
+                if (to) navigate(to);
               }}
               sx={{ display: "flex", gap: 1.5, p: 1.5, borderRadius: "14px", bgcolor: unread ? alpha(brand.gold, 0.08) : brand.paper, border: `1px solid ${unread ? alpha(brand.gold, 0.4) : brand.line}`, cursor: "pointer" }}
             >
@@ -61,6 +79,7 @@ export function NotificationsPage() {
                 {n.body ? <Typography variant="body2" sx={{ color: "text.secondary" }}>{n.body}</Typography> : null}
                 <Typography variant="caption">{dayjs(n.created_at).locale(locale).fromNow()}</Typography>
               </Box>
+              {target(n, user?.role) ? <ChevronRightIcon sx={{ color: "text.secondary", alignSelf: "center" }} /> : null}
             </Box>
           );
         })}

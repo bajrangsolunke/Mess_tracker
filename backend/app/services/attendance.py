@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from datetime import UTC, date, datetime, timedelta
 
-from sqlalchemy import String, and_, case, cast, func, or_, select
+from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -672,23 +672,19 @@ async def ensure_closed(db: AsyncSession, org_id: int) -> None:
 
 async def search(db: AsyncSession, org_id: int, q: str, d: date) -> list[SearchRow]:
     """Members matching a name, phone or member number, with what can be marked on ``d``."""
-    q = q.strip()
+    from app.core.phonetic import to_ascii_digits
+    from app.services.members import search_ids
+
+    q = to_ascii_digits(q.strip())
     if not q:
         return []
-    like = f"%{q}%"
+    ids = await search_ids(db, org_id, q)
     exact = int(q) if q.isdigit() and len(q) <= 9 else -1
     members = (
         (
             await db.execute(
                 select(Member)
-                .where(
-                    Member.organization_id == org_id,
-                    or_(
-                        Member.name.ilike(like),
-                        Member.phone.like(like),
-                        cast(Member.member_no, String).like(like),
-                    ),
-                )
+                .where(Member.organization_id == org_id, Member.id.in_(ids or [0]))
                 .order_by(
                     case((Member.member_no == exact, 0), else_=1),
                     case((Member.status == MemberStatus.active, 0), else_=1),

@@ -5,6 +5,7 @@ import LogoutIcon from "@mui/icons-material/LogoutRounded";
 import BadgeIcon from "@mui/icons-material/BadgeRounded";
 import { InstallAppCard } from "../../components/InstallAppCard";
 import { PushToggle } from "../../components/PushToggle";
+import { CheckUpdateRow } from "../../components/CheckUpdateRow";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "../auth/authStore";
@@ -173,6 +174,8 @@ export function ProfilePage({ titleKey, children }: { titleKey: "nav.more" | "na
             <ListItemText primary={t("profile.changePassword")} />
             <ChevronRightIcon sx={{ color: "text.secondary" }} />
           </ListItemButton>
+          <Divider component="li" />
+          <CheckUpdateRow />
         </List>
       </Box>
 

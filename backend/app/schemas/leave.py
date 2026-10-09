@@ -36,6 +36,7 @@ class NotificationOut(BaseModel):
     created_at: datetime
     ref_type: str | None
     ref_id: int | None
+    url: str | None = None
 
 
 class NotificationPage(BaseModel):

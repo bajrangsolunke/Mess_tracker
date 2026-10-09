@@ -23,3 +23,4 @@ class Notification(TimestampMixin, Base):
     read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     ref_type: Mapped[str | None] = mapped_column(String(40))
     ref_id: Mapped[int | None]
+    url: Mapped[str | None] = mapped_column(String(300))  # screen to open when tapped

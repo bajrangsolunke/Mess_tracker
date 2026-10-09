@@ -123,5 +123,6 @@ async def decide(
             if approve
             else "Your late leave was not accepted. You are expected for this meal.",
             ref=("leave", lv.id),
+            url="/app/leave",
         )
     return lv, member

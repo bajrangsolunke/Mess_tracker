@@ -232,6 +232,7 @@ async def send_payment_reminders(db: AsyncSession, org_id: int, month: date) -> 
             f"Mess payment pending: ₹{o.due:.0f} for {month:%B %Y}",
             "Please pay at the counter or via UPI. Thank you!",
             ref=("bill", o.id),
+            url="/app/payments",
         )
         sent += 1
     return sent

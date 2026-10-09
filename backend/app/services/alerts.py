@@ -141,14 +141,16 @@ async def member_added(db: AsyncSession, org_id: int, member: Member, actor_id: 
     if not staff:
         return
     plan = member.plan.name if member.plan else ""
-    await push.send(
-        db,
-        org_id,
-        lambda lang: text("new_member", lang, name=member.name, no=member.member_no, plan=plan),
-        "/staff/attendance",
-        users=staff,
-        inbox=NotificationType.membership,
-    )
+    for u in staff:
+        url = f"/owner/members/{member.id}" if u.role is UserRole.owner else "/staff/attendance"
+        await push.send(
+            db,
+            org_id,
+            lambda lang: text("new_member", lang, name=member.name, no=member.member_no, plan=plan),
+            url,
+            users=[u],
+            inbox=NotificationType.membership,
+        )
 
 
 async def tiffins_entered(

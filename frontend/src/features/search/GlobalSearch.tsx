@@ -11,6 +11,7 @@ import { ChefSays } from "../../components/brand/ChefSays";
 import { brand } from "../../app/theme";
 import { todayIst } from "../../lib/date";
 import { SearchResults } from "./SearchResults";
+import { MicButton } from "../../components/MicButton";
 
 /** Full-screen member search from the top bar: find by name, phone or #ID and mark today's meal. */
 export function GlobalSearch({ onClose }: { onClose: () => void }) {
@@ -35,6 +36,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
           <SearchIcon sx={{ color: "text.secondary" }} />
           <InputBase autoFocus fullWidth value={text} onChange={(e) => setText(e.target.value)} placeholder={t("search.placeholder")} inputProps={{ "aria-label": t("search.placeholder"), enterKeyHint: "search" }} sx={{ fontSize: "1.05rem" }} />
           {isFetching ? <CircularProgress size={18} /> : text ? <IconButton size="small" aria-label={t("common.clear", { defaultValue: "clear" })} onClick={() => setText("")}><CloseIcon fontSize="small" /></IconButton> : null}
+          <MicButton onText={setText} />
         </Box>
       </Box>
       <Box sx={{ px: 2, py: 2, maxWidth: 600, width: "100%", mx: "auto" }}>

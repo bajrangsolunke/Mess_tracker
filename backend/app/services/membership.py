@@ -79,6 +79,7 @@ async def renew(
             f"Membership renewed till {end:%d %b %Y}",
             f"Amount ₹{bill.amount:.0f}. Please pay at the counter or via UPI.",
             ref=("bill", bill.id),
+            url="/app/payments",
         )
     return m, bill
 
@@ -108,6 +109,7 @@ async def request_renewal(db: AsyncSession, member: Member, plan_id: int) -> Mem
             f"Renewal request: {member.name} — {plan.name}",
             None,
             ref=("member", member.id),
+            url=f"/owner/members/{member.id}",
         )
     await db.refresh(member)
     return member

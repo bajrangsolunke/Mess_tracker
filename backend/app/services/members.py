@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import ApiError
+from app.core.phonetic import matches, to_ascii_digits
 from app.core.security import hash_password
 from app.core.time import membership_end, today_ist
 from app.models import (
@@ -98,17 +99,8 @@ async def list_members(
     offset: int = 0,
 ) -> tuple[list[Member], int]:
     q = select(Member).where(Member.organization_id == org_id)
-    if search:
-        like = f"%{search.strip()}%"
-        q = q.where(
-            or_(
-                Member.name.ilike(like),
-                Member.phone.ilike(like),
-                Member.room_no.ilike(like),
-                cast(Member.member_no, String).ilike(like),
-                Member.company.ilike(like),
-            )
-        )
+    if search and search.strip():
+        q = q.where(Member.id.in_(await search_ids(db, org_id, search)))
     if status is not None:
         q = q.where(Member.status == status)
     if plan_id is not None:
@@ -118,6 +110,35 @@ async def list_members(
     total = (await db.execute(select(func.count()).select_from(q.subquery()))).scalar_one()
     rows = (await db.execute(q.order_by(Member.name).limit(limit).offset(offset))).scalars()
     return list(rows), total
+
+
+async def search_ids(db: AsyncSession, org_id: int, text: str) -> list[int]:
+    """Members matching name / phone / ID / company, including the other script and voice
+    input ("राहुल" finds "Rahul"; "१००५" finds 1005)."""
+    text = to_ascii_digits(text.strip())
+    like = f"%{text}%"
+    found = {
+        r[0]
+        for r in await db.execute(
+            select(Member.id).where(
+                Member.organization_id == org_id,
+                or_(
+                    Member.name.ilike(like),
+                    Member.phone.ilike(like),
+                    Member.room_no.ilike(like),
+                    cast(Member.member_no, String).ilike(like),
+                    Member.company.ilike(like),
+                ),
+            )
+        )
+    }
+    if not text.isdigit():
+        for mid, name in await db.execute(
+            select(Member.id, Member.name).where(Member.organization_id == org_id)
+        ):
+            if mid not in found and matches(name, text):
+                found.add(mid)
+    return list(found)
 
 
 async def _phone_taken(db: AsyncSession, phone: str) -> bool:

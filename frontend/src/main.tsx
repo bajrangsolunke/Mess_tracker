@@ -5,6 +5,9 @@ import "./lib/install"; // capture the install prompt early
 import { Providers } from "./app/providers";
 import App from "./App";
 import { UpdatePrompt } from "./components/UpdatePrompt";
+import { initAppUpdate } from "./lib/appUpdate";
+
+initAppUpdate();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

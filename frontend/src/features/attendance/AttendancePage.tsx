@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { Alert, Box, Button, ButtonBase, Skeleton, Stack, Tab, Tabs, Typography, alpha } from "@mui/material";
+import { Alert, Box, Button, ButtonBase, Fab, Skeleton, Snackbar, Stack, Tab, Tabs, Typography, alpha } from "@mui/material";
+import DialpadIcon from "@mui/icons-material/DialpadRounded";
+import SortIcon from "@mui/icons-material/SortRounded";
+import { nameMatches, toAsciiDigits } from "../../lib/phonetic";
+import { IdPad } from "./IdPad";
 import CheckIcon from "@mui/icons-material/CheckRounded";
 import CloseIcon from "@mui/icons-material/CloseRounded";
 import LockIcon from "@mui/icons-material/LockRounded";
@@ -7,7 +11,7 @@ import BeachAccessIcon from "@mui/icons-material/BeachAccessRounded";
 import MenuBookIcon from "@mui/icons-material/MenuBookRounded";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import type { AttendanceRow, MealType, MemberType } from "../../api/types";
+import type { AttendanceRow, AttendanceStatus, MealType, MemberType } from "../../api/types";
 import { Chip } from "@mui/material";
 import { useAttendanceSheet, useMarkAttendance, useMemberSearch } from "../../api/useAttendance";
 import { SearchResults } from "../search/SearchResults";
@@ -24,14 +28,21 @@ import EditIcon from "@mui/icons-material/EditRounded";
 import { CorrectMarkDialog, type Correction } from "./CorrectMarkDialog";
 import { ApiError } from "../../api/client";
 
-function Counter({ label, value, color }: { label: string; value: number; color: string }) {
+type View = "pending" | "present" | "absent" | "all";
+
+function inView(r: AttendanceRow, v: View): boolean {
+  if (v === "pending") return r.status === null && !r.on_leave;
+  if (v === "present") return r.status === "present";
+  if (v === "absent") return r.status === "absent";
+  return true;
+}
+
+function ViewChip({ label, count, color, active, onClick }: { label: string; count: number; color: string; active: boolean; onClick: () => void }) {
   return (
-    <Box sx={{ flex: 1, textAlign: "center", py: 1, borderRadius: "12px", bgcolor: alpha(color, 0.1) }}>
-      <Typography sx={{ fontWeight: 800, fontSize: "1.3rem", lineHeight: 1.1, color }}>{value}</Typography>
-      <Typography variant="caption" sx={{ color: "text.secondary" }}>
-        {label}
-      </Typography>
-    </Box>
+    <ButtonBase onClick={onClick} sx={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 0.75, px: 1.5, height: 40, borderRadius: 999, fontWeight: 700, fontSize: "0.9rem", bgcolor: active ? color : alpha(color, 0.1), color: active ? "#fff" : color, border: `1.5px solid ${active ? color : alpha(color, 0.25)}` }}>
+      {label}
+      <Box component="span" sx={{ minWidth: 26, px: 0.75, py: 0.1, borderRadius: 999, bgcolor: active ? "rgba(255,255,255,.25)" : alpha(color, 0.15), fontVariantNumeric: "tabular-nums" }}>{count}</Box>
+    </ButtonBase>
   );
 }
 
@@ -58,13 +69,14 @@ function Row({ row, locked, onMark, onCorrect }: { row: AttendanceRow; locked: b
         display: "flex",
         alignItems: "center",
         gap: 1.25,
-        p: 1.25,
-        borderRadius: "16px",
+        p: 1,
+        pl: 1.25,
+        borderRadius: "14px",
         bgcolor: brand.paper,
         border: `1px solid ${present ? alpha(brand.green, 0.5) : absent ? alpha("#DC2626", 0.4) : brand.line}`,
       }}
     >
-      <Avatar name={row.member.name} size={40} />
+      <Avatar name={row.member.name} size={36} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, minWidth: 0 }}>
           <Typography variant="subtitle1" noWrap sx={{ lineHeight: 1.3, minWidth: 0 }}>
@@ -152,17 +164,29 @@ export function AttendancePage() {
   const setMeal = (m: MealType) => setParams({ date, meal: m }, { replace: true });
   const [search, setSearch] = useState("");
   const [type, setType] = useState<MemberType | "">("");
+  const [picked, setPicked] = useState<View | null>(null);
+  const [sort, setSort] = useState<"name" | "id">("name");
+  const [padOpen, setPadOpen] = useState(false);
+  const [toast, setToast] = useState<{ name: string; status: AttendanceStatus } | null>(null);
 
   const { data, isLoading, isError } = useAttendanceSheet(date, meal);
   const mark = useMarkAttendance(date, meal);
   const others = useMemberSearch(search, isOwner ? date : undefined);
 
+  // open on "not marked yet" while the meal is on, so marked members leave the list
+  const view: View = picked ?? (data && data.counts.unmarked > 0 && !data.closed ? "pending" : "all");
   const rows = useMemo(() => {
     const items = data?.items ?? [];
-    const q = search.trim().toLowerCase();
+    const q = toAsciiDigits(search.trim());
     const typed = type ? items.filter((r) => r.member.member_type === type) : items;
-    return q ? typed.filter((r) => r.member.name.toLowerCase().includes(q) || r.member.phone.includes(q) || String(r.member.member_no).includes(q) || (r.member.company ?? "").toLowerCase().includes(q)) : typed;
-  }, [data, search, type]);
+    // a search looks through everyone, whatever the tab
+    const shown = q
+      ? typed.filter((r) => nameMatches(r.member.name, q) || r.member.phone.includes(q) || String(r.member.member_no).includes(q) || (r.member.company ?? "").toLowerCase().includes(q.toLowerCase()))
+      : typed.filter((r) => inView(r, view));
+    return [...shown].sort((a, b) => (sort === "id" ? a.member.member_no - b.member.member_no : a.member.name.localeCompare(b.member.name)));
+  }, [data, search, type, view, sort]);
+  const markOne = (memberId: number, name: string, status: AttendanceStatus) =>
+    mark.mutate({ items: [{ member_id: memberId, status }] }, { onSuccess: () => setToast({ name, status }) });
   const tiffinCount = (data?.items ?? []).filter((r) => r.member.member_type === "tiffin").length;
 
   const locked = data?.locked ?? false;
@@ -233,11 +257,18 @@ export function AttendancePage() {
         </>
       ) : (
         <>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Counter label={t("status.present")} value={data.counts.present} color={brand.green} />
-            <Counter label={t("status.absent")} value={data.counts.absent} color="#DC2626" />
-            <Counter label={t("attendance.unmarked")} value={data.counts.unmarked} color={brand.inkSoft} />
-            {data.counts.on_leave > 0 ? <Counter label={t("attendance.onLeave")} value={data.counts.on_leave} color={brand.goldDark} /> : null}
+          <Box sx={{ display: "flex", gap: 0.75, overflowX: "auto", pb: 0.25, mx: -0.5, px: 0.5, scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" } }}>
+            {(
+              [
+                ["pending", t("attendance.unmarked"), data.counts.unmarked, brand.inkSoft],
+                ["present", t("status.present"), data.counts.present, brand.green],
+                ["absent", t("status.absent"), data.counts.absent, "#DC2626"],
+                ["all", t("members.all"), data.items.length, brand.red],
+              ] as const
+            ).map(([k, label, n, color]) => (
+              <ViewChip key={k} label={label} count={n} color={color} active={!search.trim() && view === k} onClick={() => { setSearch(""); setPicked(k); }} />
+            ))}
+            {data.counts.on_leave > 0 ? <ViewChip label={t("attendance.onLeave")} count={data.counts.on_leave} color={brand.goldDark} active={false} onClick={() => setPicked("all")} /> : null}
           </Box>
 
           {data.ends_at ? (
@@ -246,6 +277,10 @@ export function AttendancePage() {
             </Alert>
           ) : null}
 
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
+            <Chip icon={<SortIcon />} label={sort === "name" ? t("attendance.sortName") : t("attendance.sortId")} onClick={() => setSort(sort === "name" ? "id" : "name")} variant="outlined" sx={{ height: 34, fontWeight: 600, bgcolor: brand.paper }} />
+            <Typography variant="caption" sx={{ flex: 1, textAlign: "right" }}>{search.trim() ? t("attendance.found", { count: rows.length }) : t("attendance.showing", { count: rows.length })}</Typography>
+          </Box>
           {tiffinCount > 0 ? (
             <Box sx={{ display: "flex", gap: 1 }}>
               {([["", `${t("members.all")} (${data.items.length})`], ["dine_in", `${t("members.type.dine_in")} (${data.items.length - tiffinCount})`], ["tiffin", `${t("members.type.tiffin")} (${tiffinCount})`]] as const).map(([k, label]) => (
@@ -254,13 +289,20 @@ export function AttendancePage() {
             </Box>
           ) : null}
 
-          <Stack spacing={1.25}>
+          {rows.length === 0 && !search.trim() && view === "pending" ? (
+            <Box sx={{ textAlign: "center", py: 3 }}>
+              <Typography sx={{ fontSize: "2rem" }}>🎉</Typography>
+              <Typography sx={{ fontWeight: 700 }}>{t("attendance.allMarked")}</Typography>
+              <Button size="small" onClick={() => setPicked("all")} sx={{ mt: 0.5 }}>{t("attendance.seeAll")}</Button>
+            </Box>
+          ) : null}
+          <Stack spacing={1} sx={{ pb: 8 }}>
             {rows.map((r) => (
               <Row
                 key={r.member.id}
                 row={r}
                 locked={locked}
-                onMark={(s) => mark.mutate({ items: [{ member_id: r.member.id, status: s }] })}
+                onMark={(st) => markOne(r.member.id, r.member.name, st)}
                 onCorrect={isOwner && r.status ? () => setCorrecting({ memberId: r.member.id, name: r.member.name, date, meal, from: r.status! }) : undefined}
               />
             ))}
@@ -269,6 +311,17 @@ export function AttendancePage() {
           {othersBlock}
         </>
       )}
+      {data && !data.holiday && !locked && data.items.length > 0 ? (
+        <Fab variant="extended" color="primary" onClick={() => setPadOpen(true)} sx={{ position: "fixed", right: 16, bottom: "calc(env(safe-area-inset-bottom) + 92px)", zIndex: 5, fontWeight: 800, backgroundImage: "none" }}>
+          <DialpadIcon sx={{ mr: 0.75 }} /> {t("idpad.button")}
+        </Fab>
+      ) : null}
+      <IdPad open={padOpen} onClose={() => setPadOpen(false)} rows={data?.items ?? []} date={date} meal={meal} locked={locked} onMark={(id, st) => markOne(id, data?.items.find((r) => r.member.id === id)?.member.name ?? "", st)} />
+      <Snackbar open={!!toast} autoHideDuration={2200} onClose={() => setToast(null)} anchorOrigin={{ vertical: "top", horizontal: "center" }} sx={{ top: "calc(env(safe-area-inset-top) + 84px) !important" }}>
+        <Box sx={{ px: 2, py: 1.25, borderRadius: "14px", bgcolor: toast?.status === "absent" ? "#B91C1C" : brand.greenDark, color: "#fff", fontWeight: 700, boxShadow: 6 }}>
+          {toast ? `${toast.status === "present" ? "✓" : "✗"} ${toast.name} · ${t(`status.${toast.status}`)}` : ""}
+        </Box>
+      </Snackbar>
       {correcting ? (
         <CorrectMarkDialog
           value={correcting}

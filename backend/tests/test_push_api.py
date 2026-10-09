@@ -120,6 +120,7 @@ async def test_owner_hears_about_staff_tiffin_entry(client, sent):
     assert "Assa: 18" in msg["body"] and "Ganesh" in msg["body"]
     inbox = (await client.get("/api/v1/notifications", headers=h)).json()
     assert inbox["unread"] >= 1
+    assert inbox["items"][0]["url"] == "/owner/tiffins?date=2026-10-07"  # tap opens that day
     # saving the same counts again is not news
     n = len(sent)
     await client.put(
