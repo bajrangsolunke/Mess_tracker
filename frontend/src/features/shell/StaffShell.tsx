@@ -7,7 +7,7 @@ const STAFF_NAV: NavItem[] = [
   { labelKey: "nav.today", to: "/staff", icon: <HomeIcon /> },
   { labelKey: "nav.attendance", to: "/staff/attendance", icon: <PlateCheckIcon /> },
   { labelKey: "tiffin.short", to: "/staff/tiffins", icon: <LocalShippingIcon /> },
-  { labelKey: "nav.me", to: "/staff/me", icon: <ProfileIcon />, also: ["/staff/change-password"] },
+  { labelKey: "nav.me", to: "/staff/me", icon: <ProfileIcon />, also: ["/staff/change-password", "/staff/notifications"] },
 ];
 
 /** Staff see only what they need: today's counts, marking meals, company tiffins, their salary. */

@@ -1,7 +1,7 @@
-from datetime import time
+from datetime import date, time
 from decimal import Decimal
 
-from sqlalchemy import Enum, Numeric, String, Time
+from sqlalchemy import Date, Enum, Numeric, String, Time
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -29,3 +29,5 @@ class Organization(TimestampMixin, Base):
     )
     one_meal_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
     two_meal_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    # last day the daily reminders (memberships ending soon) were sent
+    last_daily_run: Mapped[date | None] = mapped_column(Date)

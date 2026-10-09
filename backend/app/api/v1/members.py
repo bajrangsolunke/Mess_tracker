@@ -5,8 +5,8 @@ from app.core.time import today_ist
 from app.models import MemberStatus, MemberType
 from app.schemas.common import Page
 from app.schemas.member import MemberCreate, MemberCreated, MemberOut, MemberUpdate, TempPassword
+from app.services import alerts, credits
 from app.services import auth as auth_svc
-from app.services import credits
 from app.services import members as svc
 
 router = APIRouter(prefix="/members", tags=["members"])
@@ -60,6 +60,7 @@ async def create_member(data: MemberCreate, owner: OwnerUser, db: DbSession) -> 
         db, owner.organization_id, org.default_language, data, owner.id
     )
     out = await _one(db, member)
+    await alerts.member_added(db, owner.organization_id, member, owner.id)
     await db.commit()
     return MemberCreated(member=out, temp_password=temp)
 

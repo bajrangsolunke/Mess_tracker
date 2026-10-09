@@ -13,6 +13,7 @@ from app.api.v1 import (
     plans,
     pricing,
     public,
+    push,
     tiffin,
 )
 
@@ -31,3 +32,4 @@ api_router.include_router(dashboard.router)
 api_router.include_router(tiffin.router)
 api_router.include_router(operations.router)
 api_router.include_router(public.router)
+api_router.include_router(push.router)

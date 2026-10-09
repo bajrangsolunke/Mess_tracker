@@ -15,6 +15,7 @@ import { formatDateLong, formatTime, monthKey } from "../../lib/date";
 import { AttendanceCalendar } from "../attendance/AttendanceCalendar";
 import { MonthSwitcher } from "../attendance/MyAttendancePage";
 import { TiffinPackCard } from "../members/TiffinPackCard";
+import { PushToggle } from "../../components/PushToggle";
 
 /** What a member opens from their WhatsApp link: meals, membership and dues. No login, read-only. */
 export function PublicMemberPage() {
@@ -61,6 +62,8 @@ export function PublicMemberPage() {
                 </Typography>
               ) : null}
             </Box>
+
+            <PushToggle target={{ kind: "member", token }} compact />
 
             {data.credits ? <TiffinPackCard credits={data.credits} /> : null}
 

@@ -23,6 +23,7 @@ from app.models.notification import Notification
 from app.models.operations import LedgerEntry, StaffProfile
 from app.models.organization import Organization
 from app.models.plan import MessPlan
+from app.models.push import AppSetting, PushSubscription
 from app.models.refresh_token import RefreshToken
 from app.models.tiffin import (
     TiffinClient,
@@ -39,6 +40,8 @@ __all__ = [
     "Menu",
     "Bill",
     "Payment",
+    "PushSubscription",
+    "AppSetting",
     "Leave",
     "Notification",
     "Holiday",

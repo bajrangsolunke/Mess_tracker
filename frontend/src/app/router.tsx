@@ -97,6 +97,7 @@ export const router = createBrowserRouter([
       { path: "attendance", element: <AttendancePage /> },
       { path: "tiffins", element: <TiffinDayPage /> },
       { path: "me", element: <StaffMePage /> },
+      { path: "notifications", element: <NotificationsPage /> },
       { path: "change-password", element: <ChangePasswordPage /> },
     ],
   },

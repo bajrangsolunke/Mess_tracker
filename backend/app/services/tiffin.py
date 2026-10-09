@@ -582,10 +582,14 @@ async def day_sheet(db: AsyncSession, org_id: int, d: date, show_money: bool = T
     )
 
 
-async def put_day(db: AsyncSession, org_id: int, d: date, entries: list[DayEntry]) -> None:
-    """Save veg / non-veg counts; rates are the company's at the time of entry."""
+async def put_day(
+    db: AsyncSession, org_id: int, d: date, entries: list[DayEntry]
+) -> list[tuple[str, MealType, int, int]]:
+    """Save veg / non-veg counts; rates are the company's at the time of entry.
+    Returns the rows that changed: (company, meal, veg, nonveg)."""
     await assert_month_open(db, org_id, d)
     defaults = await default_rates(db, org_id)
+    changed: list[tuple[str, MealType, int, int]] = []
     for e in entries:
         c = await get_client(db, org_id, e.client_id)
         o = (
@@ -599,6 +603,7 @@ async def put_day(db: AsyncSession, org_id: int, d: date, entries: list[DayEntry
         ).scalar_one_or_none()
         if o is not None and _order_veg(o) == e.veg and _order_qty(o) - _order_veg(o) == e.nonveg:
             continue  # unchanged: keep the rates it was saved with
+        changed.append((c.name, e.meal_type, e.veg, e.nonveg))
         if e.veg == 0 and e.nonveg == 0:
             if o is not None:
                 await db.delete(o)
@@ -612,3 +617,4 @@ async def put_day(db: AsyncSession, org_id: int, d: date, entries: list[DayEntry
         o.veg_price, o.nonveg_price = _rates(c, defaults)
         o.veg_qty, o.nonveg_qty = e.veg, e.nonveg
     await db.flush()
+    return changed

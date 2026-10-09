@@ -14,8 +14,9 @@ from app.schemas.billing import (
     PaymentCreate,
     RemindersResult,
 )
+from app.services import alerts
 from app.services import billing as svc
-from app.services.members import member_for_user
+from app.services.members import get_member, member_for_user
 
 router = APIRouter(tags=["billing"])
 
@@ -61,6 +62,8 @@ async def record_payment(
     bill_id: int, data: PaymentCreate, owner: OwnerUser, db: DbSession
 ) -> BillOut:
     out = await svc.record_payment(db, owner.organization_id, bill_id, data, owner.id)
+    member = await get_member(db, owner.organization_id, out.member.id)
+    await alerts.payment_received(db, owner.organization_id, member, data.amount, out.due)
     await db.commit()
     return out
 

@@ -8,7 +8,7 @@ import { brand } from "../../app/theme";
 import { NONVEG_COLOR, VEG_COLOR, VegMark } from "../../components/brand/VegMark";
 import { PlateCheckIcon } from "../../components/brand/icons";
 
-/** One meal for the kitchen: how many plates to cook and how many members are still to be marked. */
+/** One meal for the kitchen: members expected and still to mark, plus company tiffins. */
 export function KitchenCard({ meal, data, onMark }: { meal: MealType; data: KitchenMeal; onMark?: () => void }) {
   const { t } = useTranslation();
   const c = data.counts;
@@ -30,10 +30,6 @@ export function KitchenCard({ meal, data, onMark }: { meal: MealType; data: Kitc
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         {icon}
         <Typography variant="h6" component="h2" sx={{ flex: 1 }}>{t(`meal.${meal}`)}</Typography>
-        <Box sx={{ textAlign: "right" }}>
-          <Typography variant="caption">{t("kitchen.cookFor")}</Typography>
-          <Typography sx={{ fontWeight: 800, fontSize: "1.9rem", lineHeight: 1, color: brand.red, fontVariantNumeric: "tabular-nums" }}>{members + tiffins}</Typography>
-        </Box>
       </Box>
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, mt: 1.5 }}>
         <Box sx={{ p: 1.25, borderRadius: "12px", bgcolor: alpha(brand.red, 0.05) }}>

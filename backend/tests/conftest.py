@@ -10,6 +10,8 @@ from app.main import app
 
 # Tests opt in to automatic absent marking explicitly (see test_auto_absent_api.py).
 settings.auto_close_meals = False
+# Push is opted into by tests that check notifications (with a fake sender).
+settings.push_enabled = False
 
 TEST_DB_URL = settings.database_url.rsplit("/", 1)[0] + "/mess_test"
 

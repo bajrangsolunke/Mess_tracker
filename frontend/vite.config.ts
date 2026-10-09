@@ -14,7 +14,7 @@ export default defineConfig({
         short_name: "स्वाद",
         description: "Attendance, meals and payments for your mess",
         theme_color: "#B91C1C",
-        background_color: "#FEFCF8",
+        background_color: "#FFF8F0",
         display: "standalone",
         start_url: "/",
         lang: "mr",
@@ -24,7 +24,7 @@ export default defineConfig({
           { src: "icons/icon-512-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
-      workbox: { navigateFallbackDenylist: [/^\/api\//] },
+      workbox: { navigateFallbackDenylist: [/^\/api\//], importScripts: ["push-sw.js"] },
     }),
   ],
   server: {

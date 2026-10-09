@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     timezone: str = "Asia/Kolkata"
     # Mark expected members absent once a meal's end time has passed (disabled in most tests).
     auto_close_meals: bool = True
+    # Web Push. Keys are optional: without them a key pair is created once and stored in the DB.
+    push_enabled: bool = True
+    vapid_public_key: str = ""
+    vapid_private_key: str = ""
+    vapid_subject: str = "https://swad-mess-laturkar.netlify.app"
 
     @field_validator("database_url")
     @classmethod

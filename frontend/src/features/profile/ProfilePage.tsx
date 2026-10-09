@@ -4,6 +4,7 @@ import LanguageIcon from "@mui/icons-material/LanguageRounded";
 import LogoutIcon from "@mui/icons-material/LogoutRounded";
 import BadgeIcon from "@mui/icons-material/BadgeRounded";
 import { InstallAppCard } from "../../components/InstallAppCard";
+import { PushToggle } from "../../components/PushToggle";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "../auth/authStore";
@@ -52,6 +53,7 @@ export function ProfilePage({ titleKey, children }: { titleKey: "nav.more" | "na
       {children}
 
       {user?.role !== "customer" ? <InstallAppCard /> : null}
+      {user?.role !== "customer" ? <PushToggle target={{ kind: "user" }} /> : null}
 
       <Box>
         <SectionTitle>{t("profile.settings")}</SectionTitle>

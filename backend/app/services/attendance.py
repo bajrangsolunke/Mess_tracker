@@ -615,20 +615,58 @@ async def auto_close(db: AsyncSession, org_id: int) -> int:
                         .on_conflict_do_nothing(constraint="uq_attendance_member_date_meal")
                     )
                     created += res.rowcount or 0
-            await db.execute(
+            closure = await db.execute(
                 insert(MealClosure)
                 .values(organization_id=org_id, date=d, meal_type=meal)
                 .on_conflict_do_nothing(constraint="uq_meal_closures_org_date_meal")
             )
+            if closure.rowcount and d == now.date():
+                await _closing_summary(db, org_id, d, meal)
         d += timedelta(days=1)
     await db.flush()
     return created
 
 
+async def _closing_summary(db: AsyncSession, org_id: int, d: date, meal: MealType) -> None:
+    """Tell the owner how the meal went once its time is over."""
+    from app.services import alerts
+    from app.services.tiffin import day_sheet
+
+    counts = {
+        st: n
+        for st, n in await db.execute(
+            select(Attendance.status, func.count())
+            .where(
+                Attendance.organization_id == org_id,
+                Attendance.date == d,
+                Attendance.meal_type == meal,
+            )
+            .group_by(Attendance.status)
+        )
+    }
+    tiffins = sum(
+        r.veg + r.nonveg
+        for r in (await day_sheet(db, org_id, d, False)).rows
+        if r.meal_type is meal
+    )
+    await alerts.meal_closed(
+        db,
+        org_id,
+        meal,
+        counts.get(AttendanceStatus.present, 0),
+        counts.get(AttendanceStatus.absent, 0),
+        tiffins,
+    )
+
+
 async def ensure_closed(db: AsyncSession, org_id: int) -> None:
-    """Called before reading attendance so missed meals already show as absent."""
+    """Called before reading attendance so missed meals already show as absent.
+    Also sends the once-a-day reminders."""
     if settings.auto_close_meals:
+        from app.services import alerts
+
         await auto_close(db, org_id)
+        await alerts.daily(db, org_id)
         await db.commit()
 
 

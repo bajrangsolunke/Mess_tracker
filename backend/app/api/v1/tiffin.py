@@ -22,6 +22,7 @@ from app.schemas.tiffin import (
     TiffinPaymentCreate,
     TiffinSummary,
 )
+from app.services import alerts
 from app.services import tiffin as svc
 
 router = APIRouter(tags=["tiffin"])
@@ -160,6 +161,7 @@ async def put_day(data: DayPut, operator: AttendanceOperator, db: DbSession) -> 
     owner = operator.role is UserRole.owner
     if not owner and data.date != today_ist():
         raise ApiError(403, "STAFF_TODAY_ONLY", "Staff can enter today's tiffins only")
-    await svc.put_day(db, operator.organization_id, data.date, data.entries)
+    changed = await svc.put_day(db, operator.organization_id, data.date, data.entries)
+    await alerts.tiffins_entered(db, operator.organization_id, operator, data.date, changed)
     await db.commit()
     return await svc.day_sheet(db, operator.organization_id, data.date, show_money=owner)

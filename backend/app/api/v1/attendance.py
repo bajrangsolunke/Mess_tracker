@@ -4,7 +4,7 @@ from fastapi import APIRouter, Query, Response, status
 
 from app.core.deps import AttendanceOperator, CurrentUser, DbSession, OwnerUser
 from app.core.errors import ApiError
-from app.core.time import parse_month, today_ist
+from app.core.time import now_ist, parse_month, today_ist
 from app.models import AttendanceStatus, Holiday, MealType, User, UserRole
 from app.schemas.attendance import (
     AttendanceSheet,
@@ -18,6 +18,7 @@ from app.schemas.attendance import (
     SearchRow,
     SummaryRow,
 )
+from app.services import alerts
 from app.services import attendance as svc
 from app.services.attendance import ensure_closed
 from app.services.members import get_member, member_for_user
@@ -99,6 +100,14 @@ async def put_marks(data: BulkMark, operator: AttendanceOperator, db: DbSession)
         [(i.member_id, i.status) for i in data.items],
         operator.id,
         override=data.override,
+    )
+    await alerts.meal_marked(
+        db,
+        operator.organization_id,
+        data.date,
+        data.meal_type,
+        [(i.member_id, i.status) for i in data.items],
+        now_ist().strftime("%I:%M %p").lstrip("0"),
     )
     await db.commit()
     return await svc.sheet(db, operator.organization_id, data.date, data.meal_type)

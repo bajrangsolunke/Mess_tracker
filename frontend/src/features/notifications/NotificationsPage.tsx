@@ -8,6 +8,9 @@ import { PageHeader } from "../../components/brand/PageHeader";
 import { BellSpoonIcon, PlateCheckIcon, ThaliIcon, WalletRupeeIcon } from "../../components/brand/icons";
 import { brand } from "../../app/theme";
 import dayjs from "dayjs";
+import LocalShippingIcon from "@mui/icons-material/LocalShippingRounded";
+import AutorenewIcon from "@mui/icons-material/AutorenewRounded";
+import BadgeIcon from "@mui/icons-material/BadgeRounded";
 import relativeTime from "dayjs/plugin/relativeTime";
 
 dayjs.extend(relativeTime);
@@ -17,6 +20,11 @@ const ICON: Record<Notification["type"], { el: React.ReactNode; color: string }>
   leave_decided: { el: <PlateCheckIcon />, color: brand.green },
   announcement: { el: <ThaliIcon />, color: brand.red },
   general: { el: <BellSpoonIcon />, color: brand.inkSoft },
+  meal: { el: <PlateCheckIcon />, color: brand.green },
+  tiffin: { el: <LocalShippingIcon />, color: brand.red },
+  payment: { el: <WalletRupeeIcon />, color: brand.greenDark },
+  membership: { el: <AutorenewIcon />, color: brand.goldDark },
+  staff: { el: <BadgeIcon />, color: brand.inkSoft },
 };
 
 export function NotificationsPage() {
@@ -25,7 +33,7 @@ export function NotificationsPage() {
   const { user } = useSession();
   const { data } = useNotifications();
   const mark = useMarkNotificationsRead();
-  const home = user?.role === "owner" ? "/owner" : "/app";
+  const home = user?.role === "owner" ? "/owner" : user?.role === "staff" ? "/staff" : "/app";
   const locale = i18n.language === "mr" || i18n.language === "hi" ? i18n.language : "en";
 
   return (

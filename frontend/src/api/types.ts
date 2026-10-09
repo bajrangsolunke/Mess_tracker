@@ -197,7 +197,7 @@ export interface LeaveWithMember extends Leave {
   member: MemberBrief;
 }
 
-export type NotificationType = "payment_due" | "leave_decided" | "announcement" | "general";
+export type NotificationType = "payment_due" | "leave_decided" | "announcement" | "general" | "meal" | "tiffin" | "payment" | "membership" | "staff";
 
 export interface Notification {
   id: number;

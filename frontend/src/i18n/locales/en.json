@@ -526,7 +526,6 @@
     "chefAllDone": "All meals marked. Great work!",
     "chefPending": "{{count}} meals still to mark today.",
     "companyTiffins": "Company tiffins",
-    "cookFor": "Cook for",
     "markNow": "Mark {{meal}} · {{count}} left",
     "members": "Members",
     "pending": "left"
@@ -669,5 +668,17 @@
       "MONTH_CLOSED": "Month is closed",
       "STAFF_TODAY_ONLY": "Today only"
     }
+  },
+  "push": {
+    "title": "Phone notifications",
+    "offHint": "Get alerts for company tiffins, new members, payments and meal summaries.",
+    "memberHint": "Get a message on this phone when your meal is marked, fees are received or tiffins run low.",
+    "onHint": "On for this phone.",
+    "turnOn": "Turn on notifications",
+    "installFirst": "On iPhone, first add the app to your Home Screen (Share → Add to Home Screen), then open it from there.",
+    "denied": "Notifications are blocked. Allow them in the browser's site settings (🔒 next to the address).",
+    "test": "Send a test notification",
+    "testSent": "Test sent. Check your phone.",
+    "error": "Could not turn on notifications. Please try again."
   }
 }

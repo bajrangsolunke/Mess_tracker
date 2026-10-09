@@ -7,7 +7,7 @@ from app.core.time import today_ist
 from app.schemas.billing import BillOut, DueRow
 from app.schemas.member import MemberOut, RenewalRequest, RenewIn
 from app.schemas.plan import PlanOut
-from app.services import billing, credits, membership
+from app.services import alerts, billing, credits, membership
 from app.services.members import member_for_user, pay_at_desk
 
 router = APIRouter(tags=["membership"])
@@ -32,6 +32,7 @@ async def renew(member_id: int, data: RenewIn, owner: OwnerUser, db: DbSession) 
     member_out = MemberOut.model_validate(m)
     member_out.credits = (await credits.credits_on(db, [m.id], today_ist())).get(m.id)
     out = RenewOut(member=member_out, bill=billing.to_out(*bill))
+    await alerts.renewed(db, owner.organization_id, m, bill[0].meal_credits)
     await db.commit()
     return out
 

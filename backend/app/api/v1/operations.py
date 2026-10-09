@@ -16,6 +16,7 @@ from app.schemas.operations import (
     StaffSelf,
     StaffUpdate,
 )
+from app.services import alerts
 from app.services import operations as svc
 
 router = APIRouter(tags=["operations"])
@@ -77,6 +78,15 @@ async def create_ledger_entry(
     data: LedgerCreate, owner: OwnerUser, db: DbSession
 ) -> LedgerEntryOut:
     entry = await svc.create_ledger_entry(db, owner.organization_id, owner.id, data)
+    if entry.staff_user_id is not None:
+        await alerts.staff_money(
+            db,
+            owner.organization_id,
+            entry.staff_user_id,
+            entry.kind,
+            entry.amount,
+            entry.occurred_on,
+        )
     await db.commit()
     return entry
 

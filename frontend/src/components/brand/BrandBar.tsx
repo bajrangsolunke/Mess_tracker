@@ -26,7 +26,7 @@ export function BrandBar({
   const { t } = useTranslation();
   const { user } = useSession();
   const [searching, setSearching] = useState(false);
-  const { data } = useNotifications(!!user && user.role !== "staff");
+  const { data } = useNotifications(!!user);
   const unread = data?.unread ?? 0;
   return (
     <AppBar
@@ -102,8 +102,8 @@ export function BrandBar({
             <SearchIcon />
           </IconButton>
         ) : null}
-        {user && user.role !== "staff" ? (
-          <IconButton color="inherit" aria-label={`notifications${unread ? ` (${unread})` : ""}`} onClick={() => navigate(user.role === "owner" ? "/owner/notifications" : "/app/notifications")}>
+        {user ? (
+          <IconButton color="inherit" aria-label={`notifications${unread ? ` (${unread})` : ""}`} onClick={() => navigate(user.role === "owner" ? "/owner/notifications" : user.role === "staff" ? "/staff/notifications" : "/app/notifications")}>
             <Badge badgeContent={unread} color="secondary" max={9} sx={{ "& .MuiBadge-badge": { fontWeight: 700 } }}>
               <BellSpoonIcon />
             </Badge>
