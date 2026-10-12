@@ -20,6 +20,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOffRounded";
 import { useState } from "react";
 import { useLogin } from "../../api/useAuth";
 import { ApiError } from "../../api/client";
+import { tooManyAttempts } from "../../lib/errors";
 import { HOME_BY_ROLE } from "./routes";
 import { brand, FONT_DEVA } from "../../app/theme";
 import { Logo } from "../../components/brand/Logo";
@@ -50,7 +51,8 @@ export function LoginPage() {
   });
 
   const serverError =
-    login.error instanceof ApiError
+    tooManyAttempts(login.error, t) ??
+    (login.error instanceof ApiError
       ? login.error.code === "INVALID_CREDENTIALS"
         ? t("auth.invalid")
         : login.error.code === "VALIDATION_ERROR"
@@ -58,7 +60,7 @@ export function LoginPage() {
           : t("common.error")
       : login.error
         ? t("common.error")
-        : null;
+        : null);
 
   return (
     <Box sx={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>

@@ -16,3 +16,7 @@ frontend/.env.local
 .DS_Store
 *.log
 .playwright-mcp/
+
+# test coverage data
+.coverage
+htmlcov/

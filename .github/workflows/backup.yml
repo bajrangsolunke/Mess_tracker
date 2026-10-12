@@ -1,0 +1,58 @@
+# Nightly encrypted database backup, kept 30 days as a workflow artifact.
+# The repo is public, so the dump is encrypted (AES-256) before upload; only someone with
+# the BACKUP_PASSPHRASE secret can read it. Restore steps: DEPLOY.md → "Backups".
+#
+# One-time setup (GitHub → repo Settings → Secrets and variables → Actions → New secret):
+#   BACKUP_DATABASE_URL  the Neon connection string (same as Render's DATABASE_URL)
+#   BACKUP_PASSPHRASE    a long passphrase; keep a copy somewhere safe (not in this repo)
+name: Database backup
+
+on:
+  schedule:
+    - cron: "30 20 * * *" # 20:30 UTC = 02:00 IST
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check secrets
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$PASSPHRASE" ]; then
+            echo "::error::Add the BACKUP_DATABASE_URL and BACKUP_PASSPHRASE repository secrets"
+            exit 1
+          fi
+
+      - name: Dump the database
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: |
+          # pg_dump must be at least the server's version; postgres:17 dumps 13-17
+          docker run --rm -e DATABASE_URL postgres:17 \
+            sh -c 'pg_dump --format=custom --no-owner --no-privileges "$DATABASE_URL"' > db.dump
+          test -s db.dump
+          echo "Dump size: $(du -h db.dump | cut -f1)"
+
+      - name: Encrypt
+        env:
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          STAMP=$(TZ=Asia/Kolkata date +%Y-%m-%d)
+          echo "$PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+            --symmetric --cipher-algo AES256 -o "swad-backup-$STAMP.dump.gpg" db.dump
+          rm db.dump
+          echo "STAMP=$STAMP" >> "$GITHUB_ENV"
+
+      - name: Keep for 30 days
+        uses: actions/upload-artifact@v4
+        with:
+          name: swad-backup-${{ env.STAMP }}
+          path: swad-backup-*.dump.gpg
+          retention-days: 30
+          if-no-files-found: error

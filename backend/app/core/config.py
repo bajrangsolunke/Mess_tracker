@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     vapid_public_key: str = ""
     vapid_private_key: str = ""
     vapid_subject: str = "https://swad-mess-laturkar.netlify.app"
+    # Error alerts (sentry.io). Empty = off.
+    sentry_dsn: str = ""
 
     @field_validator("database_url")
     @classmethod

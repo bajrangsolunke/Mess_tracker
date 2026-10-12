@@ -1,3 +1,4 @@
+import "./lib/zodSetup"; // must stay first
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./i18n";
@@ -6,8 +7,10 @@ import { Providers } from "./app/providers";
 import App from "./App";
 import { UpdatePrompt } from "./components/UpdatePrompt";
 import { initAppUpdate } from "./lib/appUpdate";
+import { initMonitoring } from "./lib/monitoring";
 
 initAppUpdate();
+void initMonitoring();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

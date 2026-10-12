@@ -25,7 +25,8 @@
     "loginHint": "Use the mobile number your mess owner registered",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "noAccount": "No login yet? Ask your mess owner to add you."
+    "noAccount": "No login yet? Ask your mess owner to add you.",
+    "tooMany": "Too many wrong attempts. For safety, try again in {{minutes}} minutes."
   },
   "lang": {
     "select": "Select language",
@@ -720,5 +721,10 @@
     "addHint": "They get full owner access: members, money, staff and settings.",
     "phoneHint": "They log in with this number",
     "you": "You"
+  },
+  "errorPage": {
+    "title": "Something went wrong on this screen. Please reload.",
+    "reload": "Reload",
+    "home": "Go to home"
   }
 }

@@ -13,3 +13,26 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Security headers for every page. connect-src lists the API (and Sentry, if enabled);
+# style-src needs 'unsafe-inline' for the UI library's runtime styles.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://mess-tracker-api.onrender.com https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://*.ingest.de.sentry.io; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "microphone=(self), camera=(), geolocation=(), payment=(), usb=()"
+
+# Member tracking links carry a secret in the URL: never send it to other sites.
+[[headers]]
+  for = "/m/*"
+  [headers.values]
+    Referrer-Policy = "no-referrer"
+
+# Built files have a content hash in their name, so they can be cached for a year.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

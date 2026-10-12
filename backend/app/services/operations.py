@@ -41,7 +41,7 @@ STAFF_LEDGER_KINDS = {
 
 
 def _temp_password() -> str:
-    return f"{secrets.randbelow(10**6):06d}"
+    return f"{secrets.randbelow(10**8):08d}"
 
 
 def _staff_out(profile: StaffProfile, user: User) -> StaffOut:

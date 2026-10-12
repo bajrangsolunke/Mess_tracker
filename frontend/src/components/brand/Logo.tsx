@@ -1,11 +1,10 @@
 import { Box, type SxProps, type Theme } from "@mui/material";
-import logoTransparent from "../../assets/brand/logo-transparent.png";
-import logoFull from "../../assets/brand/logo-full.png";
-import chef from "../../assets/brand/chef.png";
-import wordmark from "../../assets/brand/wordmark.png";
+import logoTransparent from "../../assets/brand/logo-transparent.webp";
+import logoFull from "../../assets/brand/logo-full.webp";
+import chef from "../../assets/brand/chef.webp";
 
-type Variant = "full" | "chef" | "wordmark" | "transparent";
-const SRC: Record<Variant, string> = { full: logoFull, chef, wordmark, transparent: logoTransparent };
+type Variant = "full" | "chef" | "transparent";
+const SRC: Record<Variant, string> = { full: logoFull, chef, transparent: logoTransparent };
 
 export function Logo({
   variant = "full",

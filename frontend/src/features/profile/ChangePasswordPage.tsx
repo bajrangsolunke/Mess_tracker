@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { api, ApiError } from "../../api/client";
+import { tooManyAttempts } from "../../lib/errors";
 import type { MeResponse } from "../../api/useAuth";
 import { authStore, useSession } from "../auth/authStore";
 import { HOME_BY_ROLE } from "../auth/routes";
@@ -29,7 +30,7 @@ export function ChangePasswordPage() {
   });
   const tooLong = new TextEncoder().encode(next).length > 72;
   const valid = current.length > 0 && next.length >= 6 && !tooLong && next === confirm;
-  const err = change.error instanceof ApiError ? (change.error.code === "WRONG_PASSWORD" ? t("password.wrongCurrent") : t("common.error")) : change.error ? t("common.error") : null;
+  const err = tooManyAttempts(change.error, t) ?? (change.error instanceof ApiError ? (change.error.code === "WRONG_PASSWORD" ? t("password.wrongCurrent") : t("common.error")) : change.error ? t("common.error") : null);
 
   return (
     <Stack component="form" spacing={2} noValidate onSubmit={(e) => { e.preventDefault(); if (valid) change.mutate(); }}>

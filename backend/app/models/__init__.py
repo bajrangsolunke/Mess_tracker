@@ -25,6 +25,7 @@ from app.models.organization import Organization
 from app.models.plan import MessPlan
 from app.models.push import AppSetting, PushSubscription
 from app.models.refresh_token import RefreshToken
+from app.models.security import FailedAttempt
 from app.models.tiffin import (
     TiffinClient,
     TiffinItem,
@@ -42,6 +43,7 @@ __all__ = [
     "Payment",
     "PushSubscription",
     "AppSetting",
+    "FailedAttempt",
     "Leave",
     "Notification",
     "Holiday",

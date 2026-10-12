@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { api, ApiError, type TokenResponse } from "../../api/client";
+import { tooManyAttempts } from "../../lib/errors";
 import { authStore } from "./authStore";
 import { brand } from "../../app/theme";
 import { Logo } from "../../components/brand/Logo";
@@ -29,9 +30,9 @@ export function RegisterMessPage() {
       navigate("/owner/pricing", { replace: true });
     },
   });
-  const err = register.error instanceof ApiError
+  const err = tooManyAttempts(register.error, t) ?? (register.error instanceof ApiError
     ? register.error.code === "INVALID_INVITE" ? t("registerMess.badInvite") : register.error.code === "DUPLICATE_PHONE" ? t("members.duplicatePhone") : t("common.error")
-    : register.error ? t("common.error") : null;
+    : register.error ? t("common.error") : null);
   const set = (k: keyof typeof v) => (e: React.ChangeEvent<HTMLInputElement>) => setV({ ...v, [k]: e.target.value });
 
   return (

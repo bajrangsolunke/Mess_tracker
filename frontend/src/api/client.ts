@@ -6,11 +6,14 @@ export const API_BASE: string =
 export class ApiError extends Error {
   status: number;
   code: string;
-  constructor(status: number, code: string, message: string) {
+  /** seconds to wait (429 TOO_MANY_ATTEMPTS) */
+  retryAfter?: number;
+  constructor(status: number, code: string, message: string, retryAfter?: number) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -25,14 +28,16 @@ export interface TokenResponse {
 async function parseError(res: Response): Promise<ApiError> {
   let code = "HTTP_ERROR";
   let detail = res.statusText || "Request failed";
+  let retryAfter: number | undefined;
   try {
-    const body = (await res.json()) as { code?: string; detail?: string };
+    const body = (await res.json()) as { code?: string; detail?: string; retry_after?: number };
     code = body.code ?? code;
     detail = body.detail ?? detail;
+    retryAfter = body.retry_after;
   } catch {
     /* non-JSON body */
   }
-  return new ApiError(res.status, code, detail);
+  return new ApiError(res.status, code, detail, retryAfter);
 }
 
 /** "ok": new tokens stored. "rejected": server says the refresh token is dead → log out.

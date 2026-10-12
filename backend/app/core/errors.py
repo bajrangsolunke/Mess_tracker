@@ -5,19 +5,23 @@ from fastapi.responses import JSONResponse
 
 
 class ApiError(Exception):
-    def __init__(self, status: int, code: str, detail: str) -> None:
+    def __init__(self, status: int, code: str, detail: str, retry_after: int | None = None) -> None:
         super().__init__(detail)
         self.status = status
         self.code = code
         self.detail = detail
+        self.retry_after = retry_after  # seconds, for 429
 
 
 def install_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def _api_error(_: Request, exc: ApiError) -> JSONResponse:
-        return JSONResponse(
-            status_code=exc.status, content={"detail": exc.detail, "code": exc.code}
-        )
+        content: dict = {"detail": exc.detail, "code": exc.code}
+        headers = None
+        if exc.retry_after is not None:
+            content["retry_after"] = exc.retry_after
+            headers = {"Retry-After": str(exc.retry_after)}
+        return JSONResponse(status_code=exc.status, content=content, headers=headers)
 
     @app.exception_handler(RequestValidationError)
     async def _validation(_: Request, exc: RequestValidationError) -> JSONResponse:

@@ -69,7 +69,7 @@ async def update_plan(db: AsyncSession, org_id: int, plan_id: int, data: PlanUpd
 
 
 def _temp_password() -> str:
-    return f"{secrets.randbelow(10**6):06d}"
+    return f"{secrets.randbelow(10**8):08d}"
 
 
 async def get_member(db: AsyncSession, org_id: int, member_id: int) -> Member:

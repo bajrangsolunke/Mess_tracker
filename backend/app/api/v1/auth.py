@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Request, Response, status
 
 from app.core.deps import CurrentUser, DbSession, OwnerUser
+from app.core.errors import ApiError
 from app.models import User
 from app.schemas.auth import (
     LoginRequest,
@@ -15,6 +16,7 @@ from app.schemas.auth import (
 )
 from app.schemas.member import MemberOut
 from app.services import auth as svc
+from app.services import throttle
 from app.services.members import member_for_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -40,14 +42,32 @@ async def _token_response(db: DbSession, user: User) -> TokenResponse:
 
 
 @router.post("/register-owner", status_code=status.HTTP_201_CREATED, response_model=TokenResponse)
-async def register_owner(data: RegisterOwnerRequest, db: DbSession) -> TokenResponse:
-    user = await svc.register_owner(db, data)
+async def register_owner(
+    data: RegisterOwnerRequest, request: Request, db: DbSession
+) -> TokenResponse:
+    keys = [f"invite:{throttle.client_ip(request)}"]
+    await throttle.check(db, keys)
+    try:
+        user = await svc.register_owner(db, data)
+    except ApiError as e:
+        if e.code == "INVALID_INVITE":
+            await db.rollback()
+            await throttle.fail(db, keys)
+        raise
     return await _token_response(db, user)
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(data: LoginRequest, db: DbSession) -> TokenResponse:
-    user = await svc.authenticate(db, data.phone, data.password)
+async def login(data: LoginRequest, request: Request, db: DbSession) -> TokenResponse:
+    keys = [f"phone:{data.phone}", f"ip:{throttle.client_ip(request)}"]
+    await throttle.check(db, keys)
+    try:
+        user = await svc.authenticate(db, data.phone, data.password)
+    except ApiError as e:
+        if e.code == "INVALID_CREDENTIALS":
+            await throttle.fail(db, keys)
+        raise
+    await throttle.clear(db, keys[:1])
     return await _token_response(db, user)
 
 
@@ -76,7 +96,16 @@ async def me(user: CurrentUser, db: DbSession) -> MeResponse:
 
 @router.patch("/me", response_model=MeResponse)
 async def patch_me(data: UpdateMeRequest, user: CurrentUser, db: DbSession) -> MeResponse:
-    user = await svc.update_me(db, user, data)
+    keys = [f"pw:{user.id}"]
+    if data.new_password is not None:
+        await throttle.check(db, keys)
+    try:
+        user = await svc.update_me(db, user, data)
+    except ApiError as e:
+        if e.code == "WRONG_PASSWORD":
+            await db.rollback()
+            await throttle.fail(db, keys)
+        raise
     org = await svc.get_org(db, user.organization_id)
     await db.commit()
     return MeResponse(
