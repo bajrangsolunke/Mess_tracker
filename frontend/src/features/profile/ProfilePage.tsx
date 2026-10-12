@@ -3,6 +3,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRightRounded";
 import LanguageIcon from "@mui/icons-material/LanguageRounded";
 import LogoutIcon from "@mui/icons-material/LogoutRounded";
 import BadgeIcon from "@mui/icons-material/BadgeRounded";
+import GroupsIcon from "@mui/icons-material/GroupsRounded";
 import { InstallAppCard } from "../../components/InstallAppCard";
 import { PushToggle } from "../../components/PushToggle";
 import { CheckUpdateRow } from "../../components/CheckUpdateRow";
@@ -66,6 +67,14 @@ export function ProfilePage({ titleKey, children }: { titleKey: "nav.more" | "na
                   <WalletRupeeIcon />
                 </ListItemIcon>
                 <ListItemText primary={t("ledger.title")} secondary={t("ledger.hintShort")} />
+                <ChevronRightIcon sx={{ color: "text.secondary" }} />
+              </ListItemButton>
+              <Divider component="li" />
+              <ListItemButton onClick={() => navigate("/owner/owners")} sx={{ minHeight: 60 }}>
+                <ListItemIcon sx={{ color: brand.goldDark, minWidth: 44 }}>
+                  <GroupsIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("owners.title")} secondary={t("owners.hintShort")} />
                 <ChevronRightIcon sx={{ color: "text.secondary" }} />
               </ListItemButton>
               <Divider component="li" />

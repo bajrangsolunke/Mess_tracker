@@ -35,6 +35,7 @@ import { RegisterPage } from "../features/register/RegisterPage";
 import { TiffinClientsPage } from "../features/tiffin/TiffinClientsPage";
 import { TiffinClientDetailPage } from "../features/tiffin/TiffinClientDetailPage";
 import { StaffPage } from "../features/operations/StaffPage";
+import { OwnersPage } from "../features/operations/OwnersPage";
 import { LedgerPage } from "../features/operations/LedgerPage";
 import { StaffShell } from "../features/shell/StaffShell";
 import { StaffHomePage } from "../features/staff/StaffHomePage";
@@ -80,6 +81,7 @@ export const router = createBrowserRouter([
       { path: "payments", element: <PaymentsPage /> },
       { path: "payments/:id", element: <BillDetailPage /> },
       { path: "staff", element: <StaffPage /> },
+      { path: "owners", element: <OwnersPage /> },
       { path: "ledger", element: <LedgerPage /> },
       { path: "more", element: <ProfilePage titleKey="nav.more" /> },
       { path: "change-password", element: <ChangePasswordPage /> },

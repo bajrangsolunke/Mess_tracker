@@ -156,11 +156,11 @@ async def member_added(db: AsyncSession, org_id: int, member: Member, actor_id: 
 async def tiffins_entered(
     db: AsyncSession, org_id: int, actor: User, d: date, rows: list[tuple[str, MealType, int, int]]
 ) -> None:
-    """rows: (company, meal, veg, nonveg) that changed. Owner hears from staff and vice versa."""
+    """rows: (company, meal, veg, nonveg) that changed; everyone else in the mess hears."""
     if not rows:
         return
-    other = UserRole.owner if actor.role is UserRole.staff else UserRole.staff
-    users = await push.staff_and_owners(db, org_id, [other], actor.id)
+    # everyone else who runs the mess: other owners and staff
+    users = await push.staff_and_owners(db, org_id, [UserRole.owner, UserRole.staff], actor.id)
     if not users:
         return
     for meal in (MealType.lunch, MealType.dinner):

@@ -10,6 +10,10 @@ from app.schemas.operations import (
     LedgerCreate,
     LedgerEntryOut,
     LedgerReport,
+    OwnerCreate,
+    OwnerCreated,
+    OwnerOut,
+    OwnerUpdate,
     StaffCreate,
     StaffCreated,
     StaffOut,
@@ -96,3 +100,28 @@ async def delete_ledger_entry(entry_id: int, owner: OwnerUser, db: DbSession) ->
     await svc.delete_ledger_entry(db, owner.organization_id, entry_id)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# --- co-owners ---------------------------------------------------------------------------
+
+
+@router.get("/owners", response_model=list[OwnerOut])
+async def list_owners(owner: OwnerUser, db: DbSession) -> list[OwnerOut]:
+    return await svc.list_owners(db, owner.organization_id, owner.id)
+
+
+@router.post("/owners", response_model=OwnerCreated, status_code=status.HTTP_201_CREATED)
+async def create_owner(data: OwnerCreate, owner: OwnerUser, db: DbSession) -> OwnerCreated:
+    language = await svc.default_language(db, owner.organization_id)
+    out, temp = await svc.create_owner(db, owner.organization_id, owner.id, language, data)
+    await db.commit()
+    return OwnerCreated(owner=out, temp_password=temp)
+
+
+@router.patch("/owners/{owner_id}", response_model=OwnerOut)
+async def update_owner(
+    owner_id: int, data: OwnerUpdate, owner: OwnerUser, db: DbSession
+) -> OwnerOut:
+    out = await svc.set_owner_active(db, owner.organization_id, owner.id, owner_id, data.is_active)
+    await db.commit()
+    return out

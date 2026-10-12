@@ -100,3 +100,31 @@ class StaffSelf(BaseModel):
     monthly_salary: Money
     month: StaffMonth
     entries: list[LedgerEntryOut]
+
+
+class OwnerCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    phone: str
+
+    @field_validator("phone")
+    @classmethod
+    def _phone(cls, value: str) -> str:
+        return normalize_phone(value)
+
+
+class OwnerUpdate(BaseModel):
+    is_active: bool
+
+
+class OwnerOut(BaseModel):
+    id: int
+    name: str
+    phone: str
+    is_active: bool
+    created_at: datetime
+    is_me: bool = False
+
+
+class OwnerCreated(BaseModel):
+    owner: OwnerOut
+    temp_password: str

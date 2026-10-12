@@ -181,7 +181,7 @@
     "loginNote": "A login with a temporary password will be created for this phone.",
     "noPlansYet": "Create a mess plan first, then add members.",
     "loginReady": "{{name}} can log in now",
-    "loginReadyHint": "Share these once. The member will set a new password on first login.",
+    "loginReadyHint": "Share this once. They set their own password at first login.",
     "tempPassword": "Temporary password",
     "whatsappText": "Namaste {{name}}! Your स्वाद mess login:\\nPhone: {{phone}}\\nPassword: {{password}}\\nOpen: {{app}}",
     "resetPassword": "Reset password",
@@ -710,5 +710,15 @@
     "placeholder": "Type member ID",
     "none": "No member with this ID",
     "clear": "Clear"
+  },
+  "owners": {
+    "title": "Owners / partners",
+    "hintShort": "Brothers and partners with their own owner login",
+    "hint": "Everyone here has full owner access with their own phone number and password. The app records who marked meals or took payments. A login can be used on more than one phone.",
+    "add": "Add an owner",
+    "addShort": "Add",
+    "addHint": "They get full owner access: members, money, staff and settings.",
+    "phoneHint": "They log in with this number",
+    "you": "You"
   }
 }

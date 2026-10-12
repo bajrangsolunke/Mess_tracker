@@ -80,3 +80,34 @@ export function useStaffMe(month: string) {
 export function useKitchenToday() {
   return useQuery({ queryKey: ["kitchen", "today"], queryFn: () => api<KitchenToday>("/kitchen/today"), refetchInterval: 60_000 });
 }
+
+export interface Owner {
+  id: number;
+  name: string;
+  phone: string;
+  is_active: boolean;
+  created_at: string;
+  is_me: boolean;
+}
+
+export const ownersKey = ["owners"] as const;
+
+export function useOwners() {
+  return useQuery({ queryKey: ownersKey, queryFn: () => api<Owner[]>("/owners") });
+}
+
+export function useAddOwner() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string; phone: string }) => api<{ owner: Owner; temp_password: string }>("/owners", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ownersKey }),
+  });
+}
+
+export function useSetOwnerActive() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, is_active }: { id: number; is_active: boolean }) => api<Owner>(`/owners/${id}`, { method: "PATCH", body: JSON.stringify({ is_active }) }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ownersKey }),
+  });
+}

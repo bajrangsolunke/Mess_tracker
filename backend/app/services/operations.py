@@ -24,6 +24,8 @@ from app.schemas.operations import (
     LedgerEntryOut,
     LedgerReport,
     LedgerTotals,
+    OwnerCreate,
+    OwnerOut,
     StaffCreate,
     StaffMonth,
     StaffOut,
@@ -338,3 +340,66 @@ async def default_language(db: AsyncSession, org_id: int):
     if org is None:
         raise ApiError(404, "ORGANIZATION_NOT_FOUND", "Mess not found")
     return org.default_language
+
+
+# --- co-owners (e.g. brothers running the mess together) ---------------------------------
+
+
+def _owner_out(u: User, me_id: int) -> OwnerOut:
+    return OwnerOut(
+        id=u.id,
+        name=u.name,
+        phone=u.phone,
+        is_active=u.is_active,
+        created_at=u.created_at,
+        is_me=u.id == me_id,
+    )
+
+
+async def list_owners(db: AsyncSession, org_id: int, me_id: int) -> list[OwnerOut]:
+    rows = (
+        await db.execute(
+            select(User)
+            .where(User.organization_id == org_id, User.role == UserRole.owner)
+            .order_by(User.is_active.desc(), User.created_at)
+        )
+    ).scalars()
+    return [_owner_out(u, me_id) for u in rows]
+
+
+async def create_owner(
+    db: AsyncSession, org_id: int, me_id: int, owner_language, data: OwnerCreate
+) -> tuple[OwnerOut, str]:
+    """Another owner with full access and their own login."""
+    if (await db.execute(select(User.id).where(User.phone == data.phone))).first():
+        raise ApiError(409, "DUPLICATE_PHONE", "A login with this phone already exists")
+    temp_password = _temp_password()
+    user = User(
+        organization_id=org_id,
+        phone=data.phone,
+        name=data.name.strip(),
+        password_hash=hash_password(temp_password),
+        role=UserRole.owner,
+        language=owner_language,
+        must_change_password=True,
+    )
+    db.add(user)
+    try:
+        await db.flush()
+    except IntegrityError as e:
+        raise ApiError(409, "DUPLICATE_PHONE", "A login with this phone already exists") from e
+    await db.refresh(user)
+    return _owner_out(user, me_id), temp_password
+
+
+async def set_owner_active(
+    db: AsyncSession, org_id: int, me_id: int, owner_id: int, active: bool
+) -> OwnerOut:
+    user = await db.get(User, owner_id)
+    if user is None or user.organization_id != org_id or user.role is not UserRole.owner:
+        raise ApiError(404, "OWNER_NOT_FOUND", "Owner not found")
+    if not active and user.id == me_id:
+        raise ApiError(422, "CANNOT_BLOCK_SELF", "You cannot block your own login")
+    user.is_active = active
+    await db.flush()
+    return _owner_out(user, me_id)
